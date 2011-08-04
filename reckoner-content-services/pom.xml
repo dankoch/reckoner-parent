@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.reckonlabs.reckoner</groupId>
+    <artifactId>reckoner-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <groupId>com.reckonlabs.reckoner</groupId>
+  <artifactId>reckoner-content-services</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <name>The Reckoner Content Services</name>
+  <description>
+  <![CDATA[
+      The Reckoner Content Services are responsible for exposing the actual Reckoning Content
+      as contained on TheReckoner.net.
+  ]]>
+  </description>
+  <dependencies>
+    <dependency>
+      <groupId>com.reckonlabs.reckoner</groupId>
+      <artifactId>reckoner-domain</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.7</version>
+    </dependency>
+  </dependencies>
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-war-plugin</artifactId>
+              <configuration>
+                    <warName>reckoner-content-services</warName>
+              </configuration>
+          </plugin>
+      </plugins>
+  </build>
+</project>

@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.reckonlabs.reckoner</groupId>
+    <artifactId>reckoner-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <groupId>com.reckonlabs.reckoner</groupId>
+  <artifactId>reckoner-domain</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>The Reckoner Domain</name>
+  <description>
+  <![CDATA[
+      The reckoner-domain project provides the domain model for the Reckoning Database.
+      This includes the Java object equivalents for the documents contained in the DB.
+  ]]>
+  </description>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.7</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
