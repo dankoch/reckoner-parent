@@ -29,10 +29,16 @@
           <id>sourceforge</id>
           <url>http://oss.sonatype.org/content/groups/sourceforge/</url>
       </repository>
+      <repository>
+          <id>spring-milestone</id>
+          <name>Spring Maven MILESTONE Repository</name>
+          <url>http://maven.springframework.org/milestone</url>
+       </repository>
   </repositories>
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <spring.version>3.0.5.RELEASE</spring.version>
+      <hibernate.version>3.5.2-Final</hibernate.version>
   </properties>
   <dependencies>
       <dependency>
@@ -66,6 +72,65 @@
           <version>4.7</version>
           <scope>test</scope>
       </dependency>
+      <dependency>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+          <version>1.2.15</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>javax.mail</groupId>
+                  <artifactId>mail</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>javax.jms</groupId>
+                  <artifactId>jms</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>com.sun.jdmk</groupId>
+                  <artifactId>jmxtools</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>com.sun.jmx</groupId>
+                  <artifactId>jmxri</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+      <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+          <version>1.4.2</version>
+      </dependency>
+      <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-entitymanager</artifactId>
+          <version>${hibernate.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-annotations</artifactId>
+          <version>${hibernate.version}</version>
+      </dependency>
+       <!-- mongodb java driver -->
+       <dependency>
+           <groupId>org.mongodb</groupId>
+           <artifactId>mongo-java-driver</artifactId>
+           <version>2.6.3</version>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.data</groupId>
+           <artifactId>spring-data-mongodb</artifactId>
+           <version>1.0.0.M3</version>
+       </dependency>
+       <dependency>
+           <groupId>com.jamonapi</groupId>
+           <artifactId>jamon</artifactId>
+           <version>2.0</version>
+       </dependency>
+       <dependency>
+           <groupId>org.codehaus.jackson</groupId>
+           <artifactId>jackson-mapper-asl</artifactId>
+           <version>1.5.0</version>
+       </dependency>
   </dependencies>
   <build>
       <plugins>
