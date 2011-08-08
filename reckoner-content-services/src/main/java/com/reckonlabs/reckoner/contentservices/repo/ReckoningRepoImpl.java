@@ -16,7 +16,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	@Autowired
 	MongoTemplate mongoTemplate;
 	
-	public static final String RECKONING_COLLECTION = "reckonings";
+	public static final String RECKONING_COLLECTION = "reckoning";
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(ReckoningRepoImpl.class);

@@ -1,5 +1,6 @@
 package com.reckonlabs.reckoner.contentservices.controller;
 
+import java.lang.Boolean;
 import java.util.Date;
 
 import javax.annotation.Resource;
@@ -81,6 +82,34 @@ public class ReckoningController {
 	}
 	
 	/**
+	 * This method allows for the retrieval of unapproved Reckonings.
+	 * 
+	 * @param postReckoning
+	 *            PostReckoning
+	 * @return postReckoningResponse
+	 *            PostReckoningResponse
+	 * @throws AuthenticationException, Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/approvalqueue", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getReckoningsAwaitingApproval(
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "latest_first") Boolean latestFirst,			
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.warn("Approval queue request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return reckoningService.getApprovalQueue(page, size, latestFirst, userToken);
+	}
+	
+	/**
 	 * This method allows for the retrieval of Reckoning content.
 	 * 
 	 * @param postReckoning
@@ -93,10 +122,10 @@ public class ReckoningController {
 	@RequestMapping(value = "/reckoning", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getReckoning(
-			@RequestParam(required = true, value = "page") Long page,
-			@RequestParam(required = true, value = "size") Long size,
-			@RequestParam(required = false, value = "approved") boolean approved,
-			@RequestParam(required = false, value = "rejected") boolean rejected,
+			@RequestParam(required = true, value = "page") Integer page,
+			@RequestParam(required = true, value = "size") Integer size,
+			@RequestParam(required = false, value = "approved") Boolean approved,
+			@RequestParam(required = false, value = "rejected") Boolean rejected,
 			@RequestParam(required = false, value = "id") String id,
 			@RequestParam(required = false, value = "submitter_id") String submitterId,
 			@RequestParam(required = false, value = "posted_after_date") Date postedAfter,

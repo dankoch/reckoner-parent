@@ -23,5 +23,24 @@ public class ReckoningValidator {
 		
 		return null;
 	}
+	
+	public static Message validateReckoningQuery(Integer page, Integer size) {
+		
+		if (page != null ^ size != null) {
+			return (new Message(MessageEnum.R203_GET_RECKONING));
+		}
+		if (page != null) {
+			if (page < 0) {
+				return (new Message(MessageEnum.R201_GET_RECKONING));
+			}
+		}
+		if (size != null) {
+			if (size < 1) {
+				return (new Message(MessageEnum.R202_GET_RECKONING));				
+			}
+		}
+		
+		return null;
+	}
 
 }
