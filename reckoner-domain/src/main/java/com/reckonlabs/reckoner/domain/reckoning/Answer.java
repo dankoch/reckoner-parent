@@ -20,7 +20,7 @@ public class Answer implements Serializable {
 	}
 	
 	public Answer (String answer, String subtitle) {
-		setAnswer(answer);
+		setText(answer);
 		setSubtitle(subtitle);
 	}
 	

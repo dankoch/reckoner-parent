@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.contentservices.controller;
 
 import java.lang.Boolean;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.annotation.Resource;
@@ -8,11 +9,14 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +33,7 @@ import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
+import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 
 /**
  * This controller is responsible for the web services for posting and reading
@@ -37,7 +42,14 @@ import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
 @Controller
 public class ReckoningController {
 	
-	@Resource
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DateFormatAdapter.DATE_PATTERN);
+        dateFormat.setLenient(false);
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, false));
+    }
+	
+	@Autowired
 	ReckoningService reckoningService;
 	
 	private static final Logger log = LoggerFactory
@@ -82,13 +94,38 @@ public class ReckoningController {
 	}
 	
 	/**
+	 * This method allows for the retrieval of a specific Reckoning by ID.
+	 * 
+	 * @param id
+	 *           String
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/{id}", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getReckoningById(
+			@PathVariable String id,		
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getReckoning(id, userToken);
+	}
+	
+	/**
 	 * This method allows for the retrieval of unapproved Reckonings.
 	 * 
-	 * @param postReckoning
-	 *            PostReckoning
-	 * @return postReckoningResponse
-	 *            PostReckoningResponse
-	 * @throws AuthenticationException, Exception
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer
+	 * @param latestFirst
+	 *           Boolean
+	 * @param userToken
+	 *           String 
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
 	 *            exception
 	 */	
 	@RequestMapping(value = "/reckoning/approvalqueue", method = RequestMethod.GET)	
@@ -110,34 +147,239 @@ public class ReckoningController {
 	}
 	
 	/**
-	 * This method allows for the retrieval of Reckoning content.
+	 * This method allows for the retrieval of reckonings related to a specific user.
 	 * 
-	 * @param postReckoning
-	 *            PostReckoning
-	 * @return postReckoningResponse
-	 *            PostReckoningResponse
-	 * @throws AuthenticationException, Exception
+	 * @param submitter_id
+	 *           String
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer
+	 * @param userToken
+	 *           String  
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/user/{submitterId}", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getReckoningsByUser(
+			@PathVariable String submitterId,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getReckoningsByUser (submitterId, page, size, userToken);
+	}
+	
+	/**
+	 * This method allows for the retrieval of reckoning summaries related to a specific user.
+	 * 
+	 * @param submitter_id
+	 *           String
+	 * @param userToken
+	 *           String  
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/user/{submitterId}/summary", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getReckoningSummariesByUser(
+			@PathVariable String submitterId,
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getReckoningSummariesByUser (submitterId, userToken);
+	}
+	
+	/**
+	 * This method allows for the retrieval of open reckonings related to a specific user.
+	 * 
+	 * @param submitter_id
+	 *           String
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer     
+	 * @param userToken
+	 *           String        
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/user/{submitterId}/open", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getOpenReckoningsByUser(
+			@PathVariable String submitterId,	
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getOpenReckoningsByUser (submitterId, page, size, userToken);
+	}
+	
+	/**
+	 * This method allows for the retrieval of closed reckonings related to a specific user.
+	 * 
+	 * @param submitter_id
+	 *           String
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer     
+	 * @param userToken
+	 *           String         
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/user/{submitterId}/closed", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getClosedReckoningsByUser(
+			@PathVariable String submitterId,	
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getClosedReckoningsByUser (submitterId, page, size, userToken);
+	}
+	
+	/**
+	 * This method allows for the retrieval of reckonings related to a specific user awaiting approval.
+	 * 
+	 * @param submitter_id
+	 *           String       
+	 * @param userToken
+	 *           String        
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/user/{submitterId}/approvalqueue", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getApprovalQueueReckoningsByUser(
+			@PathVariable String submitterId,	
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getApprovalQueueByUser(submitterId, userToken);
+	}
+
+	/**
+	 * This method allows for the retrieval of the most recent open highlighted reckoning.
+	 * 
+	 * @param userToken
+	 *           String          
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/highlighted", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getHighlightedReckonings(
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getHighlightedReckonings(null, userToken);
+	}
+	
+	/**
+	 * This method allows for the retrieval of the most recent open highlighted reckoning.
+	 * 
+	 * @param userToken
+	 *           String   
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/highlighted/open", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getHighlightedOpenReckoning(
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getHighlightedReckonings(true, userToken);
+	}
+	
+	/**
+	 * This method allows for the retrieval of the most recent closed highlighted reckoning.
+	 * 
+	 * @param userToken
+	 *           String   
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/highlighted/closed", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getHighlightedClosedReckoning(
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getHighlightedReckonings(false, userToken);
+	}
+	
+	/**
+	 * This method allows for the general retrieval of reckoning summaries.
+	 * 
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer
+	 * @param postedAfter
+	 *           Date
+	 * @param postedBefore
+	 *           Date    
+	 * @param closedAfter
+	 *           Date
+	 * @param closedBefore
+	 *           Date 
+	 * @param userToken
+	 *           String   
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
 	 *            exception
 	 */	
 	@RequestMapping(value = "/reckoning", method = RequestMethod.GET)	
 	public @ResponseBody
-	ReckoningServiceList getReckoning(
-			@RequestParam(required = true, value = "page") Integer page,
-			@RequestParam(required = true, value = "size") Integer size,
-			@RequestParam(required = false, value = "approved") Boolean approved,
-			@RequestParam(required = false, value = "rejected") Boolean rejected,
-			@RequestParam(required = false, value = "id") String id,
-			@RequestParam(required = false, value = "submitter_id") String submitterId,
-			@RequestParam(required = false, value = "posted_after_date") Date postedAfter,
-			@RequestParam(required = false, value = "posted_before_date") Date postedBefore,
-			@RequestParam(required = false, value = "closed_after_date") Date closedAfter,
-			@RequestParam(required = false, value = "closed_before_date") Date closedBefore,
-			@RequestParam(required = false, value = "tag") String tag,		
-			@RequestParam(required = false, value = "sort_by") String sortBy,	
-			@RequestParam(required = false, value = "filter") String filter,
+	ReckoningServiceList getOpenReckonings(
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "posted_after") Date postedAfter,
+			@RequestParam(required = false, value = "posted_before") Date postedBefore,
+			@RequestParam(required = false, value = "closed_after") Date closedAfter,
+			@RequestParam(required = false, value = "closed_before") Date closedBefore,
 			@RequestParam(required = true, value = "user_token") String userToken) {
 		
-		return reckoningService.queryReckoning(page, size, approved, rejected, id, submitterId, postedAfter, 
-				postedBefore, closedAfter, closedBefore, tag, sortBy, filter, userToken);
+		return reckoningService.getReckoningSummaries(page, size, postedAfter, postedBefore,
+				closedAfter, closedBefore, userToken);
+	}
+	
+	/**
+	 * This method allows for the retrieval of reckonings related to a specific tag.
+	 * 
+	 * @param tag
+	 *           String
+	 * @param userToken
+	 *           String  
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/tag/{tag}", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getReckoningsByTag(
+			@PathVariable String tag,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		return reckoningService.getReckoningsByTag(tag, page, size, userToken);
 	}
 }

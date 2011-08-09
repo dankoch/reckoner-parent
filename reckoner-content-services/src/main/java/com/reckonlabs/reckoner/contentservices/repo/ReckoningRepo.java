@@ -12,18 +12,25 @@ import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 
 public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 
+	List<Reckoning> findById(String id);
+	
 	List<Reckoning> findByApproved(boolean approved);
 	List<Reckoning> findByRejected(boolean rejected);
 	List<Reckoning> findByApprovedAndRejected(boolean approved, boolean rejected);
 	Page<Reckoning> findByApprovedAndRejected(boolean approved, boolean rejected, Pageable page);	
 	
-	List<Reckoning> findById(String id);
+	@Query(value = "{'submitterId' : ?0}", fields="{'id' : 1, 'question' : 1, 'submissionDate' : 1, 'submitterId' : 1}")
+	List<Reckoning> findBySubmitterIdSummary(String submitterId);
+	List<Reckoning> findBySubmitterId(String submitterId);	
+	Page<Reckoning> findBySubmitterId(String submitterId, Pageable page);
+	List<Reckoning> findBySubmitterIdAndClosingDateGreaterThan(String submitterId, Date currentDate);
+	Page<Reckoning> findBySubmitterIdAndClosingDateGreaterThan(String submitterId, Date currentDate, Pageable page);	
+	List<Reckoning> findBySubmitterIdAndClosingDateLessThan(String submitterId, Date currentDate);
+	Page<Reckoning> findBySubmitterIdAndClosingDateLessThan(String submitterId, Date currentDate, Pageable page);	
+	List<Reckoning> findBySubmitterIdAndApprovedAndRejected(String submitterId, boolean approved, boolean rejected);	
 	
-	List<Reckoning> findBySubmitterId(String submitterId);
-	
-	List<Reckoning> findBySubmissionDateGreaterThan (Date submissionDate);
-	List<Reckoning> findBySubmissionDateLessThan (Date submissionDate);
-	List<Reckoning> findBySubmissionDateLessThanAndSubmissionDateGreaterThan (Date submissionDateEnd, Date submissionDateStart);
-	
-	List<Reckoning> findByInterval (String interval);
+	List<Reckoning> findByHighlighted (boolean highlighted);
+	List<Reckoning> findByHighlightedAndClosingDateGreaterThan (boolean highlighted, Date currentDate);
+	List<Reckoning> findByHighlightedAndClosingDateLessThan (boolean highlighted, Date currentDate);
+
 }

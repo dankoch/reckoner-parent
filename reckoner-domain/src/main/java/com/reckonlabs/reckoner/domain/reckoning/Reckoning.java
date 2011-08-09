@@ -7,6 +7,7 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -14,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
+import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 @Entity
 @XmlRootElement(name = "reckoning")
@@ -38,8 +40,9 @@ public class Reckoning implements Serializable {
 	private boolean approved;
 	@Column(name="rejected")
 	private boolean rejected;
-	@Column(name="open")
+	@Transient
 	private boolean open;
+	
 	@Column(name="anonymous_requested")
 	private boolean anonymousRequested;
 	@Column(name="anonymous")
@@ -63,6 +66,9 @@ public class Reckoning implements Serializable {
 	
 	@Column(name="tags")
 	private List<String> tags;
+	
+	@Column(name="highlighted")
+	private boolean highlighted;
 
 	public String getId() {
 		return id;
@@ -126,14 +132,18 @@ public class Reckoning implements Serializable {
 	public void setRejected(boolean rejected) {
 		this.rejected = rejected;
 	}
-
+	
 	@XmlElement(name = "open")
 	public boolean isOpen() {
-		return open;
-	}
-
-	public void setOpen(boolean open) {
-		this.open = open;
+		if (isApproved() && getClosingDate() != null) {
+			if (!DateUtility.isBeforeNow(getClosingDate())) {
+				this.open = true;
+				return this.open;
+			} 
+		}
+		
+		this.open = false;
+		return this.open;
 	}
 
 	@XmlElement(name = "anonymous_requested")
@@ -228,5 +238,14 @@ public class Reckoning implements Serializable {
 
 	public void setTags(List<String> tags) {
 		this.tags = tags;
+	}
+
+	@XmlElement(name = "highlighted")
+	public boolean isHighlighted() {
+		return highlighted;
+	}
+
+	public void setHighlighted(boolean highlighted) {
+		this.highlighted = highlighted;
 	}
 }
