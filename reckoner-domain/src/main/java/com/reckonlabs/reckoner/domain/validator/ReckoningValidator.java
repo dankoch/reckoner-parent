@@ -42,5 +42,16 @@ public class ReckoningValidator {
 		
 		return null;
 	}
+	
+	public static Message validateReckoningId(String id) {
+		
+		if (id == null) {
+			return (new Message(MessageEnum.R02_DEFAULT));
+		} else if (id.length() != 24) {
+			return (new Message(MessageEnum.R02_DEFAULT));			
+		}
+		
+		return null;
+	}
 
 }

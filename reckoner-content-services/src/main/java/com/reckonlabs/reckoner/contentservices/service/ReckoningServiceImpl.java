@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
+import com.reckonlabs.reckoner.contentservices.cache.ReckoningCache;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoImpl;
@@ -19,8 +20,11 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
+import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
+import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
+import com.reckonlabs.reckoner.domain.utility.ListPagingUtility;
 
 @Component
 public class ReckoningServiceImpl implements ReckoningService {
@@ -29,7 +33,10 @@ public class ReckoningServiceImpl implements ReckoningService {
 	ReckoningRepo reckoningRepo;
 	
 	@Autowired
-	ReckoningRepoCustom reckoningRepoCustomImpl;
+	ReckoningRepoCustom reckoningRepoCustom;
+	
+	@Autowired
+	ReckoningCache reckoningCache;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(ReckoningServiceImpl.class);
@@ -38,9 +45,82 @@ public class ReckoningServiceImpl implements ReckoningService {
 	public ServiceResponse postReckoning (Reckoning reckoning, String userToken) {
 		
 		try {
-			reckoningRepoCustomImpl.insertNewReckoning(reckoning);
+			reckoningRepoCustom.insertNewReckoning(reckoning);
+			
+			reckoningCache.removeCachedUserReckoningSummaries(reckoning.getSubmitterId());
 		} catch (Exception e) {
-			log.error("General exception when getting the approval queue: " + e.getMessage());
+			log.error("General exception when inserting a new reckoning: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new ServiceResponse();
+	}
+	
+	@Override
+	public ServiceResponse updateReckoning (Reckoning reckoning, String userToken) {
+		
+		try {
+			reckoningRepoCustom.updateReckoning(reckoning);
+			
+			reckoningCache.removeCachedReckoning(reckoning.getId());
+		} catch (Exception e) {
+			log.error("General exception when updating a reckoning: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new ServiceResponse();
+	}
+	
+	@Override
+	public ServiceResponse approveReckoning (String id, String userToken) {
+		
+		try {
+			List<Reckoning> approvedReckoning = reckoningRepo.findById(id);
+			
+			if (approvedReckoning != null && approvedReckoning.size() > 0) {
+				reckoningRepoCustom.approveReckoning(id, "THX1138", DateUtility.now(), 
+						new Date(DateUtility.now().getTime() + approvedReckoning.get(0).getInterval()));
+			} else {
+				log.info("Request to approve non-existent reckoning: " + id);
+				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
+			}
+			
+		} catch (DBUpdateException dbE) {
+			log.error("Database exception when accepting a reckoning: " + dbE.getMessage());
+			log.debug("Stack Trace:", dbE);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));				
+		}
+		  catch (Exception e) {
+			log.error("General exception when accepting a reckoning: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new ServiceResponse();
+	}
+	
+	@Override
+	public ServiceResponse rejectReckoning (String id, String userToken) {
+		
+		try {
+			List<Reckoning> rejectedReckoning = reckoningRepo.findById(id);
+			
+			if (rejectedReckoning != null && rejectedReckoning.size() > 0) {
+				reckoningRepoCustom.rejectReckoning(id, "THX1138");
+			} else {
+				log.info("Request to reject non-existent reckoning: " + id);
+				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
+			}
+			
+		} catch (DBUpdateException dbE) {
+			log.error("Database exception when rejecting a reckoning: " + dbE.getMessage());
+			log.debug("Stack Trace:", dbE);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));				
+		}
+		  catch (Exception e) {
+			log.error("General exception when rejecting a reckoning: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
 			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));	
 		}
@@ -51,9 +131,12 @@ public class ReckoningServiceImpl implements ReckoningService {
 	@Override
 	public ReckoningServiceList getReckoning (String id, String userToken) {
 		List<Reckoning> reckoning = null;
-		
 		try {
-			reckoning = reckoningRepo.findById(id);
+			reckoning = reckoningCache.getCachedReckoning(id);
+			if (reckoningCache.getCachedReckoning(id) == null) {
+				reckoning = reckoningRepo.findById(id);
+				reckoningCache.setCachedReckoning(reckoning, id);
+			}
 		} catch (Exception e) {
 			log.error("General exception when retrieving a reckoning: " + e.getMessage());
 			log.debug("Stack Trace:", e);	
@@ -90,93 +173,21 @@ public class ReckoningServiceImpl implements ReckoningService {
 		
 		return new ReckoningServiceList(approvalQueue, new Message(), true);
 	}
-
-	@Override
-	public ReckoningServiceList getReckoningsByUser(String submitterId,
-			Integer page, Integer size, String userToken) {
-		List<Reckoning> reckonings = null;
-		
-		try {
-			if (page != null && size != null) {
-				reckonings = reckoningRepo.findBySubmitterId(submitterId, 
-						new PageRequest(page, size, Sort.Direction.DESC, "submissionDate")).getContent();					
-			} else {
-				reckonings = reckoningRepo.findBySubmitterId(submitterId);
-			}
-		} catch (Exception e) {
-			log.error("General exception when getting reckonings by user: " + e.getMessage());
-			log.debug("Stack Trace:", e);		
-			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
-		}
-		
-		return new ReckoningServiceList(reckonings, new Message(), true);
-	}
 	
 	@Override
-	public ReckoningServiceList getReckoningSummariesByUser(String submitterId, String userToken) {
+	public ReckoningServiceList getReckoningSummariesByUser(String submitterId, Integer page, Integer size, String userToken) {
 		List<Reckoning> reckonings = null;
 		
 		try {
-			reckonings = reckoningRepo.findBySubmitterIdSummary(submitterId);
+			reckonings = reckoningCache.getCachedUserReckoningSummaries(submitterId);
+			if (reckonings == null) {
+				reckonings = reckoningRepo.findBySubmitterIdSummary(submitterId);
+				reckoningCache.setCachedUserReckoningSummaries(submitterId, reckonings);
+			}
+			
+			reckonings = (List<Reckoning>) ListPagingUtility.pageList(reckonings, page, size);
 		} catch (Exception e) {
 			log.error("General exception when getting reckoning summaries by user: " + e.getMessage());
-			log.debug("Stack Trace:", e);
-			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
-		}
-		
-		return new ReckoningServiceList(reckonings, new Message(), true);
-	}
-
-	@Override
-	public ReckoningServiceList getOpenReckoningsByUser(String submitterId,
-			Integer page, Integer size, String userToken) {
-		List<Reckoning> reckonings = null;
-		
-		try {
-			if (page != null && size != null) {
-				reckonings = reckoningRepo.findBySubmitterIdAndClosingDateGreaterThan(submitterId, DateUtility.now(),
-						new PageRequest(page, size, Sort.Direction.DESC, "submissionDate")).getContent();					
-			} else {
-				reckonings = reckoningRepo.findBySubmitterIdAndClosingDateGreaterThan(submitterId, DateUtility.now());
-			}
-		} catch (Exception e) {
-			log.error("General exception when getting open reckonings by user: " + e.getMessage());
-			log.debug("Stack Trace:", e);		
-			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
-		}
-		
-		return new ReckoningServiceList(reckonings, new Message(), true);
-	}
-
-	@Override
-	public ReckoningServiceList getClosedReckoningsByUser(String submitterId,
-			Integer page, Integer size, String userToken) {
-		List<Reckoning> reckonings = null;
-		
-		try {
-			if (page != null && size != null) {
-				reckonings = reckoningRepo.findBySubmitterIdAndClosingDateLessThan(submitterId, DateUtility.now(),
-						new PageRequest(page, size, Sort.Direction.DESC, "submissionDate")).getContent();					
-			} else {
-				reckonings = reckoningRepo.findBySubmitterIdAndClosingDateLessThan(submitterId, DateUtility.now());
-			}
-		} catch (Exception e) {
-			log.error("General exception when getting closed reckonings by user: " + e.getMessage());
-			log.debug("Stack Trace:", e);		
-			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
-		}
-		
-		return new ReckoningServiceList(reckonings, new Message(), true);
-	}
-	
-	@Override
-	public ReckoningServiceList getApprovalQueueByUser(String submitterId, String userToken) {
-		List<Reckoning> reckonings = null;
-		
-		try {
-			reckonings = reckoningRepo.findBySubmitterIdAndApprovedAndRejected(submitterId, false, false);
-		} catch (Exception e) {
-			log.error("General exception when getting approval queue reckonings by user: " + e.getMessage());
 			log.debug("Stack Trace:", e);
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
@@ -210,14 +221,14 @@ public class ReckoningServiceImpl implements ReckoningService {
 			Integer size, Date postedAfter, Date postedBefore,
 			Date closedAfter, Date closedBefore, String userToken) {
 		List<Reckoning> reckonings = null;
-		
+
 		try {
 			if (postedAfter != null || postedBefore != null) {
-				reckonings = reckoningRepoCustomImpl.getReckoningSummariesByPostingDate(page, size, postedBefore, postedAfter);
+				reckonings = reckoningRepoCustom.getReckoningSummariesByPostingDate(page, size, postedBefore, postedAfter);
 			} else if (closedAfter != null || closedBefore != null) {
-				reckonings = reckoningRepoCustomImpl.getReckoningSummariesByClosingDate(page, size, closedBefore, closedAfter);			
+				reckonings = reckoningRepoCustom.getReckoningSummariesByClosingDate(page, size, closedBefore, closedAfter);
 			} else {
-				reckonings = reckoningRepoCustomImpl.getReckoningSummaries(page, size);
+				reckonings = reckoningRepoCustom.getReckoningSummaries(page, size);
 			} 
 		}
 		catch (Exception e) {
@@ -230,12 +241,15 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 
 	@Override
-	public ReckoningServiceList getReckoningsByTag(String tag, Integer page,
+	public ReckoningServiceList getReckoningSummariesByTag(String tag, Integer page,
 			Integer size, String userToken) {
-		List<Reckoning> reckonings = null;
-		
+		List<Reckoning> reckonings = null;		
 		try {
-			reckonings = reckoningRepoCustomImpl.getReckoningSummariesByTag(tag, page, size);
+			reckonings = reckoningCache.getCachedTagReckoningSummaries(tag, page, size);
+			if (reckonings == null) {
+				reckonings = reckoningRepoCustom.getReckoningSummariesByTag(tag, page, size);
+				reckoningCache.setCachedTagReckoningSummaries(reckonings, tag, page, size);
+			}
 		}
 		catch (Exception e) {
 			log.error("General exception when getting reckonings by tag: " + e.getMessage());

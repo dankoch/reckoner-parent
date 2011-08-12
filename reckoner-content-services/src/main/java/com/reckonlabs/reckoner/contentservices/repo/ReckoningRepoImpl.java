@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
 
+import com.mongodb.WriteResult;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,9 @@ import org.springframework.data.document.mongodb.query.BasicQuery;
 import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
+import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
 public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	
@@ -25,8 +29,27 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	private static final Logger log = LoggerFactory
 			.getLogger(ReckoningRepoImpl.class);
 	
+	
 	public void insertNewReckoning (Reckoning reckoning) {
 		mongoTemplate.insert(reckoning, RECKONING_COLLECTION);
+	}
+	
+	public void updateReckoning (Reckoning reckoning) {
+		mongoTemplate.save(reckoning, RECKONING_COLLECTION);
+	}
+	
+	public void approveReckoning (String id, String approver, Date postingDate, Date closingDate) throws DBUpdateException {
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(id)), 
+				MongoDbQueryFactory.buildApprovalUpdate(approver, postingDate, closingDate), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());
+	}
+	
+	public void rejectReckoning (String id, String rejecter) throws DBUpdateException {
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(id)), 
+				MongoDbQueryFactory.buildRejectionUpdate(rejecter), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());
 	}
 	
 	public List<Reckoning> getReckoningSummariesByPostingDate (Integer page, Integer size, Date beforeDate, Date afterDate) {
@@ -104,6 +127,27 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		}
 		
 		return mongoTemplate.find(query, Reckoning.class);
+	}
+
+	@Override
+	public void insertReckoningComment(Comment comment, String reckoningId)
+			throws DBUpdateException {
+		
+		comment.setId(new ObjectId().toString());
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+				MongoDbQueryFactory.buildReckoningCommentUpdate(comment), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());		
+	}
+	
+	@Override
+	public boolean confirmReckoningExists(String reckoningId) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId), 
+				MongoDbQueryFactory.buildReckoningIdField());
+		if (!mongoTemplate.find(query, Reckoning.class).isEmpty()) {
+			return true;	
+		}
+		return false;
 	}
 
 }

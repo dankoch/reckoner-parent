@@ -19,18 +19,15 @@ public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 	List<Reckoning> findByApprovedAndRejected(boolean approved, boolean rejected);
 	Page<Reckoning> findByApprovedAndRejected(boolean approved, boolean rejected, Pageable page);	
 	
-	@Query(value = "{'submitterId' : ?0}", fields="{'id' : 1, 'question' : 1, 'submissionDate' : 1, 'submitterId' : 1}")
+	@Query(value = "{'submitterId' : ?0}", fields="{'id' : 1, 'question' : 1, 'postingDate' : 1, 'closingDate' : 1, 'submitterId' : 1}")
 	List<Reckoning> findBySubmitterIdSummary(String submitterId);
-	List<Reckoning> findBySubmitterId(String submitterId);	
-	Page<Reckoning> findBySubmitterId(String submitterId, Pageable page);
-	List<Reckoning> findBySubmitterIdAndClosingDateGreaterThan(String submitterId, Date currentDate);
-	Page<Reckoning> findBySubmitterIdAndClosingDateGreaterThan(String submitterId, Date currentDate, Pageable page);	
-	List<Reckoning> findBySubmitterIdAndClosingDateLessThan(String submitterId, Date currentDate);
-	Page<Reckoning> findBySubmitterIdAndClosingDateLessThan(String submitterId, Date currentDate, Pageable page);	
-	List<Reckoning> findBySubmitterIdAndApprovedAndRejected(String submitterId, boolean approved, boolean rejected);	
 	
 	List<Reckoning> findByHighlighted (boolean highlighted);
 	List<Reckoning> findByHighlightedAndClosingDateGreaterThan (boolean highlighted, Date currentDate);
 	List<Reckoning> findByHighlightedAndClosingDateLessThan (boolean highlighted, Date currentDate);
-
+	
+	@Query(value = "{'comments.posterId' : ?0}", fields="{'comments' : 1}")
+	List<Reckoning> getReckoningCommentsCommentedOnByUser (String userId);
+	@Query(value = "{'comments.posterId' : ?0}", fields="{'id' : 1, 'question' : 1, 'postingDate' : 1, 'closingDate' : 1, 'submitterId' : 1}")
+	List<Reckoning> getReckoningSummariesCommentedOnByUser (String userId);
 }

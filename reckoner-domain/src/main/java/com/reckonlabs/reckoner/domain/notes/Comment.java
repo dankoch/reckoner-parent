@@ -14,6 +14,8 @@ public class Comment implements Serializable{
 	
 	private static final long serialVersionUID = -5734637740785695328L;
 	
+	@Column (name="id")
+	String id;
 	@Column (name="comment")
 	String comment;
 	@Column (name="poster_id")
@@ -26,6 +28,13 @@ public class Comment implements Serializable{
 	@Column (name="flags")
 	List<Flag> flags;
 	
+	@XmlElement(name="id")	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	@XmlElement(name="comment")
 	public String getComment() {
 		return comment;

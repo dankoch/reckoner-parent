@@ -55,10 +55,13 @@ public class Reckoning implements Serializable {
 	@Column(name="closing_date")
 	private Date closingDate;
 	@Column(name="interval")
-	private String interval;
+	private Integer interval;
 	
 	@Column(name="comments")
 	private List<Comment> comments;
+	@Column(name="comment_index")
+	private int commentIndex;
+	
 	@Column(name="flags")
 	private List<Flag> flags;
 	@Column(name="favorites")
@@ -174,7 +177,7 @@ public class Reckoning implements Serializable {
 	}
 
 	@XmlElement(name = "posting_date")
-	public Date getpostingDate() {
+	public Date getPostingDate() {
 		return postingDate;
 	}
 
@@ -192,11 +195,11 @@ public class Reckoning implements Serializable {
 	}
 
 	@XmlElement(name = "interval")
-	public String getInterval() {
+	public Integer getInterval() {
 		return interval;
 	}
 
-	public void setInterval(String interval) {
+	public void setInterval(Integer interval) {
 		this.interval = interval;
 	}
 
@@ -204,6 +207,10 @@ public class Reckoning implements Serializable {
 	@XmlElement(name = "comment")
 	public List<Comment> getComments() {
 		return comments;
+	}
+
+	public void setCommentIndex(int commentIndex) {
+		this.commentIndex = commentIndex;
 	}
 
 	public void setComments(List<Comment> comments) {

@@ -94,6 +94,88 @@ public class ReckoningController {
 	}
 	
 	/**
+	 * This method allows for updates to existing Reckoning content.
+	 * 
+	 * @param postReckoning
+	 *            PostReckoning
+	 * @return postReckoningResponse
+	 *            PostReckoningResponse
+	 * @throws AuthenticationException, Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/reckoning/update", method = RequestMethod.POST)
+	public @ResponseBody
+	ServiceResponse updateReckoning(@RequestBody PostReckoning updateReckoning)
+			throws AuthenticationException, Exception {
+
+		if (!StringUtils.hasLength(updateReckoning.getUserToken())) {
+			log.warn("Null user token received for updateReckoning.");
+			throw new AuthenticationException();
+		} else {
+			Message validationMessage = ReckoningValidator.validateReckoningPost(updateReckoning.getReckoning());
+			
+			if (validationMessage != null) {
+				log.warn("Updated reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				return new ServiceResponse(validationMessage, false);
+			}
+		}
+
+		return reckoningService.updateReckoning(updateReckoning.getReckoning(), updateReckoning.getUserToken());
+	}
+	
+	/**
+	 * This method allows for accepting an unaccepted reckoning.
+	 * 
+	 * @param postReckoning
+	 *            PostReckoning
+	 * @return postReckoningResponse
+	 *            PostReckoningResponse
+	 * @throws AuthenticationException, Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/reckoning/approve/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	ServiceResponse approveReckoningById(
+			@PathVariable String id,		
+			@RequestParam(required = true, value = "user_token") String userToken) {
+
+		Message validationMessage = ReckoningValidator.validateReckoningId(id);
+		
+		if (validationMessage != null) {
+			log.warn("Approval request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}		
+		
+		return reckoningService.approveReckoning(id, userToken);
+	}
+	
+	/**
+	 * This method allows for rejecting an unaccepted reckoning.
+	 * 
+	 * @param postReckoning
+	 *            PostReckoning
+	 * @return postReckoningResponse
+	 *            PostReckoningResponse
+	 * @throws AuthenticationException, Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/reckoning/reject/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	ServiceResponse rejectReckoningById(
+			@PathVariable String id,		
+			@RequestParam(required = true, value = "user_token") String userToken) {
+		
+		Message validationMessage = ReckoningValidator.validateReckoningId(id);
+		
+		if (validationMessage != null) {
+			log.warn("Rejection request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}	
+
+		return reckoningService.rejectReckoning(id, userToken);
+	}
+	
+	/**
 	 * This method allows for the retrieval of a specific Reckoning by ID.
 	 * 
 	 * @param id
@@ -147,33 +229,6 @@ public class ReckoningController {
 	}
 	
 	/**
-	 * This method allows for the retrieval of reckonings related to a specific user.
-	 * 
-	 * @param submitter_id
-	 *           String
-	 * @param page
-	 *           Integer
-	 * @param size
-	 *           Integer
-	 * @param userToken
-	 *           String  
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/reckoning/user/{submitterId}", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getReckoningsByUser(
-			@PathVariable String submitterId,
-			@RequestParam(required = false, value = "page") Integer page,
-			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "user_token") String userToken) {
-		
-		return reckoningService.getReckoningsByUser (submitterId, page, size, userToken);
-	}
-	
-	/**
 	 * This method allows for the retrieval of reckoning summaries related to a specific user.
 	 * 
 	 * @param submitter_id
@@ -185,88 +240,22 @@ public class ReckoningController {
 	 * @throws Exception
 	 *            exception
 	 */	
-	@RequestMapping(value = "/reckoning/user/{submitterId}/summary", method = RequestMethod.GET)	
+	@RequestMapping(value = "/reckoning/user/{submitterId}", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getReckoningSummariesByUser(
 			@PathVariable String submitterId,
-			@RequestParam(required = true, value = "user_token") String userToken) {
-		
-		return reckoningService.getReckoningSummariesByUser (submitterId, userToken);
-	}
-	
-	/**
-	 * This method allows for the retrieval of open reckonings related to a specific user.
-	 * 
-	 * @param submitter_id
-	 *           String
-	 * @param page
-	 *           Integer
-	 * @param size
-	 *           Integer     
-	 * @param userToken
-	 *           String        
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/reckoning/user/{submitterId}/open", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getOpenReckoningsByUser(
-			@PathVariable String submitterId,	
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = true, value = "user_token") String userToken) {
 		
-		return reckoningService.getOpenReckoningsByUser (submitterId, page, size, userToken);
-	}
-	
-	/**
-	 * This method allows for the retrieval of closed reckonings related to a specific user.
-	 * 
-	 * @param submitter_id
-	 *           String
-	 * @param page
-	 *           Integer
-	 * @param size
-	 *           Integer     
-	 * @param userToken
-	 *           String         
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/reckoning/user/{submitterId}/closed", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getClosedReckoningsByUser(
-			@PathVariable String submitterId,	
-			@RequestParam(required = false, value = "page") Integer page,
-			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "user_token") String userToken) {
+		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
-		return reckoningService.getClosedReckoningsByUser (submitterId, page, size, userToken);
-	}
-	
-	/**
-	 * This method allows for the retrieval of reckonings related to a specific user awaiting approval.
-	 * 
-	 * @param submitter_id
-	 *           String       
-	 * @param userToken
-	 *           String        
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/reckoning/user/{submitterId}/approvalqueue", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getApprovalQueueReckoningsByUser(
-			@PathVariable String submitterId,	
-			@RequestParam(required = true, value = "user_token") String userToken) {
+		if (validationMessage != null) {
+			log.warn("Open reckoning by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}	
 		
-		return reckoningService.getApprovalQueueByUser(submitterId, userToken);
+		return reckoningService.getReckoningSummariesByUser (submitterId, page, size, userToken);
 	}
 
 	/**
@@ -356,6 +345,13 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "closed_before") Date closedBefore,
 			@RequestParam(required = true, value = "user_token") String userToken) {
 		
+		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.warn("Reckoning query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
 		return reckoningService.getReckoningSummaries(page, size, postedAfter, postedBefore,
 				closedAfter, closedBefore, userToken);
 	}
@@ -380,6 +376,13 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = true, value = "user_token") String userToken) {
 		
-		return reckoningService.getReckoningsByTag(tag, page, size, userToken);
+		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.warn("Reckoning tag query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return reckoningService.getReckoningSummariesByTag(tag, page, size, userToken);
 	}
 }

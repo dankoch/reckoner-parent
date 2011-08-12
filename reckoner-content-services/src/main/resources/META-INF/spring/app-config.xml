@@ -14,6 +14,7 @@
 	
 	<!-- Incorporates Spring configuration information for accessing the DB -->
 	<import resource="spring-mongodb-config.xml" />
+	<import resource="memcached-config.xml"/>
 
 	<bean id="placeholderProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">

@@ -16,6 +16,16 @@ public class Vote implements Serializable {
 	private String voterId;
 	@Column (name = "voting_date")
 	private Date votingDate;
+	@Column (name = "anonymous")
+	private boolean anonymous;
+	@Column (name = "ip")
+	private String ip;
+	@Column (name = "user_agent")
+	private String userAgent;
+	@Column (name = "latitude")
+	private String latitude;
+	@Column (name = "longitude")
+	private String longitude;	
 	
 	public Vote() {
 		
@@ -42,5 +52,45 @@ public class Vote implements Serializable {
 
 	public void setVotingDate(Date date) {
 		this.votingDate = date;
+	}
+
+	public boolean isAnonymous() {
+		return anonymous;
+	}
+
+	public void setAnonymous(boolean anonymous) {
+		this.anonymous = anonymous;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public String getUserAgent() {
+		return userAgent;
+	}
+
+	public void setUserAgent(String userAgent) {
+		this.userAgent = userAgent;
+	}
+
+	public String getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(String latitude) {
+		this.latitude = latitude;
+	}
+
+	public String getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(String longitude) {
+		this.longitude = longitude;
 	}
 }

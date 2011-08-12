@@ -22,7 +22,6 @@ public class ReckoningValidatorTest {
 		Assert.assertTrue(valResult.getCode().equalsIgnoreCase("R101"));
 		
 		valResult = ReckoningValidator.validateReckoningPost(buildReckoning("Answer", "test", 1));
-		System.out.println("XXX" + valResult.getCode());
 		Assert.assertTrue(valResult.getCode().equalsIgnoreCase("R102"));	
 		
 		valResult = ReckoningValidator.validateReckoningPost(buildReckoning("Answer", null, 2));
