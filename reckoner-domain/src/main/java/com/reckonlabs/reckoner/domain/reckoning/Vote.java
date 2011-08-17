@@ -14,6 +14,8 @@ public class Vote implements Serializable {
 	
 	@Column (name = "voter_id")
 	private String voterId;
+	@Column (name = "answer_index")
+	private int answerIndex;
 	@Column (name = "voting_date")
 	private Date votingDate;
 	@Column (name = "anonymous")
@@ -44,6 +46,14 @@ public class Vote implements Serializable {
 	public void setVoterId(String voterId) {
 		this.voterId = voterId;
 	}
+	@XmlElement(name = "answer_index")
+	public int getAnswerIndex() {
+		return answerIndex;
+	}
+
+	public void setAnswerIndex(int answerIndex) {
+		this.answerIndex = answerIndex;
+	}
 
 	@XmlElement(name = "voter_date")
 	public Date getVotingDate() {
@@ -53,7 +63,7 @@ public class Vote implements Serializable {
 	public void setVotingDate(Date date) {
 		this.votingDate = date;
 	}
-
+	@XmlElement(name = "anonymous")
 	public boolean isAnonymous() {
 		return anonymous;
 	}
@@ -61,7 +71,7 @@ public class Vote implements Serializable {
 	public void setAnonymous(boolean anonymous) {
 		this.anonymous = anonymous;
 	}
-
+	@XmlElement(name = "ip")
 	public String getIp() {
 		return ip;
 	}
@@ -69,7 +79,7 @@ public class Vote implements Serializable {
 	public void setIp(String ip) {
 		this.ip = ip;
 	}
-
+	@XmlElement(name = "user_agent")
 	public String getUserAgent() {
 		return userAgent;
 	}
@@ -77,7 +87,7 @@ public class Vote implements Serializable {
 	public void setUserAgent(String userAgent) {
 		this.userAgent = userAgent;
 	}
-
+	@XmlElement(name = "latitude")
 	public String getLatitude() {
 		return latitude;
 	}
@@ -85,7 +95,7 @@ public class Vote implements Serializable {
 	public void setLatitude(String latitude) {
 		this.latitude = latitude;
 	}
-
+	@XmlElement(name = "longitude")
 	public String getLongitude() {
 		return longitude;
 	}

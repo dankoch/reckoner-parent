@@ -46,4 +46,10 @@ public interface ReckoningCache {
 	public List<Reckoning> getCachedUserCommentedReckonings(String userId);
 
 	public void removeCachedUserCommentedReckonings(String userId);
+	
+	public void setCachedUserVotedReckonings (List<Reckoning> reckonings, String userId);
+
+	public List<Reckoning> getCachedUserVotedReckonings(String userId);
+
+	public void removeCachedUserVotedReckonings(String userId);
 }

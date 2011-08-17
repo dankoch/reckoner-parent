@@ -9,9 +9,12 @@ import org.springframework.data.document.mongodb.repository.Query;
 import org.springframework.data.document.mongodb.repository.MongoRepository;
 
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.Vote;
 
 public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 
+	// Leave off all of the votes for the regular request.  It's a lot of overhead we won't need.
+	@Query(value = "{'id' : ?0}", fields="{'answers.votes' : 0}")
 	List<Reckoning> findById(String id);
 	
 	List<Reckoning> findByApproved(boolean approved);
@@ -30,4 +33,9 @@ public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 	List<Reckoning> getReckoningCommentsCommentedOnByUser (String userId);
 	@Query(value = "{'comments.posterId' : ?0}", fields="{'id' : 1, 'question' : 1, 'postingDate' : 1, 'closingDate' : 1, 'submitterId' : 1}")
 	List<Reckoning> getReckoningSummariesCommentedOnByUser (String userId);
+	
+	@Query(value = "{ 'answers.votes.voterId' : ?0 }", fields="{'id' : 1, 'question' : 1, 'postingDate' : 1, 'closingDate' : 1, 'submitterId' : 1, 'answers' : 1}")
+	List<Reckoning> getVotesByUser (String userId);	
+	@Query(value = "{ 'id' : ?0 }", fields="{'answers' : 1}")
+	List<Reckoning> getReckoningVotesByReckoningId (String reckoningId);
 }

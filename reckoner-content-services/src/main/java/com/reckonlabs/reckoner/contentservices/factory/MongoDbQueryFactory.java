@@ -9,6 +9,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.document.mongodb.query.Update;
 
 import com.reckonlabs.reckoner.domain.notes.Comment;
+import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 public final class MongoDbQueryFactory {
@@ -63,6 +64,10 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("tags", tag);
 	}
 	
+	public static DBObject buildAnswerIndexExists (Integer index) {
+		return new BasicDBObject("answers.index", index);
+	}
+	
 	public static Update buildApprovalUpdate(String approver, Date postingDate, Date closingDate) {
 		Update approvalUpdate = new Update();
 		approvalUpdate.set("approved", true);
@@ -91,6 +96,13 @@ public final class MongoDbQueryFactory {
 		return commentInsert;
 	}
 	
+	public static Update buildReckoningVoteUpdate(Vote vote, Integer answerIndex) {
+		Update voteInsert = new Update();
+		voteInsert.push("answers." + answerIndex + ".votes", vote).inc("answers." + answerIndex + ".voteTotal", 1);
+		
+		return voteInsert;
+	}
+	
 	public static DBObject buildReckoningSummaryFields() {
 		BasicDBObject fields = new BasicDBObject("id", 1);
 		fields.append("question", 1);
@@ -103,6 +115,13 @@ public final class MongoDbQueryFactory {
 	
 	public static DBObject buildReckoningIdField() {
 		BasicDBObject fields = new BasicDBObject("id", 1);
+		
+		return fields;
+	}
+	
+	public static DBObject buildReckoningIdAndAnswerIndexFields() {
+		BasicDBObject fields = new BasicDBObject("id", 1);
+		fields.append("answers.index", 1);
 		
 		return fields;
 	}

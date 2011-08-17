@@ -13,7 +13,9 @@ public enum MessageEnum {
 	
 	R400_POST_COMMENT("R400"), R401_POST_COMMENT("R401"), R402_POST_COMMENT("R402"),
 	
-	R500_GET_COMMENT("R500");
+	R500_GET_COMMENT("R500"),
+	
+	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602");
 	
 	private final String code;
 
@@ -52,6 +54,10 @@ public enum MessageEnum {
 			case R402_POST_COMMENT: return ("No reckoning associated with the provided ID.");
 			
 			case R500_GET_COMMENT: return ("Paged comment queries need both a valid page and size value.");
+			
+			case R600_POST_VOTE: return ("Attempted to vote for a non-existent reckoning/answer pairing.");	
+			case R601_POST_VOTE: return ("This user has already voted for this reckoning.");
+			case R602_POST_VOTE: return ("An anonymous user with the same IP and user agent voted for this reckoning recently.  Vote is in escrow.");
 			
 			default:  return ("Message not found.");
 		}

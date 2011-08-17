@@ -17,6 +17,7 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
 public class ReckoningRepoImpl implements ReckoningRepoCustom {
@@ -141,6 +142,17 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	}
 	
 	@Override
+	public void insertReckoningVote(Vote vote, Integer answerIndex,
+			String reckoningId) throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+				MongoDbQueryFactory.buildReckoningVoteUpdate(vote, answerIndex), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());		
+		
+	}
+	
+	@Override
 	public boolean confirmReckoningExists(String reckoningId) {
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId), 
 				MongoDbQueryFactory.buildReckoningIdField());
@@ -148,6 +160,21 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			return true;	
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean confirmReckoningAndAnswerExists(String reckoningId, int answerIndex) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId), 
+				MongoDbQueryFactory.buildReckoningIdAndAnswerIndexFields());
+		List<Reckoning> reckoning = mongoTemplate.find(query, Reckoning.class);
+		
+		if (reckoning.isEmpty()) {
+			return false;	
+		} else if (reckoning.get(0).getAnswers().size() <= answerIndex) {
+			return false;
+		}
+		
+		return true;
 	}
 
 }

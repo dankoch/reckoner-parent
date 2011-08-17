@@ -4,22 +4,22 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.Vote;
 
-@XmlRootElement(name = "reckoning_post")
-public class PostReckoning implements Serializable {
+@XmlRootElement(name = "vote_post")
+public class PostVote implements Serializable {
 
 	private static final long serialVersionUID = -4218281053538996203L;
 	
-	private Reckoning reckoning;
+	private Vote vote;
 	private String userToken;
 	
-	@XmlElement (name="reckoning")
-	public Reckoning getReckoning() {
-		return reckoning;
+	@XmlElement (name="vote")
+	public Vote getVote() {
+		return vote;
 	}
-	public void setReckoning(Reckoning reckoning) {
-		this.reckoning = reckoning;
+	public void setVote(Vote vote) {
+		this.vote = vote;
 	}
 	
 	@XmlElement (name="user_token")

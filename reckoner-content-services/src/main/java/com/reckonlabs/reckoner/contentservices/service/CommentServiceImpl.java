@@ -55,9 +55,17 @@ public class CommentServiceImpl implements CommentService {
 			comment.setPostingDate(DateUtility.now());
 			reckoningRepoCustom.insertReckoningComment(comment, reckoningId);
 			
-			// Remove this user's comment cache entry because of the update.  Also remove the commented reckoning cache.
+			// Cache management. Remove this user's comment cache entry because of the update.  
+			// Also remove the commented reckoning cache.
 			commentCache.removeUserCommentCache(comment.getPosterId());
 			reckoningCache.removeCachedUserCommentedReckonings(comment.getPosterId());
+			
+			// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
+			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
+			if (cacheReckoning != null) {
+				cacheReckoning.get(0).getComments().add(comment);
+				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when inserting a new reckoning comment: " + dbE.getMessage());
 			log.debug("Stack Trace:", dbE);			

@@ -13,6 +13,7 @@ public class Answer implements Serializable {
 	private int index;
 	private String text;
 	private String subtitle;
+	private int voteTotal;
 	private List<Vote> votes;
 	
 	public Answer() {
@@ -48,11 +49,23 @@ public class Answer implements Serializable {
 		this.subtitle = subtitle;
 	}
 
+	public int getVoteTotal() {
+		return voteTotal;
+	}
+
+	public void setVoteTotal(int voteTotal) {
+		this.voteTotal = voteTotal;
+	}
+
 	public List<Vote> getVotes() {
 		return votes;
 	}
 
 	public void setVotes(List<Vote> votes) {
 		this.votes = votes;
+	}
+	
+	public void incrementVoteTotal() {
+		this.voteTotal ++;
 	}
 }

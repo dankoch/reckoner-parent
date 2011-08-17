@@ -30,6 +30,7 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostReckoning;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
+import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
@@ -88,6 +89,12 @@ public class ReckoningController {
 				log.warn("Posted reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
+		}
+		
+		int answerIndex = 0;
+		for (Answer answer : postReckoning.getReckoning().getAnswers()) {
+			answer.setIndex(answerIndex);
+			answerIndex ++;
 		}
 
 		return reckoningService.postReckoning(postReckoning.getReckoning(), postReckoning.getUserToken());

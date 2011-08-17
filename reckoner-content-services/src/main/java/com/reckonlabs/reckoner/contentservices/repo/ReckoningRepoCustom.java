@@ -6,6 +6,7 @@ import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.Vote;
 
 public interface ReckoningRepoCustom {
 	
@@ -27,5 +28,9 @@ public interface ReckoningRepoCustom {
 	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	
+	public void insertReckoningVote (Vote vote, Integer answerIndex, String reckoningId) throws DBUpdateException;	
+	
 	public boolean confirmReckoningExists (String reckoningId);
+	
+	public boolean confirmReckoningAndAnswerExists(String reckoningId, int answerIndex);
 }
