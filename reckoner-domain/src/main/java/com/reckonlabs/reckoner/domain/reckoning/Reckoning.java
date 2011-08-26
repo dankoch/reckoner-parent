@@ -28,6 +28,8 @@ public class Reckoning implements Serializable {
 	
 	@Column(name="question")
 	private String question;
+	@Column(name="description")
+	private String description;
 	@Column(name="answers")
 	private List<Answer> answers;
 	
@@ -88,6 +90,15 @@ public class Reckoning implements Serializable {
 
 	public void setQuestion(String question) {
 		this.question = question;
+	}
+	
+	@XmlElement(name = "description")
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	@XmlElementWrapper(name = "answers")

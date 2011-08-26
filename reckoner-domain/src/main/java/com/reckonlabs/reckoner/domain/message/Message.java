@@ -3,7 +3,6 @@ package com.reckonlabs.reckoner.domain.message;
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "message")
 public class Message implements Serializable {
 
 	private static final long serialVersionUID = -225295364526979257L;

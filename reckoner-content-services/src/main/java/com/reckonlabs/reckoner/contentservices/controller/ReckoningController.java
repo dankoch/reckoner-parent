@@ -79,6 +79,7 @@ public class ReckoningController {
 	ServiceResponse postReckoning(@RequestBody PostReckoning postReckoning)
 			throws AuthenticationException, Exception {
 
+		// Validate the input.
 		if (!StringUtils.hasLength(postReckoning.getUserToken())) {
 			log.warn("Null user token received for postReckoning.");
 			throw new AuthenticationException();
@@ -89,12 +90,6 @@ public class ReckoningController {
 				log.warn("Posted reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
-		}
-		
-		int answerIndex = 0;
-		for (Answer answer : postReckoning.getReckoning().getAnswers()) {
-			answer.setIndex(answerIndex);
-			answerIndex ++;
 		}
 
 		return reckoningService.postReckoning(postReckoning.getReckoning(), postReckoning.getUserToken());

@@ -24,6 +24,7 @@ public class ServiceResponse implements Serializable {
 		setSuccess(success);
 	}
 	
+	@XmlElement (name = "message")
 	public Message getMessage() {
 		return message;
 	}

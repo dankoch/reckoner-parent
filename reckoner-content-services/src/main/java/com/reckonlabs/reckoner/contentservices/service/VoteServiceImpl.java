@@ -60,13 +60,9 @@ public class VoteServiceImpl implements VoteService {
 			}
 			
 			// Confirm that the user hasn't already voted.  Check the cache first -- if nothing is there, check the DB.
-			List<Vote> userReckoningVote = voteCache.getCachedUserReckoningVote(vote.getVoterId(), reckoningId);
+			List<Vote> userReckoningVote = getUserReckoningVote(vote.getVoterId(), reckoningId).getVotes();
 			if (userReckoningVote != null) {
 				if (!userReckoningVote.isEmpty()) {
-					return (new ServiceResponse(new Message(MessageEnum.R601_POST_VOTE), false));
-				}
-			} else {
-				if (!(getUserReckoningVote(vote.getVoterId(), reckoningId).getVotes() == null)) {
 					return (new ServiceResponse(new Message(MessageEnum.R601_POST_VOTE), false));
 				}
 			}
@@ -213,5 +209,37 @@ public class VoteServiceImpl implements VoteService {
 		}	
 		
 		return userReckoningVote;
+	}
+
+	public ReckoningRepo getReckoningRepo() {
+		return reckoningRepo;
+	}
+
+	public void setReckoningRepo(ReckoningRepo reckoningRepo) {
+		this.reckoningRepo = reckoningRepo;
+	}
+
+	public ReckoningRepoCustom getReckoningRepoCustom() {
+		return reckoningRepoCustom;
+	}
+
+	public void setReckoningRepoCustom(ReckoningRepoCustom reckoningRepoCustom) {
+		this.reckoningRepoCustom = reckoningRepoCustom;
+	}
+
+	public VoteCache getVoteCache() {
+		return voteCache;
+	}
+
+	public void setVoteCache(VoteCache voteCache) {
+		this.voteCache = voteCache;
+	}
+
+	public ReckoningCache getReckoningCache() {
+		return reckoningCache;
+	}
+
+	public void setReckoningCache(ReckoningCache reckoningCache) {
+		this.reckoningCache = reckoningCache;
 	}
 }

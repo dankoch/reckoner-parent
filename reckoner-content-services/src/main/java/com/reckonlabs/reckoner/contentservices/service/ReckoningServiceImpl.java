@@ -21,6 +21,7 @@ import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
+import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
@@ -45,6 +46,16 @@ public class ReckoningServiceImpl implements ReckoningService {
 	public ServiceResponse postReckoning (Reckoning reckoning, String userToken) {
 		
 		try {
+			// Compute the answer index for each provided answer.
+			int answerIndex = 0;
+			for (Answer answer : reckoning.getAnswers()) {
+				answer.setIndex(answerIndex);
+				answerIndex ++;
+			}
+			
+			// Posted reckonings can't set their own IDs.  Null them out.
+			reckoning.setId(null);
+			
 			reckoningRepoCustom.insertNewReckoning(reckoning);
 			
 			reckoningCache.removeCachedUserReckoningSummaries(reckoning.getSubmitterId());
