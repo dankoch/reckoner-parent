@@ -104,7 +104,14 @@ public class VoteServiceImpl implements VoteService {
 			// Assume that ONLY THE VOTE TOTALS are in the cache, not the votes themselves.
 			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
 			if (cacheReckoning != null) {
-				cacheReckoning.get(0).getAnswers().get(answerIndex).incrementVoteTotal();
+				if (cacheReckoning.get(0) != null) {
+					if (cacheReckoning.get(0).getAnswers() != null) {
+						if (cacheReckoning.get(0).getAnswers().get(answerIndex) != null) {
+							cacheReckoning.get(0).getAnswers().get(answerIndex).incrementVoteTotal();							
+						}
+					}
+				}
+
 				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 			}
 		} catch (Exception e) {

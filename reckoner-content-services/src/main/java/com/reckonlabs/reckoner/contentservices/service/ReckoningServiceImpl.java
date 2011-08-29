@@ -53,8 +53,18 @@ public class ReckoningServiceImpl implements ReckoningService {
 				answerIndex ++;
 			}
 			
-			// Posted reckonings can't set their own IDs.  Null them out.
+			// Clean up the reckoning for fields that can't be set for a new posting.
 			reckoning.setId(null);
+			reckoning.setApproved(false);
+			reckoning.setRejected(false);
+			reckoning.setSubmissionDate(DateUtility.now());
+			reckoning.setpostingDate(null);
+			reckoning.setClosingDate(null);
+			reckoning.setHighlighted(false);
+			reckoning.setFlags(null);
+			reckoning.setFavorites(null);
+			reckoning.setComments(null);
+			
 			
 			reckoningRepoCustom.insertNewReckoning(reckoning);
 			

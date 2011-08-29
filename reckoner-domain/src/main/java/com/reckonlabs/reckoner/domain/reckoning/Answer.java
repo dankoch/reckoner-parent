@@ -3,6 +3,7 @@ package com.reckonlabs.reckoner.domain.reckoning;
 import java.util.List;
 
 import java.io.Serializable;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "answer")
@@ -25,6 +26,7 @@ public class Answer implements Serializable {
 		setSubtitle(subtitle);
 	}
 	
+	@XmlElement(name = "index")
 	public int getIndex() {
 		return index;
 	}
@@ -32,15 +34,17 @@ public class Answer implements Serializable {
 	public void setIndex(int index) {
 		this.index = index;
 	}
-	
+
+	@XmlElement(name = "text")
 	public String getText() {
 		return text;
 	}
-	
+
 	public void setText(String text) {
 		this.text = text;
 	}
 	
+	@XmlElement(name = "subtitle")	
 	public String getSubtitle() {
 		return subtitle;
 	}
@@ -49,6 +53,7 @@ public class Answer implements Serializable {
 		this.subtitle = subtitle;
 	}
 
+	@XmlElement(name = "vote_total")
 	public int getVoteTotal() {
 		return voteTotal;
 	}
@@ -57,6 +62,7 @@ public class Answer implements Serializable {
 		this.voteTotal = voteTotal;
 	}
 
+	@XmlElement(name = "votes")
 	public List<Vote> getVotes() {
 		return votes;
 	}

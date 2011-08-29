@@ -63,7 +63,13 @@ public class CommentServiceImpl implements CommentService {
 			// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
 			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
 			if (cacheReckoning != null) {
-				cacheReckoning.get(0).getComments().add(comment);
+				if (cacheReckoning.get(0) != null) {
+					if (cacheReckoning.get(0).getComments() == null) {
+						cacheReckoning.get(0).setComments(new LinkedList<Comment> ());
+					} 
+					cacheReckoning.get(0).getComments().add(comment);
+				}
+				
 				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
