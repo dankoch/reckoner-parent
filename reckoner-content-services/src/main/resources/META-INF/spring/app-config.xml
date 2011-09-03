@@ -45,4 +45,7 @@
 		the service MBean, using its bean name as JMX object name. -->
 	<context:mbean-export />
 
+    <!-- Reckoner Resource Beans -->
+    <bean id="facebookAuthClient" class="com.reckonlabs.reckoner.contentservices.client.FacebookAuthClient"/>
+    <bean id="googleAuthClient" class="com.reckonlabs.reckoner.contentservices.client.GoogleAuthClient"/>
 </beans>

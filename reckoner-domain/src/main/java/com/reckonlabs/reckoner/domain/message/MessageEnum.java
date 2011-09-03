@@ -15,7 +15,9 @@ public enum MessageEnum {
 	
 	R500_GET_COMMENT("R500"),
 	
-	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602");
+	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602"),
+	
+	R700_AUTH_USER("R700"), R701_AUTH_USER("R701"), R702_AUTH_USER("R702"), R703_AUTH_USER("R703"), R704_AUTH_USER("R704");
 	
 	private final String code;
 
@@ -58,6 +60,12 @@ public enum MessageEnum {
 			case R600_POST_VOTE: return ("Attempted to vote for a non-existent reckoning/answer pairing.");	
 			case R601_POST_VOTE: return ("This user has already voted for this reckoning.");
 			case R602_POST_VOTE: return ("An anonymous user with the same IP and user agent voted for this reckoning recently.  Vote is in escrow.");
+			
+			case R700_AUTH_USER: return ("No provider specified for OAuth user.");
+			case R701_AUTH_USER: return ("Invalid provider specified for OAuth user.");
+			case R702_AUTH_USER: return ("OAuth provider did not recognize provided user token. Returned null user.");		
+			case R703_AUTH_USER: return ("New user account created.");	
+			case R704_AUTH_USER: return ("No user associated with the specified user token. Nothing returned.");	
 			
 			default:  return ("Message not found.");
 		}

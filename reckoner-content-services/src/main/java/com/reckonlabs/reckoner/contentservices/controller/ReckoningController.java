@@ -56,9 +56,6 @@ public class ReckoningController {
 	private static final Logger log = LoggerFactory
 			.getLogger(ReckoningController.class);
 	
-	/**
-	 * This method handles {@link OfferUnavailableException}.
-	 */
 	@ExceptionHandler(AuthenticationException.class)
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	public void handleAuthenticationException() {

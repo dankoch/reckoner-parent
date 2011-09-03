@@ -55,9 +55,6 @@ public class VoteController {
 	private static final Logger log = LoggerFactory
 			.getLogger(VoteController.class);
 	
-	/**
-	 * This method handles {@link OfferUnavailableException}.
-	 */
 	@ExceptionHandler(AuthenticationException.class)
 	@ResponseStatus(HttpStatus.FORBIDDEN)
 	public void handleAuthenticationException() {
