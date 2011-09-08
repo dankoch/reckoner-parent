@@ -129,7 +129,7 @@
        <dependency>
            <groupId>org.springframework.data</groupId>
            <artifactId>spring-data-mongodb</artifactId>
-           <version>1.0.0.M3</version>
+           <version>1.0.0.M4</version>
        </dependency>
        <dependency>
            <groupId>com.jamonapi</groupId>

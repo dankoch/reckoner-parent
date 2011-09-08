@@ -9,8 +9,8 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.document.mongodb.MongoTemplate;
-import org.springframework.data.document.mongodb.query.BasicQuery;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.BasicQuery;
 
 import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
 import com.reckonlabs.reckoner.domain.message.Message;
@@ -70,8 +70,8 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		}
 		
 		if (page != null && size != null) {
-			query.setLimit(page.intValue());
-			query.setSkip(page.intValue() * page.intValue());
+			query.limit(page.intValue());
+			query.skip(page.intValue() * page.intValue());
 		}
 		
 		return mongoTemplate.find(query, Reckoning.class);
@@ -94,8 +94,8 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		}
 		
 		if (page != null && size != null) {
-			query.setLimit(page.intValue());
-			query.setSkip(page.intValue() * page.intValue());
+			query.limit(page.intValue());
+			query.skip(page.intValue() * page.intValue());
 		}
 		
 		return mongoTemplate.find(query, Reckoning.class);
@@ -108,8 +108,8 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 				MongoDbQueryFactory.buildReckoningSummaryFields());
 		
 		if (page != null && size != null) {
-			query.setLimit(size.intValue());
-			query.setSkip(page.intValue() * size.intValue());
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
 		}
 		
 		return mongoTemplate.find(query, Reckoning.class);
@@ -123,8 +123,8 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 				MongoDbQueryFactory.buildReckoningSummaryFields());
 		
 		if (page != null && size != null) {
-			query.setLimit(size.intValue());
-			query.setSkip(page.intValue() * size.intValue());
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
 		}
 		
 		return mongoTemplate.find(query, Reckoning.class);

@@ -42,7 +42,9 @@ public class AuthSession implements Serializable {
 		this.createdDate = DateUtility.now();
 		
 		if (expires != null) {
-			this.expirationDate = new Date(this.createdDate.getTime() + Integer.parseInt(expires) * 1000);
+			if (!expires.equalsIgnoreCase("")) {
+				this.expirationDate = new Date(this.createdDate.getTime() + Integer.parseInt(expires) * 1000);
+			}
 		}
 	}
 

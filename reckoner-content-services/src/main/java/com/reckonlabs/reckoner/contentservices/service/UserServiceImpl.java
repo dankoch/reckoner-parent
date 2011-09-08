@@ -86,6 +86,7 @@ public class UserServiceImpl implements UserService {
 					authUser.setFirstLogin(DateUtility.now());
 					authUser.setLastLogin(DateUtility.now());
 					authUser.addGroup(GroupEnum.USER);
+					authUser.setActive(true);
 					userRepoCustom.insertNewUser(authUser);
 					
 					existingUser = userRepo.findByAuthProviderAndAuthProviderId
@@ -115,7 +116,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public ServiceResponse logoutUser(String userToken) {
+	public UserServiceResponse logoutUser(String userToken) {
 		try {
 			List<AuthSession> authSessions = authSessionRepo.findByUserToken(userToken);
 			for (AuthSession authSession : authSessions) {
@@ -124,10 +125,10 @@ public class UserServiceImpl implements UserService {
 		} catch (Exception e) {
 			log.error("General exception when logging out a user: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
-			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));	
+			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
 		}		
 		
-		return new ServiceResponse();
+		return new UserServiceResponse(null, null, new Message(), true);	
 	}
 
 	@Override

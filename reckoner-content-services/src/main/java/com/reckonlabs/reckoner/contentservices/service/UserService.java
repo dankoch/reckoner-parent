@@ -11,7 +11,7 @@ public interface UserService {
 	
 	public UserServiceResponse authenticateOAuthUser(String userToken, ProviderEnum provider, String expires);
 	
-	public ServiceResponse logoutUser(String userToken);
+	public UserServiceResponse logoutUser(String userToken);
 	
 	public UserServiceResponse getUserByToken(String userToken);
 }

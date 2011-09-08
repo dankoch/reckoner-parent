@@ -112,7 +112,7 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/user/logout", method = RequestMethod.GET)
 	public @ResponseBody
-	ServiceResponse logoutUser(		
+	UserServiceResponse logoutUser(		
 			@RequestParam(required = true, value = "user_token") String userToken) {	
 		
 		return userService.logoutUser(userToken);
@@ -130,7 +130,7 @@ public class UserController {
 	 */
 	@RequestMapping(value = "/user/me", method = RequestMethod.GET)
 	public @ResponseBody
-	ServiceResponse getUserInformation(		
+	UserServiceResponse getUserInformation(		
 			@RequestParam(required = true, value = "user_token") String userToken) {	
 		
 		return userService.getUserByToken(userToken);

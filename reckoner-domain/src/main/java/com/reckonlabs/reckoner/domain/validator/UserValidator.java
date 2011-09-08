@@ -17,7 +17,16 @@ public class UserValidator {
 			return (new Message(MessageEnum.R700_AUTH_USER));
 		} else if (!ProviderEnum.isProvider(postOAuthUser.getProvider())) {
 			return (new Message(MessageEnum.R701_AUTH_USER));			
-		} 
+		} else if (postOAuthUser.getExpires() != null) {
+			if (!postOAuthUser.getExpires().equals("")) {
+				try {
+					System.out.println("XXX (" + postOAuthUser.getExpires() + ")");
+					Integer.parseInt(postOAuthUser.getExpires());
+				} catch (NumberFormatException e) {
+					return (new Message(MessageEnum.R705_AUTH_USER));					
+				}
+			}
+		}
 		
 		return null;
 	}

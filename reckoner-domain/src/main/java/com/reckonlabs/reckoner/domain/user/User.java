@@ -45,7 +45,10 @@ public class User implements Serializable {
 	private String profileUrl;
 	
 	@Column (name = "groups")
-	private List<String> groups;
+	private List<GroupEnum> groups;
+	
+	@Column (name = "active")
+	private boolean active;
 	
 	public User() {
 	}
@@ -151,6 +154,42 @@ public class User implements Serializable {
 
 	@XmlElementWrapper(name = "groups")
 	@XmlElement(name = "group")
+	public List<GroupEnum> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(List<GroupEnum> groups) {
+		this.groups = groups;
+	}
+
+	@XmlElementWrapper(name = "permissions")
+	@XmlElement(name = "permission")
+	public List<PermissionEnum> getPermissions() {
+		List<PermissionEnum> returnVal = new LinkedList<PermissionEnum>();
+		List<GroupEnum> groups = getGroups();
+		for (GroupEnum group : groups) {
+			returnVal.addAll(GroupEnum.getPermissions(group));
+		}
+		
+		return returnVal;
+	}
+	
+	public void addGroup(GroupEnum group) {
+		if (this.groups == null) {
+			groups = new LinkedList<GroupEnum> ();
+		}
+		groups.add(group);
+	}
+	
+	public void removeGroup(GroupEnum group) {
+		if (!(this.groups == null)) {
+			groups.remove(group);
+		}
+	}
+	
+	/*
+	@XmlElementWrapper(name = "groups")
+	@XmlElement(name = "group")
 	public List<String> getGroups() {
 		return groups;
 	}
@@ -168,6 +207,12 @@ public class User implements Serializable {
 		this.groups = groups;
 	}
 	
+	public void setGroupsAsEnum(List<GroupEnum> groups) {
+		for (GroupEnum group : groups) {
+			addGroup(group);
+		}
+	}
+	
 	public void addGroup(GroupEnum group) {
 		if (this.groups == null) {
 			groups = new LinkedList<String> ();
@@ -179,5 +224,34 @@ public class User implements Serializable {
 		if (!(this.groups == null)) {
 			groups.remove(group.getCode());
 		}
-	}	
+	}
+	
+	@XmlElementWrapper(name = "permissions")
+	@XmlElement(name = "permission")
+	public List<String> getPermissions() {
+		List<String> permissions = new LinkedList<String>();
+		for (PermissionEnum permission : getPermissionsAsEnum()) {
+			permissions.add(permission.getCode());
+		}
+		
+		return permissions;
+	}
+	
+	public List<PermissionEnum> getPermissionsAsEnum() {
+		List<PermissionEnum> returnVal = new LinkedList<PermissionEnum>();
+		for (GroupEnum group : getGroupsAsEnum()) {
+			returnVal.addAll(group.getPermissions(group));
+		}
+		
+		return returnVal;
+	} */
+
+	@XmlElement(name = "active")
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 }

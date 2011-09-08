@@ -29,7 +29,7 @@
      <mongo:repositories base-package="com.reckonlabs.reckoner.contentservices.repo"
         mongo-template-ref="mongoTemplate" />
  
-     <bean id="mongoTemplate" class="org.springframework.data.document.mongodb.MongoTemplate">
+     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongoDbFactory"/>
      </bean>	 
 </beans>

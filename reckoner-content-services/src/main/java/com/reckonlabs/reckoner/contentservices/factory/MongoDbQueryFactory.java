@@ -6,7 +6,7 @@ import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
 
 import org.bson.types.ObjectId;
-import org.springframework.data.document.mongodb.query.Update;
+import org.springframework.data.mongodb.core.query.Update;
 
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;

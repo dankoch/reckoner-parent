@@ -17,7 +17,8 @@ public enum MessageEnum {
 	
 	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602"),
 	
-	R700_AUTH_USER("R700"), R701_AUTH_USER("R701"), R702_AUTH_USER("R702"), R703_AUTH_USER("R703"), R704_AUTH_USER("R704");
+	R700_AUTH_USER("R700"), R701_AUTH_USER("R701"), R702_AUTH_USER("R702"), R703_AUTH_USER("R703"), R704_AUTH_USER("R704"),
+	R705_AUTH_USER("R705");
 	
 	private final String code;
 
@@ -66,6 +67,7 @@ public enum MessageEnum {
 			case R702_AUTH_USER: return ("OAuth provider did not recognize provided user token. Returned null user.");		
 			case R703_AUTH_USER: return ("New user account created.");	
 			case R704_AUTH_USER: return ("No user associated with the specified user token. Nothing returned.");	
+			case R705_AUTH_USER: return ("Invalid expiration value provided.");	
 			
 			default:  return ("Message not found.");
 		}

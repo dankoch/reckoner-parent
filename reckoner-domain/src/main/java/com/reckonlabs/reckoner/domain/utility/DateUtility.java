@@ -184,7 +184,7 @@ public class DateUtility {
 	 */
 	public static GregorianCalendar getInstance() {
 		TimeZone.setDefault(TimeZone
-				.getTimeZone("America/Chicago"));
+				.getTimeZone("America/New_York"));
 		GregorianCalendar calendar = new GregorianCalendar(TimeZone.getDefault());
 		return calendar;
 	}
