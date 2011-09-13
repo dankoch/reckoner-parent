@@ -79,8 +79,8 @@ public class CommentController {
 			@RequestBody PostComment postComment)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(postComment.getUserToken())) {
-			log.warn("Null user token received for postComment.");
+		if (!StringUtils.hasLength(postComment.getSessionId())) {
+			log.warn("Null user session id received for postComment.");
 			throw new AuthenticationException();
 		} else {
 			Message validationMessage = CommentValidator.validateCommentPost(postComment.getComment(), id);
@@ -91,7 +91,7 @@ public class CommentController {
 			}
 		}
 
-		return commentService.postReckoningComment(postComment.getComment(), postComment.getUserToken(), id);
+		return commentService.postReckoningComment(postComment.getComment(), postComment.getSessionId(), id);
 	}
 	
 	/**
@@ -109,7 +109,7 @@ public class CommentController {
 	CommentServiceList getUserCommentsById(@PathVariable String userId,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "user_token") String userToken)
+			@RequestParam(required = true, value = "session_id") String reckonerSessionId)
 			throws AuthenticationException, Exception {
 
 		Message validationMessage = CommentValidator.validateCommentQuery (page, size);
@@ -119,7 +119,7 @@ public class CommentController {
 			return new CommentServiceList(null, validationMessage, false);
 		}
 		
-		return commentService.getCommentsByUser (userId, page, size, userToken);
+		return commentService.getCommentsByUser (userId, page, size, reckonerSessionId);
 	}
 	
 	/**
@@ -137,7 +137,7 @@ public class CommentController {
 	ReckoningServiceList getCommentedReckoningsById(@PathVariable String userId,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "user_token") String userToken)
+			@RequestParam(required = true, value = "session_id") String reckonerSessionId)
 			throws AuthenticationException, Exception {
 
 		Message validationMessage = CommentValidator.validateCommentQuery (page, size);
@@ -147,7 +147,7 @@ public class CommentController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return commentService.getCommentedReckoningsByUser (userId, page, size, userToken);
+		return commentService.getCommentedReckoningsByUser (userId, page, size, reckonerSessionId);
 	}
 
 }

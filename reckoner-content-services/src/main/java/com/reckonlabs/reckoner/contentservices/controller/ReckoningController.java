@@ -77,8 +77,8 @@ public class ReckoningController {
 			throws AuthenticationException, Exception {
 
 		// Validate the input.
-		if (!StringUtils.hasLength(postReckoning.getUserToken())) {
-			log.warn("Null user token received for postReckoning.");
+		if (!StringUtils.hasLength(postReckoning.getSessionId())) {
+			log.warn("Null user session id received for postReckoning.");
 			throw new AuthenticationException();
 		} else {
 			Message validationMessage = ReckoningValidator.validateReckoningPost(postReckoning.getReckoning());
@@ -89,7 +89,7 @@ public class ReckoningController {
 			}
 		}
 
-		return reckoningService.postReckoning(postReckoning.getReckoning(), postReckoning.getUserToken());
+		return reckoningService.postReckoning(postReckoning.getReckoning(), postReckoning.getSessionId());
 	}
 	
 	/**
@@ -107,8 +107,8 @@ public class ReckoningController {
 	ServiceResponse updateReckoning(@RequestBody PostReckoning updateReckoning)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(updateReckoning.getUserToken())) {
-			log.warn("Null user token received for updateReckoning.");
+		if (!StringUtils.hasLength(updateReckoning.getSessionId())) {
+			log.warn("Null user session id received for updateReckoning.");
 			throw new AuthenticationException();
 		} else {
 			Message validationMessage = ReckoningValidator.validateReckoningPost(updateReckoning.getReckoning());
@@ -119,7 +119,7 @@ public class ReckoningController {
 			}
 		}
 
-		return reckoningService.updateReckoning(updateReckoning.getReckoning(), updateReckoning.getUserToken());
+		return reckoningService.updateReckoning(updateReckoning.getReckoning(), updateReckoning.getSessionId());
 	}
 	
 	/**
@@ -136,7 +136,7 @@ public class ReckoningController {
 	public @ResponseBody
 	ServiceResponse approveReckoningById(
 			@PathVariable String id,		
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 
 		Message validationMessage = ReckoningValidator.validateReckoningId(id);
 		
@@ -145,7 +145,7 @@ public class ReckoningController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}		
 		
-		return reckoningService.approveReckoning(id, userToken);
+		return reckoningService.approveReckoning(id, sessionId);
 	}
 	
 	/**
@@ -162,7 +162,7 @@ public class ReckoningController {
 	public @ResponseBody
 	ServiceResponse rejectReckoningById(
 			@PathVariable String id,		
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
 		Message validationMessage = ReckoningValidator.validateReckoningId(id);
 		
@@ -171,7 +171,7 @@ public class ReckoningController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}	
 
-		return reckoningService.rejectReckoning(id, userToken);
+		return reckoningService.rejectReckoning(id, sessionId);
 	}
 	
 	/**
@@ -188,9 +188,9 @@ public class ReckoningController {
 	public @ResponseBody
 	ReckoningServiceList getReckoningById(
 			@PathVariable String id,		
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
-		return reckoningService.getReckoning(id, userToken);
+		return reckoningService.getReckoning(id, sessionId);
 	}
 	
 	/**
@@ -202,7 +202,7 @@ public class ReckoningController {
 	 *           Integer
 	 * @param latestFirst
 	 *           Boolean
-	 * @param userToken
+	 * @param sessionId
 	 *           String 
 	 * @return reckoningServiceList
 	 *            ReckoningServiceList
@@ -215,7 +215,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = false, value = "latest_first") Boolean latestFirst,			
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
@@ -224,7 +224,7 @@ public class ReckoningController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return reckoningService.getApprovalQueue(page, size, latestFirst, userToken);
+		return reckoningService.getApprovalQueue(page, size, latestFirst, sessionId);
 	}
 	
 	/**
@@ -232,7 +232,7 @@ public class ReckoningController {
 	 * 
 	 * @param submitter_id
 	 *           String
-	 * @param userToken
+	 * @param sessionId
 	 *           String  
 	 * @return reckoningServiceList
 	 *            ReckoningServiceList
@@ -245,7 +245,7 @@ public class ReckoningController {
 			@PathVariable String submitterId,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
@@ -254,13 +254,13 @@ public class ReckoningController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}	
 		
-		return reckoningService.getReckoningSummariesByUser (submitterId, page, size, userToken);
+		return reckoningService.getReckoningSummariesByUser (submitterId, page, size, sessionId);
 	}
 
 	/**
 	 * This method allows for the retrieval of the most recent open highlighted reckoning.
 	 * 
-	 * @param userToken
+	 * @param sessionId
 	 *           String          
 	 * @return reckoningServiceList
 	 *            ReckoningServiceList
@@ -270,15 +270,15 @@ public class ReckoningController {
 	@RequestMapping(value = "/reckoning/highlighted", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getHighlightedReckonings(
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
-		return reckoningService.getHighlightedReckonings(null, userToken);
+		return reckoningService.getHighlightedReckonings(null, sessionId);
 	}
 	
 	/**
 	 * This method allows for the retrieval of the most recent open highlighted reckoning.
 	 * 
-	 * @param userToken
+	 * @param sessionId
 	 *           String   
 	 * @return reckoningServiceList
 	 *            ReckoningServiceList
@@ -288,15 +288,15 @@ public class ReckoningController {
 	@RequestMapping(value = "/reckoning/highlighted/open", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getHighlightedOpenReckoning(
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
-		return reckoningService.getHighlightedReckonings(true, userToken);
+		return reckoningService.getHighlightedReckonings(true, sessionId);
 	}
 	
 	/**
 	 * This method allows for the retrieval of the most recent closed highlighted reckoning.
 	 * 
-	 * @param userToken
+	 * @param sessionId
 	 *           String   
 	 * @return reckoningServiceList
 	 *            ReckoningServiceList
@@ -306,9 +306,9 @@ public class ReckoningController {
 	@RequestMapping(value = "/reckoning/highlighted/closed", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getHighlightedClosedReckoning(
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
-		return reckoningService.getHighlightedReckonings(false, userToken);
+		return reckoningService.getHighlightedReckonings(false, sessionId);
 	}
 	
 	/**
@@ -326,7 +326,7 @@ public class ReckoningController {
 	 *           Date
 	 * @param closedBefore
 	 *           Date 
-	 * @param userToken
+	 * @param sessionId
 	 *           String   
 	 * @return reckoningServiceList
 	 *            ReckoningServiceList
@@ -342,7 +342,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "posted_before") Date postedBefore,
 			@RequestParam(required = false, value = "closed_after") Date closedAfter,
 			@RequestParam(required = false, value = "closed_before") Date closedBefore,
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
@@ -352,7 +352,7 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(page, size, postedAfter, postedBefore,
-				closedAfter, closedBefore, userToken);
+				closedAfter, closedBefore, sessionId);
 	}
 	
 	/**
@@ -360,7 +360,7 @@ public class ReckoningController {
 	 * 
 	 * @param tag
 	 *           String
-	 * @param userToken
+	 * @param sessionId
 	 *           String  
 	 * @return reckoningServiceList
 	 *            ReckoningServiceList
@@ -373,7 +373,7 @@ public class ReckoningController {
 			@PathVariable String tag,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "user_token") String userToken) {
+			@RequestParam(required = true, value = "session_id") String sessionId) {
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
@@ -382,6 +382,6 @@ public class ReckoningController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return reckoningService.getReckoningSummariesByTag(tag, page, size, userToken);
+		return reckoningService.getReckoningSummariesByTag(tag, page, size, sessionId);
 	}
 }

@@ -12,7 +12,7 @@ public class PostVote implements Serializable {
 	private static final long serialVersionUID = -4218281053538996203L;
 	
 	private Vote vote;
-	private String userToken;
+	private String sessionId;
 	
 	@XmlElement (name="vote")
 	public Vote getVote() {
@@ -22,11 +22,11 @@ public class PostVote implements Serializable {
 		this.vote = vote;
 	}
 	
-	@XmlElement (name="user_token")
-	public String getUserToken() {
-		return userToken;
+	@XmlElement (name="session_id")
+	public String getSessionId() {
+		return sessionId;
 	}
-	public void setUserToken(String userToken) {
-		this.userToken = userToken;
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
 	}
 }

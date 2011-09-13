@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.reckonlabs.reckoner.contentservices.client.AuthClient;
+import com.reckonlabs.reckoner.contentservices.client.GoogleAuthClient;
 
 import com.reckonlabs.reckoner.contentservices.repo.AuthSessionRepo;
 import com.reckonlabs.reckoner.contentservices.repo.AuthSessionRepoCustom;
@@ -53,8 +54,8 @@ public class UserServiceImpl implements UserService {
 			.getLogger(UserServiceImpl.class);
 
 	@Override
-	public UserServiceResponse authenticateOAuthUser(
-			String userToken, ProviderEnum provider, String expires) {
+	public UserServiceResponse authenticateOAuthUser(String userToken, ProviderEnum provider, 
+			String expires, String refreshToken) {
 		
 		User authUser = null;
 		User reckonerUser = null;
@@ -70,7 +71,8 @@ public class UserServiceImpl implements UserService {
 			}
 			
 			// 1) If no information was returned, something went wrong - chuck back an error.
-			// 2) Otherwise, check the DB to see if this user already exists.
+			// 2) If a user was returned but has a Sentinel ID, send the corresponding response.
+			// 3) Otherwise, check the DB to see if this user already exists.
 			//   a) If not, write the user to the DB and retrieve it to get its ID.
 			//   b) If so, write an updated login date to the DB and retrieve it.
 			//   c) Finally, write a session mapping the userToken to the user in the AuthSession bank.
@@ -78,6 +80,12 @@ public class UserServiceImpl implements UserService {
 			if (authUser == null) {
 				return new UserServiceResponse(null, null, new Message(MessageEnum.R702_AUTH_USER), false);
 			} else {
+				if (authUser.getAuthProviderId() != null) {
+					if (authUser.getAuthProviderId().equalsIgnoreCase(GoogleAuthClient.NON_GPLUS_ACCOUNT_SENTINEL)) {
+						return new UserServiceResponse(null, null, new Message(MessageEnum.R707_AUTH_USER), false);
+					}
+				}
+				
 				List<User> existingUser = userRepo.findByAuthProviderAndAuthProviderId
 						(provider.getProvider(), authUser.getAuthProviderId());
 				
@@ -92,12 +100,14 @@ public class UserServiceImpl implements UserService {
 					existingUser = userRepo.findByAuthProviderAndAuthProviderId
 							(provider.getProvider(), authUser.getAuthProviderId());
 				} else {
+					existingUser.set(0, mergeUpdatedUser(existingUser.get(0), authUser));
 					existingUser.get(0).setLastLogin(DateUtility.now());
+					
 					userRepoCustom.updateUser(existingUser.get(0));
 				}
 				
 				reckonerUser = existingUser.get(0);
-				authSession = new AuthSession(userToken, reckonerUser, expires);
+				authSession = new AuthSession(userToken, reckonerUser, expires, refreshToken);
 				authSessionRepoCustom.insertNewAuthSession(authSession);
 			}
 		} catch (Exception e) {
@@ -105,7 +115,7 @@ public class UserServiceImpl implements UserService {
 			log.debug("Stack Trace:", e);			
 			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
 		}
-		
+
 		if (newUser) {
 			return new UserServiceResponse(reckonerUser, 
 				authSession, new Message(MessageEnum.R703_AUTH_USER), true);
@@ -116,15 +126,14 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserServiceResponse logoutUser(String userToken) {
+	public UserServiceResponse logoutUser(String sessionId) {
 		try {
-			List<AuthSession> authSessions = authSessionRepo.findByUserToken(userToken);
+			List<AuthSession> authSessions = authSessionRepo.findById(sessionId);
 			for (AuthSession authSession : authSessions) {
 				authSessionRepoCustom.removeAuthSession(authSession);
 			}
 		} catch (Exception e) {
-			log.error("General exception when logging out a user: " + e.getMessage());
-			log.debug("Stack Trace:", e);			
+			log.error("General exception when logging out a user: " + e.getMessage(), e);			
 			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
 		}		
 		
@@ -132,21 +141,43 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public UserServiceResponse getUserByToken(String userToken) {
+	public UserServiceResponse getUserBySessionId(String sessionId) {
 		User authUser = null;
+		AuthSession currentSession = null;
 		
 		try {
-			List<AuthSession> authSessions = authSessionRepo.findByUserToken(userToken);
+			// Check to see if a session pairs up with the passed Session ID.
+			// If not, return an A-OK message with null message and authSession.
+			List<AuthSession> authSessions = authSessionRepo.findById(sessionId);
 			if (!authSessions.isEmpty()) {
-				String userId = authSessions.get(0).getReckonerUserId();
+				currentSession = authSessions.get(0);
+				
+				// Check to see if the session is expired.  
+				//  * If so, attempt to refresh it, write the new session to the DB, and proceed using this new session.
+				//    Leave the old session in the DB in case we're doing something for the user on their behalf.
+				//    This will give them a chance to stay logged in.
+				//
+				//  * If we can't refresh it (error or no refresh_token), delete the old one and return a null message.
+				if (currentSession.isExpired()) {
+					AuthSession newSession = refreshAuthSession(currentSession);
+					if (newSession != null) {
+						authSessionRepoCustom.insertNewAuthSession(newSession);
+						currentSession = newSession;
+					} else {
+						authSessionRepoCustom.removeAuthSession(currentSession);
+						return (new UserServiceResponse(null, null, new Message(MessageEnum.R706_AUTH_USER), false));	
+					}
+				}
+				
+				String userId = currentSession.getReckonerUserId();
 				List<User> authUsers = userRepo.findById(userId);
 				if (!authUsers.isEmpty()) {
 					authUser = authUsers.get(0);
 				}
 			}
 		} catch (Exception e) {
-			log.error("General exception when fetching user from the user token: " + e.getMessage());
-			log.debug("Stack Trace:", e);			
+			log.error("General exception when fetching user from the session ID " + sessionId + 
+					": " + e.getMessage(), e);			
 			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
 		}
 		
@@ -154,6 +185,30 @@ public class UserServiceImpl implements UserService {
 			return (new UserServiceResponse(null, null, new Message(MessageEnum.R704_AUTH_USER), false));				
 		}
 		
-		return (new UserServiceResponse(authUser, null, new Message(), true));		
+		return (new UserServiceResponse(authUser, currentSession, new Message(), true));		
+	}
+	
+	private AuthSession refreshAuthSession(AuthSession oldSession) {
+		
+		if (oldSession.getRefreshToken() != null) {
+			if (oldSession.getAuthProvider() == ProviderEnum.GOOGLE) {
+				return googleAuthClient.refreshUserToken(oldSession);
+			}
+		}
+
+		return null;
+	}
+	
+	// This method is responsible for controlling how an existing user gets updated
+	// when a user re-authenticates.
+	private static User mergeUpdatedUser(User existingUser, User newUser) {
+		existingUser.setUsername(newUser.getUsername());
+		existingUser.setFirstName(newUser.getFirstName());
+		existingUser.setLastName(newUser.getLastName());
+		existingUser.setEmail(newUser.getEmail());
+		existingUser.setProfilePictureUrl(newUser.getProfilePictureUrl());
+		existingUser.setProfileUrl(newUser.getProfileUrl());
+		
+		return existingUser;
 	}
 }

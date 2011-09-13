@@ -12,7 +12,7 @@ public class PostReckoning implements Serializable {
 	private static final long serialVersionUID = -4218281053538996203L;
 	
 	private Reckoning reckoning;
-	private String userToken;
+	private String sessionId;
 	
 	@XmlElement (name="reckoning")
 	public Reckoning getReckoning() {
@@ -22,11 +22,11 @@ public class PostReckoning implements Serializable {
 		this.reckoning = reckoning;
 	}
 	
-	@XmlElement (name="user_token")
-	public String getUserToken() {
-		return userToken;
+	@XmlElement (name="session_id")
+	public String getSessionId() {
+		return sessionId;
 	}
-	public void setUserToken(String userToken) {
-		this.userToken = userToken;
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
 	}
 }

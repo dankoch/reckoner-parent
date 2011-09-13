@@ -12,6 +12,7 @@ public class PostOAuthUser implements Serializable {
 	private String userToken;
 	private String provider;
 	private String expires;
+	private String refreshToken;
 	
 	@XmlElement (name="user_token")
 	public String getUserToken() {
@@ -35,5 +36,13 @@ public class PostOAuthUser implements Serializable {
 	}
 	public void setExpires(String expires) {
 		this.expires = expires;
+	}
+	
+	@XmlElement (name="refresh_token")	
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
 	}
 }

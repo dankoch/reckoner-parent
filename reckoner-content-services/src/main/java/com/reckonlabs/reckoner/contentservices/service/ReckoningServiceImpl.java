@@ -43,7 +43,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			.getLogger(ReckoningServiceImpl.class);
 	
 	@Override
-	public ServiceResponse postReckoning (Reckoning reckoning, String userToken) {
+	public ServiceResponse postReckoning (Reckoning reckoning, String sessionId) {
 		
 		try {
 			// Compute the answer index for each provided answer.
@@ -79,7 +79,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
-	public ServiceResponse updateReckoning (Reckoning reckoning, String userToken) {
+	public ServiceResponse updateReckoning (Reckoning reckoning, String sessionId) {
 		
 		try {
 			reckoningRepoCustom.updateReckoning(reckoning);
@@ -95,7 +95,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
-	public ServiceResponse approveReckoning (String id, String userToken) {
+	public ServiceResponse approveReckoning (String id, String sessionId) {
 		
 		try {
 			List<Reckoning> approvedReckoning = reckoningRepo.findById(id);
@@ -123,7 +123,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
-	public ServiceResponse rejectReckoning (String id, String userToken) {
+	public ServiceResponse rejectReckoning (String id, String sessionId) {
 		
 		try {
 			List<Reckoning> rejectedReckoning = reckoningRepo.findById(id);
@@ -150,7 +150,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
-	public ReckoningServiceList getReckoning (String id, String userToken) {
+	public ReckoningServiceList getReckoning (String id, String sessionId) {
 		List<Reckoning> reckoning = null;
 		try {
 			reckoning = reckoningCache.getCachedReckoning(id);
@@ -168,7 +168,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
-	public ReckoningServiceList getApprovalQueue (Integer page, Integer size, Boolean latestFirst, String userToken) {
+	public ReckoningServiceList getApprovalQueue (Integer page, Integer size, Boolean latestFirst, String sessionId) {
 		List<Reckoning> approvalQueue = null;
 		
 		try {
@@ -196,7 +196,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
-	public ReckoningServiceList getReckoningSummariesByUser(String submitterId, Integer page, Integer size, String userToken) {
+	public ReckoningServiceList getReckoningSummariesByUser(String submitterId, Integer page, Integer size, String sessionId) {
 		List<Reckoning> reckonings = null;
 		
 		try {
@@ -217,7 +217,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 
 	@Override
-	public ReckoningServiceList getHighlightedReckonings(Boolean open, String userToken) {
+	public ReckoningServiceList getHighlightedReckonings(Boolean open, String sessionId) {
 		List<Reckoning> reckonings = null;
 		
 		try {
@@ -240,7 +240,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	@Override
 	public ReckoningServiceList getReckoningSummaries(Integer page,
 			Integer size, Date postedAfter, Date postedBefore,
-			Date closedAfter, Date closedBefore, String userToken) {
+			Date closedAfter, Date closedBefore, String sessionId) {
 		List<Reckoning> reckonings = null;
 
 		try {
@@ -263,7 +263,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 
 	@Override
 	public ReckoningServiceList getReckoningSummariesByTag(String tag, Integer page,
-			Integer size, String userToken) {
+			Integer size, String sessionId) {
 		List<Reckoning> reckonings = null;		
 		try {
 			reckonings = reckoningCache.getCachedTagReckoningSummaries(tag, page, size);

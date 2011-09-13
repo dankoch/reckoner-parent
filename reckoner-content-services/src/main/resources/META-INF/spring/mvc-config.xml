@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
@@ -32,13 +33,12 @@
 		</property>
 		<property name="defaultViews">
 			<list>
-				<bean
-					class="org.springframework.web.servlet.view.json.MappingJacksonJsonView">
+				<bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView">
+				    <property name="objectMapper" ref="reckonerJacksonObjectMapper"/>
 				</bean>
 			</list>
 		</property>
 	</bean>
-	
 	
 	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
         <property name="order" value="1"/>
@@ -51,9 +51,14 @@
 				<bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
 				<bean class="org.springframework.http.converter.xml.XmlAwareFormHttpMessageConverter"/>
 				<bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/>
-				<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+				<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+                    <property name="objectMapper" ref="reckonerJacksonObjectMapper"/>				    
+			    </bean>
             </list>
         </property>
     </bean>
+    
+    <!--  Configuration to allow JAXB annotations to also apply to the Jackson JSON Mapper -->
+    <bean name="reckonerJacksonObjectMapper" class="com.reckonlabs.reckoner.contentservices.spring.ReckonerJacksonObjectMapper"/>
 
 </beans>

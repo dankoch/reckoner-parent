@@ -45,7 +45,7 @@ public class CommentServiceImpl implements CommentService {
 			.getLogger(CommentServiceImpl.class);
 
 	@Override
-	public ServiceResponse postReckoningComment(Comment comment, String userToken, String reckoningId) {
+	public ServiceResponse postReckoningComment(Comment comment, String sessionId, String reckoningId) {
 		
 		try {
 			if (!reckoningRepoCustom.confirmReckoningExists(reckoningId)) {
@@ -87,7 +87,7 @@ public class CommentServiceImpl implements CommentService {
 	
 	@Override
 	public CommentServiceList getCommentsByUser(String userId, Integer page,
-			Integer size, String userToken) {
+			Integer size, String sessionId) {
 		List<Comment> userComments = null;
 		
 		try {
@@ -127,7 +127,7 @@ public class CommentServiceImpl implements CommentService {
 
 	@Override
 	public ReckoningServiceList getCommentedReckoningsByUser(String userId,
-			Integer page, Integer size, String userToken) {
+			Integer page, Integer size, String sessionId) {
 		List<Reckoning> commentedReckonings = null;		
 		
 		try {

@@ -12,7 +12,7 @@ public class PostComment implements Serializable {
 	private static final long serialVersionUID = 7515605775041162483L;
 	
 	private Comment comment;
-	private String userToken;
+	private String sessionId;
 	
 	@XmlElement (name="comment")
 	public Comment getComment() {
@@ -22,11 +22,11 @@ public class PostComment implements Serializable {
 		this.comment = comment;
 	}
 	
-	@XmlElement (name="user_token")
-	public String getUserToken() {
-		return userToken;
+	@XmlElement (name="session_id")
+	public String getSessionId() {
+		return sessionId;
 	}
-	public void setUserToken(String userToken) {
-		this.userToken = userToken;
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
 	}
 }

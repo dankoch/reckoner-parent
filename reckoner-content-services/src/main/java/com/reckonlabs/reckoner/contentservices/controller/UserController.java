@@ -81,7 +81,7 @@ public class UserController {
 
 		// Validate the input.
 		if (!StringUtils.hasLength(postOAuthUser.getUserToken())) {
-			log.warn("Null user token received for postReckoning.");
+			log.warn("Null user session id received for postReckoning.");
 			throw new AuthenticationException();
 		} else {
 			Message validationMessage = UserValidator.validateOAuthUserPost(postOAuthUser);
@@ -97,13 +97,14 @@ public class UserController {
 		}
 		
 		return userService.authenticateOAuthUser(postOAuthUser.getUserToken(), 
-				ProviderEnum.valueOf(postOAuthUser.getProvider()), postOAuthUser.getExpires());
+				ProviderEnum.valueOf(postOAuthUser.getProvider()), postOAuthUser.getExpires(),
+				postOAuthUser.getRefreshToken());
 	}
 	
 	/**
-	 * This method allows for logging out the user associated with the specified user token.
+	 * This method allows for logging out the user associated with the specified user session id.
 	 * 
-	 * @param userToken
+	 * @param sessionId
 	 *            String
 	 * @return serviceResponse
 	 *            ServiceResponse
@@ -113,15 +114,15 @@ public class UserController {
 	@RequestMapping(value = "/user/logout", method = RequestMethod.GET)
 	public @ResponseBody
 	UserServiceResponse logoutUser(		
-			@RequestParam(required = true, value = "user_token") String userToken) {	
+			@RequestParam(required = true, value = "session_id") String sessionId) {	
 		
-		return userService.logoutUser(userToken);
+		return userService.logoutUser(sessionId);
 	}
 	
 	/**
-	 * This method retrieves the user account specific to user associated with the access token.
+	 * This method retrieves the user account specific to user associated with the access session id.
 	 * 
-	 * @param userToken
+	 * @param sessionId
 	 *            String
 	 * @return serviceResponse
 	 *            ServiceResponse
@@ -131,9 +132,9 @@ public class UserController {
 	@RequestMapping(value = "/user/me", method = RequestMethod.GET)
 	public @ResponseBody
 	UserServiceResponse getUserInformation(		
-			@RequestParam(required = true, value = "user_token") String userToken) {	
+			@RequestParam(required = true, value = "session_id") String sessionId) {	
 		
-		return userService.getUserByToken(userToken);
+		return userService.getUserBySessionId(sessionId);
 	}
 	
 }

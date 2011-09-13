@@ -10,9 +10,9 @@ import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 
 public interface CommentService {
 	
-	public ServiceResponse postReckoningComment (Comment comment, String userToken, String reckoningId);
+	public ServiceResponse postReckoningComment (Comment comment, String sessionId, String reckoningId);
 	
-	public CommentServiceList getCommentsByUser (String userId, Integer page, Integer size, String userToken);
+	public CommentServiceList getCommentsByUser (String userId, Integer page, Integer size, String sessionId);
 
-	public ReckoningServiceList getCommentedReckoningsByUser (String userId, Integer page, Integer size, String userToken);
+	public ReckoningServiceList getCommentedReckoningsByUser (String userId, Integer page, Integer size, String sessionId);
 }

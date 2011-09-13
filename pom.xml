@@ -136,11 +136,22 @@
            <artifactId>jamon</artifactId>
            <version>2.0</version>
        </dependency>
-       <dependency>
-           <groupId>org.codehaus.jackson</groupId>
-           <artifactId>jackson-mapper-asl</artifactId>
-           <version>1.5.0</version>
-       </dependency>
+	   <!-- Jackson JSON Mapper -->
+	   <dependency>
+		   <groupId>org.codehaus.jackson</groupId>
+		   <artifactId>jackson-core-lgpl</artifactId>
+		   <version>1.8.0</version>
+	   </dependency>
+	   <dependency>
+		   <groupId>org.codehaus.jackson</groupId>
+		   <artifactId>jackson-mapper-lgpl</artifactId>
+		   <version>1.8.0</version>
+	   </dependency>
+	   <dependency>
+		   <groupId>org.codehaus.jackson</groupId>
+		   <artifactId>jackson-xc</artifactId>
+		   <version>1.8.0</version>
+	   </dependency>
        <dependency>
            <groupId>spy</groupId>
            <artifactId>spymemcached</artifactId>

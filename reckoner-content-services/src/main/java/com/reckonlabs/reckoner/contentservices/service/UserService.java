@@ -9,9 +9,10 @@ import com.reckonlabs.reckoner.domain.user.ProviderEnum;
 
 public interface UserService {
 	
-	public UserServiceResponse authenticateOAuthUser(String userToken, ProviderEnum provider, String expires);
+	public UserServiceResponse authenticateOAuthUser(String sessionId, ProviderEnum provider, 
+			String expires, String refreshToken);
 	
-	public UserServiceResponse logoutUser(String userToken);
+	public UserServiceResponse logoutUser(String sessionId);
 	
-	public UserServiceResponse getUserByToken(String userToken);
+	public UserServiceResponse getUserBySessionId(String sessionId);
 }

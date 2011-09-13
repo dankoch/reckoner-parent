@@ -79,8 +79,8 @@ public class VoteController {
 			@RequestBody PostVote postVote)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(postVote.getUserToken())) {
-			log.warn("Null user token received for postVoting.");
+		if (!StringUtils.hasLength(postVote.getSessionId())) {
+			log.warn("Null user session id received for postVoting.");
 			throw new AuthenticationException();
 		} else {
 			Message validationMessage = VoteValidator.validateVotePost(postVote.getVote(), id, answer);
@@ -111,7 +111,7 @@ public class VoteController {
 	public @ResponseBody
 	ServiceResponse getUserReckoningVote(@PathVariable String id,
 			@PathVariable String reckoningId,
-			@RequestParam(required = true, value = "user_token") String userToken)
+			@RequestParam(required = true, value = "session_id") String sessionId)
 			throws AuthenticationException, Exception {
 
 		Message validationMessage = ReckoningValidator.validateReckoningId(reckoningId);
@@ -137,7 +137,7 @@ public class VoteController {
 	@RequestMapping(value = "/vote/user/{id}", method = RequestMethod.GET)	
 	public @ResponseBody
 	ServiceResponse getUserVotingRecord(@PathVariable String id,
-			@RequestParam(required = true, value = "user_token") String userToken)
+			@RequestParam(required = true, value = "session_id") String sessionId)
 			throws AuthenticationException, Exception {
 
 		return voteService.getUserVotedReckonings(id);
