@@ -28,12 +28,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.reckonlabs.reckoner.contentservices.service.UserService;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostOAuthUser;
+import com.reckonlabs.reckoner.domain.message.PostPermission;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.message.UserServiceResponse;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
 import com.reckonlabs.reckoner.domain.validator.UserValidator;
+import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 
@@ -137,4 +139,68 @@ public class UserController {
 		return userService.getUserBySessionId(sessionId);
 	}
 	
+	/**
+	 * This method retrieves the information associated with the specified user.
+	 * 
+	 * @param userId
+	 *            String
+	 * @param sessionId
+	 *            String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/user/id/{userId}", method = RequestMethod.GET)
+	public @ResponseBody
+	UserServiceResponse getUserInformation(
+			@PathVariable String userId,
+			@RequestParam(required = true, value = "session_id") String sessionId) {	
+		
+		return userService.getUserByUserId(userId);
+	}
+	
+	
+	/**
+	 * Updates the group permissions associated with a user, including whether the
+	 * user is active.
+	 * 
+	 * @param postPermissions
+	 *            PostPermission
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/user/permissions", method = RequestMethod.POST)
+	public @ResponseBody
+	UserServiceResponse setUserPermissions(@RequestBody PostPermission postPermission)
+			throws AuthenticationException, Exception {	
+		
+		// Validate the input and necessary permissions.
+		if (!StringUtils.hasLength(postPermission.getSessionId())) {
+			log.warn("Null user session id received for postReckoning.");
+			throw new AuthenticationException();
+		} else if (!userService.hasPermission(postPermission.getSessionId(),
+				PermissionEnum.UPDATE_PERMS)) {
+			log.warn("User with insufficient privileges attempted to change permmissions: ");
+			log.warn("Session ID: " + postPermission.getSessionId() + " User ID: " + postPermission.getUserId());
+			throw new AuthenticationException();			
+		}
+		else {
+			Message validationMessage = UserValidator.validatePermissionPost(postPermission);
+			
+			if (validationMessage != null) {
+				log.warn("Posted authentication failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				UserServiceResponse response = new UserServiceResponse();
+				response.setMessage(validationMessage);
+				response.setSuccess(false);
+				
+				return response;
+			}
+		}
+		
+		return userService.updateUserPermissions(postPermission.getAction(), 
+				postPermission.getGroups(), postPermission.getActive(), postPermission.getUserId());
+	}	
 }

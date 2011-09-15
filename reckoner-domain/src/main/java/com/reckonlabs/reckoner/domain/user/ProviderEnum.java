@@ -1,6 +1,8 @@
 package com.reckonlabs.reckoner.domain.user;
 
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -32,4 +34,14 @@ public enum ProviderEnum {
 		
 		return true;
 	}
+	
+	public static List<String> getProviders() {
+		  List<String> providers = new LinkedList<String>();
+
+		  for (ProviderEnum provider : ProviderEnum.values()) {
+			  providers.add(provider.name());  
+		  }
+
+		  return providers;
+		}
 }

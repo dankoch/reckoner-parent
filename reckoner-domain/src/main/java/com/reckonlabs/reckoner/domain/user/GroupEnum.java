@@ -5,7 +5,7 @@ import java.util.List;
 
 public enum GroupEnum {
 
-	ANONYMOUS("ANON"), USER("USER"), ADMIN ("ADMIN");
+	ANONYMOUS("ANON"), USER("USER"), ADMIN ("ADMIN"), SUPER_ADMIN("S_ADMIN");
 	
 	private final String code;
 	
@@ -45,8 +45,21 @@ public enum GroupEnum {
 				permissions.add(PermissionEnum.BLOG_POST);
 				permissions.add(PermissionEnum.HIGHLIGHT);
 				break;
+			case SUPER_ADMIN:
+				permissions.addAll(getPermissions(GroupEnum.ADMIN));
+				permissions.add(PermissionEnum.UPDATE_PERMS);
 		}
 		
 		return permissions;
 	}
+	
+	public static List<String> getGroups() {
+		  List<String> groups = new LinkedList<String>();
+
+		  for (GroupEnum group : GroupEnum.values()) {
+		    groups.add(group.name());  
+		  }
+
+		  return groups;
+		}
 }

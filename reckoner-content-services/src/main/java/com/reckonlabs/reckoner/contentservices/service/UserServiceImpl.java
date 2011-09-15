@@ -3,6 +3,7 @@ package com.reckonlabs.reckoner.contentservices.service;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Resource;
 
 import org.slf4j.Logger;
@@ -17,12 +18,14 @@ import com.reckonlabs.reckoner.contentservices.repo.AuthSessionRepo;
 import com.reckonlabs.reckoner.contentservices.repo.AuthSessionRepoCustom;
 import com.reckonlabs.reckoner.contentservices.repo.UserRepo;
 import com.reckonlabs.reckoner.contentservices.repo.UserRepoCustom;
+import com.reckonlabs.reckoner.domain.message.PostActionEnum;
 import com.reckonlabs.reckoner.domain.message.UserServiceResponse;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.user.AuthSession;
 import com.reckonlabs.reckoner.domain.user.GroupEnum;
+import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
 import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
@@ -188,6 +191,27 @@ public class UserServiceImpl implements UserService {
 		return (new UserServiceResponse(authUser, currentSession, new Message(), true));		
 	}
 	
+	@Override
+	public UserServiceResponse getUserByUserId(String userId) {
+		User authUser = null;
+		
+		try {
+			List<User> authUsers = userRepo.findById(userId);
+			if (!authUsers.isEmpty()) {
+				authUser = authUsers.get(0);
+			}
+		} catch (Exception e) {
+			log.error("General exception when fetching user from the user ID " + userId + 
+					": " + e.getMessage(), e);			
+			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		if (authUser == null) {
+			return (new UserServiceResponse(null, null, new Message(MessageEnum.R704_AUTH_USER), false));				
+		}
+		return (new UserServiceResponse(authUser, null, new Message(), true));		
+	}
+	
 	private AuthSession refreshAuthSession(AuthSession oldSession) {
 		
 		if (oldSession.getRefreshToken() != null) {
@@ -197,6 +221,54 @@ public class UserServiceImpl implements UserService {
 		}
 
 		return null;
+	}
+	
+	@Override
+	public UserServiceResponse updateUserPermissions(PostActionEnum action,
+			Set<GroupEnum> groups, Boolean active, String userId) {
+		
+		try {
+			List<User> userInfo = userRepo.findById(userId);
+			if (!userInfo.isEmpty()) {
+				User changeUser = userInfo.get(0);
+				
+				if (changeUser.getGroups() != null) {
+					if (action == PostActionEnum.ADD) {
+						changeUser.getGroups().addAll(groups);
+					} else if (action == PostActionEnum.REMOVE) {
+						changeUser.getGroups().removeAll(groups);		
+					} else if (action == PostActionEnum.REPLACE) {
+						changeUser.getGroups().clear();
+						changeUser.getGroups().addAll(groups);
+					}
+				}
+				
+				if (active != null) {
+					changeUser.setActive(active.booleanValue());
+				}
+				
+				userRepoCustom.updateUser(changeUser);
+			} else {
+				return (new UserServiceResponse(null, null, new Message(MessageEnum.R710_AUTH_USER), false));					
+			}
+		} catch (Exception e) {
+			log.error("General exception when changing user permissions: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new UserServiceResponse(null, null, new Message(), true);
+	}
+
+	@Override
+	public boolean hasPermission(String sessionId, PermissionEnum perm) {
+		UserServiceResponse userResponse = getUserBySessionId(sessionId);
+		
+		if (userResponse.getUser() != null) {
+			return userResponse.getUser().hasPermission(perm);
+		}
+		
+		return false;
 	}
 	
 	// This method is responsible for controlling how an existing user gets updated

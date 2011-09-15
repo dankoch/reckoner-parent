@@ -18,7 +18,8 @@ public enum MessageEnum {
 	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602"),
 	
 	R700_AUTH_USER("R700"), R701_AUTH_USER("R701"), R702_AUTH_USER("R702"), R703_AUTH_USER("R703"), R704_AUTH_USER("R704"),
-	R705_AUTH_USER("R705"), R706_AUTH_USER("R706"), R707_AUTH_USER("R707");
+	R705_AUTH_USER("R705"), R706_AUTH_USER("R706"), R707_AUTH_USER("R707"), R708_AUTH_USER("R708"), R709_AUTH_USER("R709"),
+	R710_AUTH_USER("R710");
 	
 	private final String code;
 
@@ -66,10 +67,13 @@ public enum MessageEnum {
 			case R701_AUTH_USER: return ("Invalid provider specified for OAuth user.");
 			case R702_AUTH_USER: return ("OAuth provider did not recognize provided user token. Returned null user.");		
 			case R703_AUTH_USER: return ("New user account created.");	
-			case R704_AUTH_USER: return ("No user associated with the specified user token. Nothing returned.");	
+			case R704_AUTH_USER: return ("No user associated with the specified information. Nothing returned.");	
 			case R705_AUTH_USER: return ("Invalid expiration value provided.");
 			case R706_AUTH_USER: return ("Session has expired.  Please log in again.");
 			case R707_AUTH_USER: return ("This Google account is not a G+ enabled account.  Only G+ accounts (with a profile) are valid.");
+			case R708_AUTH_USER: return ("Action needs to be specified when changing the permissions for this user account.");
+			case R709_AUTH_USER: return ("User ID needs to be specified when changing this user account.");
+			case R710_AUTH_USER: return ("No user found with the specified ID.");
 			
 			default:  return ("Message not found.");
 		}
