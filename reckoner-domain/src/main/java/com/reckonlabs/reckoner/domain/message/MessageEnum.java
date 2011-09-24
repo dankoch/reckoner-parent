@@ -13,13 +13,17 @@ public enum MessageEnum {
 	
 	R400_POST_COMMENT("R400"), R401_POST_COMMENT("R401"), R402_POST_COMMENT("R402"),
 	
-	R500_GET_COMMENT("R500"),
+	R500_GET_COMMENT("R500"), R501_GET_COMMENT("R501"),
 	
 	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602"),
 	
 	R700_AUTH_USER("R700"), R701_AUTH_USER("R701"), R702_AUTH_USER("R702"), R703_AUTH_USER("R703"), R704_AUTH_USER("R704"),
 	R705_AUTH_USER("R705"), R706_AUTH_USER("R706"), R707_AUTH_USER("R707"), R708_AUTH_USER("R708"), R709_AUTH_USER("R709"),
-	R710_AUTH_USER("R710");
+	R710_AUTH_USER("R710"),
+	
+	R800_POST_NOTE("R800"), R801_POST_NOTE("R801"), R802_POST_NOTE("R802"), R803_POST_NOTE("R803"), R804_POST_NOTE("R804"),
+	
+	R900_GET_NOTE("R900");
 	
 	private final String code;
 
@@ -38,7 +42,7 @@ public enum MessageEnum {
 		switch (enumeration) {
 			case R00_DEFAULT:  return ("Success");
 			case R01_DEFAULT:  return ("The service returned an error when processing this request.  Please try again later.");
-			case R02_DEFAULT:  return ("Invalid reckoning ID.  Reckoning ID must be supplied and be 24 characters.");
+			case R02_DEFAULT:  return ("Invalid reckoning/object ID.  Object IDs must be supplied and be 24 characters.");
 			
 			case R100_POST_RECKONING:  return ("No question text in posted Reckoning.");
 			case R101_POST_RECKONING:  return ("No answer text in posted Reckoning.");
@@ -58,6 +62,7 @@ public enum MessageEnum {
 			case R402_POST_COMMENT: return ("No reckoning associated with the provided ID.");
 			
 			case R500_GET_COMMENT: return ("Paged comment queries need both a valid page and size value.");
+			case R501_GET_COMMENT: return ("No comment found with specified ID.");			
 			
 			case R600_POST_VOTE: return ("Attempted to vote for a non-existent reckoning/answer pairing.");	
 			case R601_POST_VOTE: return ("This user has already voted for this reckoning.");
@@ -74,6 +79,14 @@ public enum MessageEnum {
 			case R708_AUTH_USER: return ("Action needs to be specified when changing the permissions for this user account.");
 			case R709_AUTH_USER: return ("User ID needs to be specified when changing this user account.");
 			case R710_AUTH_USER: return ("No user found with the specified ID.");
+			
+			case R800_POST_NOTE: return ("No user ID specified as favoriting/flagging agent.");
+			case R801_POST_NOTE: return ("Specified reckoning does not exist.");
+			case R802_POST_NOTE: return ("Specified comment does not exist.");
+			case R803_POST_NOTE: return ("Specified user does not exist.");		
+			case R804_POST_NOTE: return ("Specified user has already favorited / flagged this reckoning.");
+			
+			case R900_GET_NOTE: return ("Paged flag/favorite queries need both a valid page and size value.");
 			
 			default:  return ("Message not found.");
 		}

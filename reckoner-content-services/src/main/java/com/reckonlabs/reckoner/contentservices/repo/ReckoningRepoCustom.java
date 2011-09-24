@@ -5,6 +5,8 @@ import java.util.List;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
 import com.reckonlabs.reckoner.domain.notes.Comment;
+import com.reckonlabs.reckoner.domain.notes.Favorite;
+import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 
@@ -28,7 +30,18 @@ public interface ReckoningRepoCustom {
 	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	
-	public void insertReckoningVote (Vote vote, Integer answerIndex, String reckoningId) throws DBUpdateException;	
+	public void insertReckoningVote (Vote vote, Integer answerIndex, String reckoningId) throws DBUpdateException;
+	
+	public void insertReckoningFavorite (Favorite favorite, String reckoningId) throws DBUpdateException;
+	
+	public void insertReckoningFlag (Flag flag, String reckoningId) throws DBUpdateException;
+	
+	public void updateComment (Comment comment) throws DBUpdateException;
+	
+	// Waiting for Mongo DB to fix SERVER-831.
+	// public void insertCommentFavorite (Favorite favorite, String commentId) throws DBUpdateException;
+	
+	// public void insertCommentFlag (Flag flag, String commentId) throws DBUpdateException;
 	
 	public boolean confirmReckoningExists (String reckoningId);
 	

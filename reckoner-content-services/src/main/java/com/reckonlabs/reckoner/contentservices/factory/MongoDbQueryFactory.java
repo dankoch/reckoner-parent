@@ -9,6 +9,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Update;
 
 import com.reckonlabs.reckoner.domain.notes.Comment;
+import com.reckonlabs.reckoner.domain.notes.Favorite;
+import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
@@ -24,6 +26,14 @@ public final class MongoDbQueryFactory {
 	
 	public static DBObject buildReckoningIdExistsQuery (String id) {
 		return new BasicDBObject("id", new BasicDBObject ("$exists", new ObjectId(id)));
+	}
+	
+	public static DBObject buildCommentIdQuery (String id) {
+		return new BasicDBObject("comments.commentId", id);
+	}
+	
+	public static DBObject buildCommentIdExistsQuery (String id) {
+		return new BasicDBObject("comments.commentId", new BasicDBObject ("$exists", id));
 	}
 	
 	public static DBObject buildReckoningPostedAfterDateQuery (Date afterDate) {
@@ -96,12 +106,50 @@ public final class MongoDbQueryFactory {
 		return commentInsert;
 	}
 	
+	public static Update buildFavoriteUpdate(Favorite favorite) {
+		Update favoriteInsert = new Update();
+		favoriteInsert.push("favorites", favorite);
+		
+		return favoriteInsert;
+	}
+	
+	public static Update buildFlagUpdate(Flag flag) {
+		Update flagInsert = new Update();
+		flagInsert.push("flags", flag);
+		
+		return flagInsert;
+	}
+	
 	public static Update buildReckoningVoteUpdate(Vote vote, Integer answerIndex) {
 		Update voteInsert = new Update();
 		voteInsert.push("answers." + answerIndex + ".votes", vote).inc("answers." + answerIndex + ".voteTotal", 1);
 		
 		return voteInsert;
 	}
+	
+	public static Update buildCommentUpdate(Comment comment) {
+		Update voteInsert = new Update();
+		voteInsert.set("comments.$", comment);
+		
+		return voteInsert;
+	}
+	
+	/* Awaiting MongoDB to fix SERVER-831 for the 2.1 release.  Multi-tiered conditional positioning statements
+	 * are not currently supported in 1.9.  DO NOT USE THAT FIX IS APPLIED AND WE'VE MIGRATED.
+	 * 
+	public static Update buildCommentFavoriteUpdate(Favorite favorite) {
+		Update voteInsert = new Update();
+		voteInsert.push("comments.$.favorites", favorite);
+		
+		return voteInsert;
+	}
+	
+	public static Update buildCommentUpdate(Flag flag) {
+		Update voteInsert = new Update();
+		voteInsert.push("comments.$.flag", flag);
+		
+		return voteInsert;
+	}*/
 	
 	public static DBObject buildReckoningSummaryFields() {
 		BasicDBObject fields = new BasicDBObject("id", 1);

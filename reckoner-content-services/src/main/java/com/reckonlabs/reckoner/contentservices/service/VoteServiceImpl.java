@@ -132,17 +132,15 @@ public class VoteServiceImpl implements VoteService {
 			if (userVotedReckonings == null) {
 				userVotedReckonings = reckoningRepo.getVotesByUser(userId);
 				for (Reckoning reckoning : userVotedReckonings) {
-					List<Vote> vote = getUserVoteFromReckoning(userId, reckoning);
+					List<Vote> vote = reckoning.getVoteByUser(userId);
 					
 					// Clear out the answer vote lists so they only contain the user's vote.
-					if (vote !=  null) {
-						if (!vote.isEmpty()) {
-							for (Answer answer : reckoning.getAnswers()) {
-								if (answer.getIndex() == vote.get(0).getAnswerIndex()) {
-									answer.setVotes(vote);
-								} else {
-									answer.setVotes(new LinkedList<Vote> ());
-								}
+					if (!vote.isEmpty()) {
+						for (Answer answer : reckoning.getAnswers()) {
+							if (answer.getIndex() == vote.get(0).getAnswerIndex()) {
+								answer.setVotes(vote);
+							} else {
+								answer.setVotes(new LinkedList<Vote> ());
 							}
 						}
 					}
@@ -170,13 +168,10 @@ public class VoteServiceImpl implements VoteService {
 				
 				if (votedReckonings != null) {
 					if (!votedReckonings.isEmpty()) {
-						userReckoningVote = getUserVoteFromReckoning(userId, votedReckonings.get(0));	
+						userReckoningVote = votedReckonings.get(0).getVoteByUser(userId);	
 					}
 				}
-				// Empty array list will be written to cache if no votes turn up.
-				if (userReckoningVote == null) {
-					userReckoningVote = new LinkedList<Vote> ();
-				}
+
 				voteCache.setCachedUserReckoningVote(userReckoningVote, userId, reckoningId);
 			}
 		} catch (Exception e) {
@@ -193,29 +188,6 @@ public class VoteServiceImpl implements VoteService {
 		}
 		
 		return new VoteServiceList(userReckoningVote, new Message(), true);		
-	}
-	
-	// Used to extract a particular user's vote out of a Reckoning object.
-	private static List<Vote> getUserVoteFromReckoning(String userId, Reckoning reckoning) {
-		List<Vote> userReckoningVote = null;
-		boolean search = true;
-		
-		// Assuming one vote per result set, so stop the search once found to save time.
-		for (Answer answer : reckoning.getAnswers()) {
-			if (answer.getVotes() != null) {
-				for (Vote vote : answer.getVotes()) {
-					if (vote.getVoterId().equals(userId)) {
-						userReckoningVote = new LinkedList<Vote> ();
-						userReckoningVote.add(vote);
-						search = false;
-						break;
-					}
-				}
-				if (!search) break;
-			}
-		}	
-		
-		return userReckoningVote;
 	}
 
 	public ReckoningRepo getReckoningRepo() {

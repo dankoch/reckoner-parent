@@ -2,6 +2,7 @@ package com.reckonlabs.reckoner.domain.reckoning;
 
 import java.util.Date;
 import java.util.List;
+import java.util.LinkedList;
 
 import java.io.Serializable;
 import javax.persistence.Column;
@@ -11,15 +12,16 @@ import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
+import com.reckonlabs.reckoner.domain.Notable;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
-import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 @Entity
 @XmlRootElement(name = "reckoning")
-public class Reckoning implements Serializable {
+public class Reckoning extends Notable implements Serializable  {
 
 	private static final long serialVersionUID = 9172808928286702823L;
 
@@ -64,16 +66,8 @@ public class Reckoning implements Serializable {
 	@Column(name="comment_index")
 	private int commentIndex;
 	
-	@Column(name="flags")
-	private List<Flag> flags;
-	@Column(name="favorites")
-	private List<Favorite> favorites;
-	
 	@Column(name="tags")
 	private List<String> tags;
-	
-	@Column(name="highlighted")
-	private boolean highlighted;
 
 	public String getId() {
 		return id;
@@ -220,32 +214,24 @@ public class Reckoning implements Serializable {
 		return comments;
 	}
 
-	public void setCommentIndex(int commentIndex) {
-		this.commentIndex = commentIndex;
-	}
-
 	public void setComments(List<Comment> comments) {
 		this.comments = comments;
 	}
-
-	@XmlElementWrapper(name = "flags")
-	@XmlElement(name = "flag")
-	public List<Flag> getFlags() {
-		return flags;
+	
+	public void addComment(Comment comment) {
+		if (this.comments == null) {
+			this.comments = new LinkedList<Comment>();
+		}
+		this.comments.add(comment);
+		this.commentIndex++;
 	}
-
-	public void setFlags(List<Flag> flags) {
-		this.flags = flags;
+	
+	public void setCommentIndex(int commentIndex) {
+		this.commentIndex = commentIndex;
 	}
-
-	@XmlElementWrapper(name = "favorites")
-	@XmlElement(name = "favorite")
-	public List<Favorite> getFavorites() {
-		return favorites;
-	}
-
-	public void setFavorites(List<Favorite> favorites) {
-		this.favorites = favorites;
+	
+	public int getCommentIndex() {
+		return this.commentIndex;
 	}
 
 	@XmlElementWrapper(name = "tags")
@@ -257,13 +243,75 @@ public class Reckoning implements Serializable {
 	public void setTags(List<String> tags) {
 		this.tags = tags;
 	}
-
-	@XmlElement(name = "highlighted")
-	public boolean isHighlighted() {
-		return highlighted;
+	
+	// Gets the comments in this reckoning with a particular userId.
+	public List<Comment> getCommentsByUser (String userId) {
+		List<Comment> userComments = new LinkedList<Comment>();
+		
+		if (getComments() != null) {
+			for (Comment comment : getComments()) {
+				if (comment.getPosterId().equals(userId)) {
+					userComments.add(comment);
+				}
+			}
+		}
+		
+		return userComments;
+	}
+	
+	// Gets the comments favorited by this user for the particular ID.
+	public List<Comment> getFavoritedCommentsByUser (String userId) {
+		List<Comment> userComments = new LinkedList<Comment>();
+		
+		if (getComments() != null) {
+			for (Comment comment : getComments()) {
+				if (comment.getFavorites() != null) {
+					for (Favorite favorite : comment.getFavorites()) {
+						if (favorite.getUserId().equals(userId)) {
+							userComments.add(comment);
+						}
+					}
+				}
+			}
+		}
+		
+		return userComments;
 	}
 
-	public void setHighlighted(boolean highlighted) {
-		this.highlighted = highlighted;
+	// Gets the comments in this Reckoning with a particular commentId.
+	public List<Comment> getCommentById (String commentId) {
+		if (getComments() != null) {
+			for (Comment comment : getComments()) {
+				if (comment.getCommentId().equals(commentId)) {
+					List<Comment> returnList = new LinkedList<Comment> ();
+					returnList.add(comment);
+					return returnList;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	// Used to extract a particular user's vote out of this Reckoning object.
+	public List<Vote> getVoteByUser(String userId) {
+		List<Vote> userReckoningVote = new LinkedList<Vote> ();
+		boolean search = true;
+		
+		// Assuming one vote per result set, so stop the search once found to save time.
+		for (Answer answer : getAnswers()) {
+			if (answer.getVotes() != null) {
+				for (Vote vote : answer.getVotes()) {
+					if (vote.getVoterId().equals(userId)) {
+						userReckoningVote.add(vote);
+						search = false;
+						break;
+					}
+				}
+				if (!search) break;
+			}
+		}	
+		
+		return userReckoningVote;
 	}
 }

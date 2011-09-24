@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.domain.notes;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlElement;
@@ -14,7 +15,7 @@ public class Flag implements Serializable {
 	@Column (name="user_id")
 	String userId;
 	@Column (name="flag_date")
-	String flagDate;
+	Date flagDate;
 	@Column (name="reason")
 	String reason;
 	
@@ -27,10 +28,10 @@ public class Flag implements Serializable {
 	}
 	
 	@XmlElement (name="flag_date")
-	public String getFlagDate() {
+	public Date getFlagDate() {
 		return flagDate;
 	}
-	public void setFlagDate(String flagDate) {
+	public void setFlagDate(Date flagDate) {
 		this.flagDate = flagDate;
 	}
 	

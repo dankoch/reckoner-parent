@@ -12,7 +12,7 @@ public interface CommentService {
 	
 	public ServiceResponse postReckoningComment (Comment comment, String sessionId, String reckoningId);
 	
-	public CommentServiceList getCommentsByUser (String userId, Integer page, Integer size, String sessionId);
-
-	public ReckoningServiceList getCommentedReckoningsByUser (String userId, Integer page, Integer size, String sessionId);
+	public ReckoningServiceList getComment(String commentId, String sessionId);
+	
+	public ReckoningServiceList getCommentsByUser (String userId, Integer page, Integer size, String sessionId);
 }

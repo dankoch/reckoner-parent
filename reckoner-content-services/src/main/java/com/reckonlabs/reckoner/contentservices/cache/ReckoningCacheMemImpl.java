@@ -24,6 +24,8 @@ public class ReckoningCacheMemImpl implements ReckoningCache {
 	public static final int TAG_RECKONING_SUMMARY_CACHE_LIFESPAN = 1800;	
 	public static final int USER_COMMENTED_RECKONING_CACHE_LIFESPAN = 604800;
 	public static final int USER_VOTED_RECKONING_CACHE_LIFESPAN = 604800;
+	public static final int USER_FAVORITED_RECKONING_CACHE_LIFESPAN = 604800;
+	public static final int USER_FAVORITED_COMMENT_CACHE_LIFESPAN = 604800;
 	
 	public static final String RECKONING_CACHE_PREFIX = "reckoning_";
 	public static final String RECKONING_SUMMARY_CACHE_PREFIX = "reckoning_summary_";
@@ -32,6 +34,8 @@ public class ReckoningCacheMemImpl implements ReckoningCache {
 	public static final String USER_COMMENTED_RECKONING_CACHE_PREFIX = "user_commented_reckoning_";
 	public static final String USER_RECKONING_VOTE_CACHE_PREFIX = "user_reckoning_vote_";
 	public static final String USER_VOTED_RECKONING_CACHE_PREFIX = "user_vote_";
+	public static final String USER_FAVORITED_RECKONING_CACHE_PREFIX = "user_favorited_reckoning_";
+	public static final String USER_FAVORITED_COMMENT_CACHE_PREFIX = "user_favorited_comment_";
 	
 	
 	@Autowired
@@ -148,6 +152,40 @@ public class ReckoningCacheMemImpl implements ReckoningCache {
 	@Override
 	public void removeCachedUserVotedReckonings(String userId) {
 		removeCacheElement(USER_VOTED_RECKONING_CACHE_PREFIX + userId);
+	}
+	
+	@Override
+	public void setCachedUserFavoritedReckonings(List<Reckoning> reckonings,
+			String userId) {
+		setCacheElement(USER_FAVORITED_RECKONING_CACHE_PREFIX + userId, USER_FAVORITED_RECKONING_CACHE_LIFESPAN, reckonings);
+	}
+
+	@Override
+	public List<Reckoning> getCachedUserFavoritedReckonings(String userId) {
+		// TODO Auto-generated method stub
+		return getCacheElement(USER_FAVORITED_RECKONING_CACHE_PREFIX + userId);
+	}
+
+	@Override
+	public void removeCachedUserFavoritedReckonings(String userId) {
+		removeCacheElement(USER_FAVORITED_RECKONING_CACHE_PREFIX + userId);
+	}
+	
+	@Override
+	public void setCachedUserFavoritedReckoningComments(List<Reckoning> commentedReckonings,
+			String userId) {
+		setCacheElement(USER_FAVORITED_COMMENT_CACHE_PREFIX + userId, USER_FAVORITED_COMMENT_CACHE_LIFESPAN, commentedReckonings);
+	}
+
+	@Override
+	public List<Reckoning> getCachedUserFavoritedReckoningComments(String userId) {
+		// TODO Auto-generated method stub
+		return getCacheElement(USER_FAVORITED_COMMENT_CACHE_PREFIX + userId);
+	}
+
+	@Override
+	public void removeCachedUserFavoritedReckoningComments(String userId) {
+		removeCacheElement(USER_FAVORITED_COMMENT_CACHE_PREFIX + userId);
 	}
 	
 	private void setCacheElement(String key, int lifespan, List<Reckoning> value) {

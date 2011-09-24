@@ -154,7 +154,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 		List<Reckoning> reckoning = null;
 		try {
 			reckoning = reckoningCache.getCachedReckoning(id);
-			if (reckoningCache.getCachedReckoning(id) == null) {
+			if (reckoning == null) {
 				reckoning = reckoningRepo.findById(id);
 				reckoningCache.setCachedReckoning(reckoning, id);
 			}

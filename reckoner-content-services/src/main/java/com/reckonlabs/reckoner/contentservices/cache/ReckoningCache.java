@@ -52,4 +52,16 @@ public interface ReckoningCache {
 	public List<Reckoning> getCachedUserVotedReckonings(String userId);
 
 	public void removeCachedUserVotedReckonings(String userId);
+	
+	public void setCachedUserFavoritedReckonings (List<Reckoning> reckonings, String userId);
+
+	public List<Reckoning> getCachedUserFavoritedReckonings(String userId);
+
+	public void removeCachedUserFavoritedReckonings(String userId);	
+	
+	public void setCachedUserFavoritedReckoningComments (List<Reckoning> commentedReckonings, String userId);
+
+	public List<Reckoning> getCachedUserFavoritedReckoningComments(String userId);
+
+	public void removeCachedUserFavoritedReckoningComments(String userId);	
 }

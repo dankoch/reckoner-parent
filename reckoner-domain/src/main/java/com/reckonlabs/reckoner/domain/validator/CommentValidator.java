@@ -20,7 +20,12 @@ public class CommentValidator {
 		return ReckoningValidator.validateReckoningId(reckoningId);
 	}
 	
-	public static Message validateCommentQuery(Integer page, Integer size) {
+	public static Message validateCommentQuery(String commentId) {
+		// Comment IDs and Reckoning IDs have the same criteria, so this is equally valid.
+		return ReckoningValidator.validateReckoningId(commentId);
+	}
+	
+	public static Message validateUserCommentQuery(Integer page, Integer size) {
 		
 		if (page != null ^ size != null) {
 			return (new Message(MessageEnum.R500_GET_COMMENT));

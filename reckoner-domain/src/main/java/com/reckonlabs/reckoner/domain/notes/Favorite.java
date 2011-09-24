@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.domain.notes;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlElement;
@@ -14,7 +15,7 @@ public class Favorite implements Serializable {
 	@Column (name="user_id")
 	String userId;
 	@Column (name="favorite_date")
-	String favoriteDate;
+	Date favoriteDate;
 	
 	@XmlElement (name="user_id")
 	public String getUserId() {
@@ -25,10 +26,10 @@ public class Favorite implements Serializable {
 	}
 	
 	@XmlElement (name="favorite_date")
-	public String getFavoriteDate() {
+	public Date getFavoriteDate() {
 		return favoriteDate;
 	}
-	public void setFavoriteDate(String favoriteDate) {
+	public void setFavoriteDate(Date favoriteDate) {
 		this.favoriteDate = favoriteDate;
 	}
 }

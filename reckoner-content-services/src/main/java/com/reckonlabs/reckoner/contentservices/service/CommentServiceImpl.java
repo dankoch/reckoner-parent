@@ -62,12 +62,12 @@ public class CommentServiceImpl implements CommentService {
 			
 			// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
 			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
-			if (cacheReckoning != null) {
+			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
 				if (cacheReckoning.get(0) != null) {
 					if (cacheReckoning.get(0).getComments() == null) {
 						cacheReckoning.get(0).setComments(new LinkedList<Comment> ());
 					} 
-					cacheReckoning.get(0).getComments().add(comment);
+					cacheReckoning.get(0).addComment(comment);
 				}
 				
 				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
@@ -84,66 +84,58 @@ public class CommentServiceImpl implements CommentService {
 		
 		return new ServiceResponse();
 	}
-	
+
 	@Override
-	public CommentServiceList getCommentsByUser(String userId, Integer page,
-			Integer size, String sessionId) {
-		List<Comment> userComments = null;
+	public ReckoningServiceList getComment(String commentId, String sessionId) {
+		List<Reckoning> commentedReckonings = new LinkedList<Reckoning>();
 		
 		try {
-			// Check the cache to see if the full list of comments made by this user are already available.
-			// If not, pull all the reckonings this user has commented on and create the complete list.
-			// Then cache them for next time.
-			
-			userComments = commentCache.getUserCommentCache(userId);
-			
-			if (userComments == null) {
-				userComments = new LinkedList<Comment> ();
-				List<Reckoning> commentedReckonings = reckoningRepo.getReckoningCommentsCommentedOnByUser(userId);
-				
-				if (commentedReckonings != null) {
-					for (Reckoning reckoning : commentedReckonings) {
-						for (Comment comment : reckoning.getComments()) {
-							if (comment.getPosterId().equals(userId)) {
-								userComments.add(comment);
-							}
-						}
-					}
-				}
-
-				commentCache.setUserCommentCache(userId, userComments);
-			}
-			
-			// Implement pagination.
-			userComments = (List<Comment>) ListPagingUtility.pageList(userComments, page, size);
+		   commentedReckonings = reckoningRepo.getReckoningCommentById(commentId);
+		   if (!commentedReckonings.isEmpty()) {
+			   commentedReckonings.get(0).setComments(commentedReckonings.get(0).getCommentById(commentId));
+		   }
 		} catch (Exception e) {
 		   log.error("General exception when getting comments by user: " + e.getMessage());
-		   log.debug("Stack Trace:", e);			
-		   return new CommentServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
-	    }
-		
-		return new CommentServiceList(userComments, new Message(), true);
-	}
-
-	@Override
-	public ReckoningServiceList getCommentedReckoningsByUser(String userId,
-			Integer page, Integer size, String sessionId) {
-		List<Reckoning> commentedReckonings = null;		
-		
-		try {
-			commentedReckonings = reckoningCache.getCachedUserCommentedReckonings(userId);
-			
-			if (commentedReckonings == null) {
-				commentedReckonings = reckoningRepo.getReckoningSummariesCommentedOnByUser(userId);
-				reckoningCache.setCachedUserCommentedReckonings(commentedReckonings, userId);
-			}
-			commentedReckonings = (List <Reckoning>) ListPagingUtility.pageList(commentedReckonings, page, size);
-		} catch (Exception e) {
-		   log.error("General exception when getting commented reckonings by user: " + e.getMessage());
 		   log.debug("Stack Trace:", e);			
 		   return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 	    }
 		
-		return new ReckoningServiceList(commentedReckonings, new Message(), true);		
+		if (commentedReckonings.isEmpty()) {
+			return new ReckoningServiceList(null, new Message(MessageEnum.R501_GET_COMMENT), false);
+		}
+		return new ReckoningServiceList(commentedReckonings, new Message(MessageEnum.R00_DEFAULT), true);
 	}
+	
+	@Override
+	public ReckoningServiceList getCommentsByUser(String userId, Integer page,
+			Integer size, String sessionId) {
+		List<Reckoning> commentedReckonings = null;	
+		
+		try {
+			// Check the cache to see if the list already exists.  If not, create it and cache.
+			commentedReckonings = reckoningCache.getCachedUserCommentedReckonings(userId);
+			
+			if (commentedReckonings == null) {
+				commentedReckonings = reckoningRepo.getReckoningSummariesCommentedOnByUser(userId);
+				
+				// Remove all of the comments from the reckonings except those made by the specified user.
+				for (Reckoning commentedReckoning : commentedReckonings) {
+					List<Comment> userComments = commentedReckoning.getCommentsByUser(userId);
+					commentedReckoning.setComments(userComments);
+					commentedReckoning.setCommentIndex(userComments.size());
+				}
+				
+				reckoningCache.setCachedUserCommentedReckonings(commentedReckonings, userId);
+			}
+			
+			commentedReckonings = (List <Reckoning>) ListPagingUtility.pageList(commentedReckonings, page, size);
+		} catch (Exception e) {
+		   log.error("General exception when getting comments by user: " + e.getMessage());
+		   log.debug("Stack Trace:", e);			
+		   return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+	    }
+		
+		return new ReckoningServiceList(commentedReckonings, new Message(), true);
+	}
+	
 }

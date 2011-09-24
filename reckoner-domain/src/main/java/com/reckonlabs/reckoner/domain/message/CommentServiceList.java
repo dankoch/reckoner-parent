@@ -32,7 +32,7 @@ public class CommentServiceList extends ServiceResponse implements Serializable 
 	
 	@XmlElementWrapper (name = "comments")
 	@XmlElement (name = "comment")
-	public List<Comment> getcomments() {
+	public List<Comment> getComments() {
 		return comments;
 	}
 

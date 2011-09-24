@@ -16,6 +16,8 @@ import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
+import com.reckonlabs.reckoner.domain.notes.Favorite;
+import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
@@ -134,7 +136,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	public void insertReckoningComment(Comment comment, String reckoningId)
 			throws DBUpdateException {
 		
-		comment.setId(new ObjectId().toString());
+		comment.setCommentId(new ObjectId().toString());
 		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
 				MongoDbQueryFactory.buildReckoningCommentUpdate(comment), RECKONING_COLLECTION);
 		
@@ -150,6 +152,59 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());		
 		
+	}
+	
+	@Override
+	public void insertReckoningFavorite(Favorite favorite, String reckoningId)
+			throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+				MongoDbQueryFactory.buildFavoriteUpdate(favorite), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());		
+	}
+
+	@Override
+	public void insertReckoningFlag(Flag flag, String reckoningId)
+			throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+				MongoDbQueryFactory.buildFlagUpdate(flag), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());	
+	}
+
+	/* Awaiting fix for SERVER-831 in MongoDB 2.1.
+	 * 
+	@Override
+	public void insertCommentFavorite(Favorite favorite, String commentId)
+			throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildCommentIdQuery(commentId)), 
+				MongoDbQueryFactory.buildCommentFavoriteUpdate(favorite), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());	
+		
+	}
+
+	@Override
+	public void insertCommentFlag(Flag flag, String commentId)
+			throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildCommentIdQuery(commentId)), 
+				MongoDbQueryFactory.buildCommentFlagUpdate(flag), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());	
+	} */
+	
+	@Override
+	public void updateComment(Comment comment) 
+			throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildCommentIdQuery(comment.getCommentId())), 
+				MongoDbQueryFactory.buildCommentUpdate(comment), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());			
 	}
 	
 	@Override

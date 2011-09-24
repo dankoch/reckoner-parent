@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.reckonlabs.reckoner.contentservices.service.CommentService;
+import com.reckonlabs.reckoner.domain.message.CommentServiceList;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostComment;
-import com.reckonlabs.reckoner.domain.message.CommentServiceList;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.notes.Comment;
@@ -64,7 +64,7 @@ public class CommentController {
 	}
 	
 	/**
-	 * This method allows for the retrieval of all comments attached to a given piece of content.
+	 * This method allows for the posting of a comment associated with a given reckoning.
 	 * 
 	 * @param id
 	 *           String
@@ -86,7 +86,7 @@ public class CommentController {
 			Message validationMessage = CommentValidator.validateCommentPost(postComment.getComment(), id);
 			
 			if (validationMessage != null) {
-				log.warn("Posted reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.warn("Posted comment failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
 		}
@@ -95,7 +95,34 @@ public class CommentController {
 	}
 	
 	/**
-	 * This method allows for the retrieval of all comments made by a specified user.
+	 * This method allows for the retrieval of a comment with a specific ID.
+	 * 
+	 * @param id
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/comments/id/{id}", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getCommentById(@PathVariable String id,
+			@RequestParam(required = true, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		Message validationMessage = CommentValidator.validateCommentQuery(id);
+		
+		if (validationMessage != null) {
+			log.warn("Retrieve comment request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return commentService.getComment(id, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of all comments made by a specified user (including associated reckoning summaries).
+	 * Paging is by the number of reckonings on which the user has commented.
 	 * 
 	 * @param userId
 	 *           String
@@ -106,48 +133,20 @@ public class CommentController {
 	 */	
 	@RequestMapping(value = "/comments/user/{userId}", method = RequestMethod.GET)	
 	public @ResponseBody
-	CommentServiceList getUserCommentsById(@PathVariable String userId,
+	ReckoningServiceList getUserCommentsById(@PathVariable String userId,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = true, value = "session_id") String reckonerSessionId)
 			throws AuthenticationException, Exception {
 
-		Message validationMessage = CommentValidator.validateCommentQuery (page, size);
+		Message validationMessage = CommentValidator.validateUserCommentQuery (page, size);
 		
 		if (validationMessage != null) {
 			log.warn("Comments by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
-			return new CommentServiceList(null, validationMessage, false);
-		}
-		
-		return commentService.getCommentsByUser (userId, page, size, reckonerSessionId);
-	}
-	
-	/**
-	 * This method allows for the retrieval of all reckonings commented on by a given user (summarized).
-	 * 
-	 * @param userId
-	 *           String
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/comments/user/{userId}/reckonings", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getCommentedReckoningsById(@PathVariable String userId,
-			@RequestParam(required = false, value = "page") Integer page,
-			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "session_id") String reckonerSessionId)
-			throws AuthenticationException, Exception {
-
-		Message validationMessage = CommentValidator.validateCommentQuery (page, size);
-		
-		if (validationMessage != null) {
-			log.warn("Commented reckonings by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return commentService.getCommentedReckoningsByUser (userId, page, size, reckonerSessionId);
+		return commentService.getCommentsByUser(userId, page, size, reckonerSessionId);
 	}
-
+	
 }

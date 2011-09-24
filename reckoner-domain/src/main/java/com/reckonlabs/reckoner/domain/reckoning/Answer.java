@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.domain.reckoning;
 
 import java.util.List;
+import java.util.LinkedList;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
@@ -69,6 +70,14 @@ public class Answer implements Serializable {
 
 	public void setVotes(List<Vote> votes) {
 		this.votes = votes;
+	}
+	
+	public void addVote(Vote vote) {
+		if (this.votes == null) {
+			this.votes = new LinkedList<Vote> ();
+		}
+		this.votes.add(vote);
+		incrementVoteTotal();
 	}
 	
 	public void incrementVoteTotal() {
