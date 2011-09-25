@@ -30,9 +30,12 @@ public enum GroupEnum {
 		
 		switch (group) {
 			case ANONYMOUS:
+				permissions.add(PermissionEnum.VIEW_LIST);
+				permissions.add(PermissionEnum.VIEW_RECKONING);
 				permissions.add(PermissionEnum.VOTE);
 				break;
 			case USER:
+				permissions.add(PermissionEnum.POST_RECKONING);
 				permissions.add(PermissionEnum.VOTE);
 				permissions.add(PermissionEnum.COMMENT);
 				permissions.add(PermissionEnum.FLAG);
@@ -44,6 +47,8 @@ public enum GroupEnum {
 				permissions.add(PermissionEnum.APPROVAL);
 				permissions.add(PermissionEnum.BLOG_POST);
 				permissions.add(PermissionEnum.HIGHLIGHT);
+				permissions.add(PermissionEnum.UPDATE_ALL_RECKONINGS);
+				permissions.add(PermissionEnum.VIEW_ALL_PROFILES);
 				break;
 			case SUPER_ADMIN:
 				permissions.addAll(getPermissions(GroupEnum.ADMIN));

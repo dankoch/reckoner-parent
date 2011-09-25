@@ -5,8 +5,21 @@ import java.util.List;
 
 public enum PermissionEnum {
 
-	VOTE("vote"), COMMENT("comment"), FLAG("flag"), FAVORITE("favorite"), VIEW_PROFILE("view_profile"), APPROVAL("approval"),
-	BLOG_POST("blog_post"), HIGHLIGHT("highlight"), UPDATE_PERMS("update_perms");
+	VIEW_RECKONING("view_reckoning"),
+	VIEW_LIST("view_list"),
+	POST_RECKONING("post_reckoning"), 
+	UPDATE_RECKONING("update_reckoning"), 
+	UPDATE_ALL_RECKONINGS("update_all_reckonings"),
+	VOTE("vote"), 
+	COMMENT("comment"), 
+	FLAG("flag"), 
+	FAVORITE("favorite"), 
+	VIEW_PROFILE("view_profile"), 
+	VIEW_ALL_PROFILES("view_all_profiles"), 
+	APPROVAL("approval"), 
+	BLOG_POST("blog_post"), 
+	HIGHLIGHT("highlight"), 
+	UPDATE_PERMS("update_perms");
 	
 	private final String code;
 	

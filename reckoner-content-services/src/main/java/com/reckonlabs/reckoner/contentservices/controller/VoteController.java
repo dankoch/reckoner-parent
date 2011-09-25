@@ -4,13 +4,14 @@ import java.lang.Boolean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,13 +25,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.reckonlabs.reckoner.contentservices.service.VoteService;
+import com.reckonlabs.reckoner.contentservices.service.UserService;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostVote;
-import com.reckonlabs.reckoner.domain.message.CommentServiceList;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
+import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
 import com.reckonlabs.reckoner.domain.validator.VoteValidator;
@@ -51,6 +54,12 @@ public class VoteController {
 	
 	@Autowired
 	VoteService voteService;
+	
+	@Autowired
+	UserService userService;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(VoteController.class);
@@ -79,14 +88,16 @@ public class VoteController {
 			@RequestBody PostVote postVote)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(postVote.getSessionId())) {
-			log.warn("Null user session id received for postVoting.");
-			throw new AuthenticationException();
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postVote.getSessionId(), PermissionEnum.VOTE)) {
+			log.info("User with insufficient privileges attempted to vote: ");
+			log.info("Session ID: " + postVote.getSessionId());
+			throw new AuthenticationException();			
 		} else {
 			Message validationMessage = VoteValidator.validateVotePost(postVote.getVote(), id, answer);
 			
 			if (validationMessage != null) {
-				log.warn("Posted vote failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.info("Posted vote failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
 		}
@@ -111,13 +122,20 @@ public class VoteController {
 	public @ResponseBody
 	ServiceResponse getUserReckoningVote(@PathVariable String id,
 			@PathVariable String reckoningId,
-			@RequestParam(required = true, value = "session_id") String sessionId)
+			@RequestParam(required = false, value = "session_id") String sessionId)
 			throws AuthenticationException, Exception {
 
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to get a user's vote: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
 		Message validationMessage = ReckoningValidator.validateReckoningId(reckoningId);
 		
 		if (validationMessage != null) {
-			log.warn("Rejection request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Rejection request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}	
 
@@ -140,6 +158,13 @@ public class VoteController {
 			@RequestParam(required = true, value = "session_id") String sessionId)
 			throws AuthenticationException, Exception {
 
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to get a user's votes: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
 		return voteService.getUserVotedReckonings(id);
 	}
 

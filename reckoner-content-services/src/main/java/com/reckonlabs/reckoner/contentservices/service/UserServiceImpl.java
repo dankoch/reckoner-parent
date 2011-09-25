@@ -262,13 +262,15 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public boolean hasPermission(String sessionId, PermissionEnum perm) {
-		UserServiceResponse userResponse = getUserBySessionId(sessionId);
-		
-		if (userResponse.getUser() != null) {
-			return userResponse.getUser().hasPermission(perm);
+		if (sessionId != null) {
+			UserServiceResponse userResponse = getUserBySessionId(sessionId);
+			
+			if (userResponse.getUser() != null) {
+				return userResponse.getUser().hasPermission(perm);
+			}
 		}
 		
-		return false;
+		return GroupEnum.getPermissions(GroupEnum.ANONYMOUS).contains(perm);
 	}
 	
 	// This method is responsible for controlling how an existing user gets updated

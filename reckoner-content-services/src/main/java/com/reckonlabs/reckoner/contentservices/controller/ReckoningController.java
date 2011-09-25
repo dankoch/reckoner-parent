@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.reckonlabs.reckoner.contentservices.service.ReckoningService;
+import com.reckonlabs.reckoner.contentservices.service.UserService;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostReckoning;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
@@ -34,6 +36,7 @@ import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
+import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 
 /**
@@ -52,6 +55,12 @@ public class ReckoningController {
 	
 	@Autowired
 	ReckoningService reckoningService;
+	
+	@Autowired
+	UserService userService;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(ReckoningController.class);
@@ -77,14 +86,16 @@ public class ReckoningController {
 			throws AuthenticationException, Exception {
 
 		// Validate the input.
-		if (!StringUtils.hasLength(postReckoning.getSessionId())) {
-			log.warn("Null user session id received for postReckoning.");
-			throw new AuthenticationException();
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postReckoning.getSessionId(), PermissionEnum.POST_RECKONING)) {
+			log.info("User with insufficient privileges attempted to post a reckoning: ");
+			log.info("Session ID: " + postReckoning.getSessionId());
+			throw new AuthenticationException();			
 		} else {
 			Message validationMessage = ReckoningValidator.validateReckoningPost(postReckoning.getReckoning());
 			
 			if (validationMessage != null) {
-				log.warn("Posted reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.info("Posted reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
 		}
@@ -107,14 +118,16 @@ public class ReckoningController {
 	ServiceResponse updateReckoning(@RequestBody PostReckoning updateReckoning)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(updateReckoning.getSessionId())) {
-			log.warn("Null user session id received for updateReckoning.");
-			throw new AuthenticationException();
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(updateReckoning.getSessionId(), PermissionEnum.UPDATE_ALL_RECKONINGS)) {
+			log.info("User with insufficient privileges attempted to approve a reckoning: ");
+			log.info("Session ID: " + updateReckoning.getSessionId() + " Reckoning " + updateReckoning.getReckoning().getId());
+			throw new AuthenticationException();			
 		} else {
 			Message validationMessage = ReckoningValidator.validateReckoningPost(updateReckoning.getReckoning());
 			
 			if (validationMessage != null) {
-				log.warn("Updated reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.info("Updated reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
 		}
@@ -136,12 +149,20 @@ public class ReckoningController {
 	public @ResponseBody
 	ServiceResponse approveReckoningById(
 			@PathVariable String id,		
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
 
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to approve a reckoning: ");
+			log.info("Session ID: " + sessionId + " Reckoning " + id);
+			throw new AuthenticationException();			
+		}
+		
 		Message validationMessage = ReckoningValidator.validateReckoningId(id);
 		
 		if (validationMessage != null) {
-			log.warn("Approval request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Approval request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}		
 		
@@ -162,12 +183,20 @@ public class ReckoningController {
 	public @ResponseBody
 	ServiceResponse rejectReckoningById(
 			@PathVariable String id,		
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to reject a reckoning: ");
+			log.info("Session ID: " + sessionId + " Reckoning " + id);
+			throw new AuthenticationException();			
+		}
 		
 		Message validationMessage = ReckoningValidator.validateReckoningId(id);
 		
 		if (validationMessage != null) {
-			log.warn("Rejection request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Rejection request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}	
 
@@ -188,7 +217,15 @@ public class ReckoningController {
 	public @ResponseBody
 	ReckoningServiceList getReckoningById(
 			@PathVariable String id,		
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view a reckoning: ");
+			log.info("Session ID: " + sessionId + " Reckoning " + id);
+			throw new AuthenticationException();			
+		}
 		
 		return reckoningService.getReckoning(id, sessionId);
 	}
@@ -215,12 +252,19 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = false, value = "latest_first") Boolean latestFirst,			
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to view approval queue: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		}
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
 		if (validationMessage != null) {
-			log.warn("Approval queue request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Approval queue request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
@@ -245,12 +289,20 @@ public class ReckoningController {
 			@PathVariable String submitterId,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to retrieve profile information: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		}		
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
 		if (validationMessage != null) {
-			log.warn("Open reckoning by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Open reckoning by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}	
 		
@@ -270,7 +322,15 @@ public class ReckoningController {
 	@RequestMapping(value = "/reckoning/highlighted", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getHighlightedReckonings(
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view highlighted reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		}
 		
 		return reckoningService.getHighlightedReckonings(null, sessionId);
 	}
@@ -288,7 +348,15 @@ public class ReckoningController {
 	@RequestMapping(value = "/reckoning/highlighted/open", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getHighlightedOpenReckoning(
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view highlighted reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		}
 		
 		return reckoningService.getHighlightedReckonings(true, sessionId);
 	}
@@ -306,7 +374,15 @@ public class ReckoningController {
 	@RequestMapping(value = "/reckoning/highlighted/closed", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getHighlightedClosedReckoning(
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view highlighted reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();
+		}
 		
 		return reckoningService.getHighlightedReckonings(false, sessionId);
 	}
@@ -342,12 +418,20 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "posted_before") Date postedBefore,
 			@RequestParam(required = false, value = "closed_after") Date closedAfter,
 			@RequestParam(required = false, value = "closed_before") Date closedBefore,
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
-		
+	
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view a list of reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();
+		}	
+	
 		if (validationMessage != null) {
-			log.warn("Reckoning query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Reckoning query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
@@ -373,12 +457,20 @@ public class ReckoningController {
 			@PathVariable String tag,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "session_id") String sessionId) {
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view a list of reckonings by tag: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();
+		}	
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery (page, size);
 		
 		if (validationMessage != null) {
-			log.warn("Reckoning tag query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Reckoning tag query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.reckonlabs.reckoner.contentservices.service.UserService;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostOAuthUser;
 import com.reckonlabs.reckoner.domain.message.PostPermission;
@@ -55,6 +56,9 @@ public class UserController {
 	
 	@Autowired
 	UserService userService;
+
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(UserController.class);
@@ -83,13 +87,13 @@ public class UserController {
 
 		// Validate the input.
 		if (!StringUtils.hasLength(postOAuthUser.getUserToken())) {
-			log.warn("Null user session id received for postReckoning.");
+			log.info("Null OAUTH user token provided to authenticate user.");
 			throw new AuthenticationException();
 		} else {
 			Message validationMessage = UserValidator.validateOAuthUserPost(postOAuthUser);
 			
 			if (validationMessage != null) {
-				log.warn("Posted authentication failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.info("Posted authentication failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				UserServiceResponse response = new UserServiceResponse();
 				response.setMessage(validationMessage);
 				response.setSuccess(false);
@@ -155,7 +159,15 @@ public class UserController {
 	public @ResponseBody
 	UserServiceResponse getUserInformation(
 			@PathVariable String userId,
-			@RequestParam(required = true, value = "session_id") String sessionId) {	
+			@RequestParam(required = true, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to get a user's info from their sessionID: ");
+			log.info("Session ID: " + sessionId + " User ID: " + userId);
+			throw new AuthenticationException();			
+		}
 		
 		return userService.getUserByUserId(userId);
 	}
@@ -178,20 +190,17 @@ public class UserController {
 			throws AuthenticationException, Exception {	
 		
 		// Validate the input and necessary permissions.
-		if (!StringUtils.hasLength(postPermission.getSessionId())) {
-			log.warn("Null user session id received for postReckoning.");
-			throw new AuthenticationException();
-		} else if (!userService.hasPermission(postPermission.getSessionId(),
-				PermissionEnum.UPDATE_PERMS)) {
-			log.warn("User with insufficient privileges attempted to change permmissions: ");
-			log.warn("Session ID: " + postPermission.getSessionId() + " User ID: " + postPermission.getUserId());
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postPermission.getSessionId(), PermissionEnum.UPDATE_PERMS)) {
+			log.info("User with insufficient privileges attempted to change permmissions: ");
+			log.info("Session ID: " + postPermission.getSessionId() + " User ID: " + postPermission.getUserId());
 			throw new AuthenticationException();			
 		}
 		else {
 			Message validationMessage = UserValidator.validatePermissionPost(postPermission);
 			
 			if (validationMessage != null) {
-				log.warn("Posted authentication failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.info("Posted authentication failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				UserServiceResponse response = new UserServiceResponse();
 				response.setMessage(validationMessage);
 				response.setSuccess(false);

@@ -12,13 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,15 +23,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.reckonlabs.reckoner.contentservices.service.ListService;
-import com.reckonlabs.reckoner.domain.message.Message;
+import com.reckonlabs.reckoner.contentservices.service.UserService;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.DataServiceList;
-import com.reckonlabs.reckoner.domain.message.ServiceResponse;
-import com.reckonlabs.reckoner.domain.message.UserServiceResponse;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
-import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
-import com.reckonlabs.reckoner.domain.validator.UserValidator;
 import com.reckonlabs.reckoner.domain.user.PermissionEnum;
-import com.reckonlabs.reckoner.domain.user.ProviderEnum;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 
 /**
@@ -54,6 +47,12 @@ public class ListController {
 	@Autowired
 	ListService listService;
 	
+	@Autowired
+	UserService userService;
+	
+	@Resource
+	ServiceProps serviceProps;
+	
 	private static final Logger log = LoggerFactory
 			.getLogger(ListController.class);
 	
@@ -67,7 +66,17 @@ public class ListController {
 	 */
 	@RequestMapping(value = "/list/user/groups", method = RequestMethod.GET)
 	public @ResponseBody
-	DataServiceList getGroups() {	
+	DataServiceList<String> getGroups(
+			@RequestParam(required = false, value = "session_id") String sessionId)
+					throws AuthenticationException {	
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_LIST)) {
+			log.info("User with insufficient privileges attempted to view the groups list: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
 		return listService.getValidGroups();
 	}
 	
@@ -76,7 +85,17 @@ public class ListController {
 	 */
 	@RequestMapping(value = "/list/user/permissions", method = RequestMethod.GET)
 	public @ResponseBody
-	DataServiceList getPermissions() {	
+	DataServiceList<String> getPermissions(
+			@RequestParam(required = false, value = "session_id") String sessionId)
+					throws AuthenticationException {	
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_LIST)) {
+			log.info("User with insufficient privileges attempted to view the permissions list: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 	
+		
 		return listService.getValidPermissions();
 	}
 	
@@ -85,7 +104,16 @@ public class ListController {
 	 */
 	@RequestMapping(value = "/list/user/providers", method = RequestMethod.GET)
 	public @ResponseBody
-	DataServiceList getProviders() {	
+	DataServiceList<String> getProviders(
+			@RequestParam(required = false, value = "session_id") String sessionId)
+					throws AuthenticationException {	
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_LIST)) {
+			log.info("User with insufficient privileges attempted to view the providers list: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
 		return listService.getValidProviders();
 	}
 }

@@ -4,6 +4,8 @@ import java.lang.Boolean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.reckonlabs.reckoner.contentservices.service.NotesService;
+import com.reckonlabs.reckoner.contentservices.service.UserService;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostFavorite;
 import com.reckonlabs.reckoner.domain.message.PostFlag;
@@ -32,6 +36,7 @@ import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
+import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 import com.reckonlabs.reckoner.domain.validator.CommentValidator;
 import com.reckonlabs.reckoner.domain.validator.NotesValidator;
@@ -52,6 +57,12 @@ public class NotesController {
 	
 	@Autowired
 	NotesService notesService;
+	
+	@Autowired
+	UserService userService;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(NotesController.class);
@@ -79,15 +90,17 @@ public class NotesController {
 	ServiceResponse postReckoningFavorite(@PathVariable String id,
 			@RequestBody PostFavorite postFavorite)
 			throws AuthenticationException, Exception {
-
-		if (!StringUtils.hasLength(postFavorite.getSessionId())) {
-			log.warn("Null user session id received for postReckoningFavorite.");
-			throw new AuthenticationException();
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFavorite.getSessionId(), PermissionEnum.FAVORITE)) {
+			log.info("User with insufficient privileges attempted to favorite a reckoning: ");
+			log.info("Session ID: " + postFavorite.getSessionId());
+			throw new AuthenticationException();			
 		} else {
 			Message validationMessage = NotesValidator.validateFavoritePost(postFavorite.getFavorite(), id);
 			
 			if (validationMessage != null) {
-				log.warn("Posted reckoning favorite failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.info("Posted reckoning favorite failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
 		}
@@ -111,14 +124,16 @@ public class NotesController {
 			@RequestBody PostFlag postFlag)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(postFlag.getSessionId())) {
-			log.warn("Null user session id received for postReckoningFlag.");
-			throw new AuthenticationException();
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFlag.getSessionId(), PermissionEnum.FLAG)) {
+			log.info("User with insufficient privileges attempted to flag a reckoning: ");
+			log.info("Session ID: " + postFlag.getSessionId());
+			throw new AuthenticationException();			
 		} else {
 			Message validationMessage = NotesValidator.validateFlagPost(postFlag.getFlag(), id);
 			
 			if (validationMessage != null) {
-				log.warn("Posted reckoning flag failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				log.info("Posted reckoning flag failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
 		}
@@ -142,14 +157,16 @@ public class NotesController {
 			@RequestBody PostFavorite postFavorite)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(postFavorite.getSessionId())) {
-			log.warn("Null user session id received for postReckoningCommentFavorite.");
-			throw new AuthenticationException();
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFavorite.getSessionId(), PermissionEnum.FAVORITE)) {
+			log.info("User with insufficient privileges attempted to favorite a reckoning comment: ");
+			log.info("Session ID: " + postFavorite.getSessionId());
+			throw new AuthenticationException();			
 		} else {
 			Message validationMessage = NotesValidator.validateFavoritePost(postFavorite.getFavorite(), id);
 			
 			if (validationMessage != null) {
-				log.warn("Posted reckoning comment favorite failed validation: " + validationMessage.getCode() 
+				log.info("Posted reckoning comment favorite failed validation: " + validationMessage.getCode() 
 						+ ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
@@ -175,14 +192,16 @@ public class NotesController {
 			@RequestBody PostFlag postFlag)
 			throws AuthenticationException, Exception {
 
-		if (!StringUtils.hasLength(postFlag.getSessionId())) {
-			log.warn("Null user session id received for postReckoningCommentFlag.");
-			throw new AuthenticationException();
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFlag.getSessionId(), PermissionEnum.FLAG)) {
+			log.info("User with insufficient privileges attempted to flag a reckoning comment: ");
+			log.info("Session ID: " + postFlag.getSessionId());
+			throw new AuthenticationException();			
 		} else {
 			Message validationMessage = NotesValidator.validateFlagPost(postFlag.getFlag(), id);
 			
 			if (validationMessage != null) {
-				log.warn("Posted reckoning comment flag failed validation: " + validationMessage.getCode() 
+				log.info("Posted reckoning comment flag failed validation: " + validationMessage.getCode() 
 						+ ": " + validationMessage.getMessageText());
 				return new ServiceResponse(validationMessage, false);
 			}
@@ -207,13 +226,20 @@ public class NotesController {
 	ReckoningServiceList getFavoritedReckoningsByUserId(@PathVariable String userId,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "session_id") String sessionId)
+			@RequestParam(required = false, value = "session_id") String sessionId)
 			throws AuthenticationException, Exception {
 
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to retrieve a user's favorite reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
 		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
 		
 		if (validationMessage != null) {
-			log.warn("Favorited reckonings by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Favorited reckonings by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
@@ -236,13 +262,20 @@ public class NotesController {
 	ReckoningServiceList getFavoritedReckoningCommentsByUserId(@PathVariable String userId,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = true, value = "session_id") String sessionId)
+			@RequestParam(required = false, value = "session_id") String sessionId)
 			throws AuthenticationException, Exception {
 
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to retrieve a user's favorite reckoning comments: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
 		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
 		
 		if (validationMessage != null) {
-			log.warn("Favorited reckonings by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			log.info("Favorited reckonings by user request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		

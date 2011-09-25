@@ -4,9 +4,9 @@ import com.reckonlabs.reckoner.domain.message.DataServiceList;
 
 public interface ListService {
 	
-	public DataServiceList getValidGroups();
+	public DataServiceList<String> getValidGroups();
 	
-	public DataServiceList getValidPermissions();
+	public DataServiceList<String> getValidPermissions();
 	
-	public DataServiceList getValidProviders();
+	public DataServiceList<String> getValidProviders();
 }

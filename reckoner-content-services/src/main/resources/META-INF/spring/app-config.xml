@@ -84,4 +84,8 @@
         <property name="clientId" value="${reckoner.contentservices.google.clientid}" />
         <property name="clientSecret" value="${reckoner.contentservices.google.clientsecret}" />
     </bean>
+    
+    <bean id="serviceProps" class="com.reckonlabs.reckoner.contentservices.utility.ServiceProps">
+        <property name="enableServiceAuthentication" value="${reckoner.contentservices.authentication.enable}" />
+    </bean>
 </beans>
