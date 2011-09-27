@@ -120,9 +120,9 @@ public final class MongoDbQueryFactory {
 		return flagInsert;
 	}
 	
-	public static Update buildReckoningVoteUpdate(Vote vote, Integer answerIndex) {
+	public static Update buildReckoningVoteUpdate(String voterId, Integer answerIndex) {
 		Update voteInsert = new Update();
-		voteInsert.push("answers." + answerIndex + ".votes", vote).inc("answers." + answerIndex + ".voteTotal", 1);
+		voteInsert.push("answers." + answerIndex + ".votes." + voterId, true).inc("answers." + answerIndex + ".voteTotal", 1);
 		
 		return voteInsert;
 	}
@@ -153,10 +153,10 @@ public final class MongoDbQueryFactory {
 	
 	public static DBObject buildReckoningSummaryFields() {
 		BasicDBObject fields = new BasicDBObject("id", 1);
-		fields.append("question", 1);
-		fields.append("postingDate", 1);
-		fields.append("closingDate", 1);
-		fields.append("submitterId", 1);
+		fields.append("answers.votes", 0);
+		fields.append("comments", 0);
+		fields.append("favorites", 0);
+		fields.append("flags", 0);
 		
 		return fields;
 	}

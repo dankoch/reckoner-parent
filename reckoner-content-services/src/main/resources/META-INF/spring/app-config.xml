@@ -87,5 +87,6 @@
     
     <bean id="serviceProps" class="com.reckonlabs.reckoner.contentservices.utility.ServiceProps">
         <property name="enableServiceAuthentication" value="${reckoner.contentservices.authentication.enable}" />
+        <property name="votePersistenceSize" value="${reckoner.contentservices.db.votecollectionsize}" />
     </bean>
 </beans>

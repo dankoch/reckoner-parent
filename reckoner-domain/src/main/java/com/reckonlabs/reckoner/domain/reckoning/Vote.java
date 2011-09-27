@@ -12,8 +12,12 @@ public class Vote implements Serializable {
 
 	private static final long serialVersionUID = 43147529695578005L;
 	
+	@Column
+	private String id;
 	@Column (name = "voter_id")
 	private String voterId;
+	@Column (name = "reckoning_id")
+	private String reckoningId;
 	@Column (name = "answer_index")
 	private int answerIndex;
 	@Column (name = "voting_date")
@@ -24,18 +28,24 @@ public class Vote implements Serializable {
 	private String ip;
 	@Column (name = "user_agent")
 	private String userAgent;
-	@Column (name = "latitude")
-	private String latitude;
-	@Column (name = "longitude")
-	private String longitude;	
 	
 	public Vote() {
 		
 	}
 	
-	public Vote (String voterId, Date date) {
-		setVotingDate(date);
+	public Vote (String voterId, String reckoningId, int index) {
+		setReckoningId(reckoningId);
+		setAnswerIndex(index);
 		setVoterId(voterId);
+	}
+	
+	@XmlElement(name = "id")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	@XmlElement(name = "voter_id")
@@ -46,6 +56,16 @@ public class Vote implements Serializable {
 	public void setVoterId(String voterId) {
 		this.voterId = voterId;
 	}
+	
+	@XmlElement(name = "reckoning_id")	
+	public String getReckoningId() {
+		return reckoningId;
+	}
+
+	public void setReckoningId(String reckoningId) {
+		this.reckoningId = reckoningId;
+	}
+
 	@XmlElement(name = "answer_index")
 	public int getAnswerIndex() {
 		return answerIndex;
@@ -86,21 +106,5 @@ public class Vote implements Serializable {
 
 	public void setUserAgent(String userAgent) {
 		this.userAgent = userAgent;
-	}
-	@XmlElement(name = "latitude")
-	public String getLatitude() {
-		return latitude;
-	}
-
-	public void setLatitude(String latitude) {
-		this.latitude = latitude;
-	}
-	@XmlElement(name = "longitude")
-	public String getLongitude() {
-		return longitude;
-	}
-
-	public void setLongitude(String longitude) {
-		this.longitude = longitude;
 	}
 }

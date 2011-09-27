@@ -66,6 +66,11 @@ public class Reckoning extends Notable implements Serializable  {
 	@Column(name="comment_index")
 	private int commentIndex;
 	
+	@Column(name="commentary")
+	private String commentary;
+	@Column(name="commentary_user_id")
+	private String commentaryUserId;
+	
 	@Column(name="tags")
 	private List<String> tags;
 
@@ -186,7 +191,7 @@ public class Reckoning extends Notable implements Serializable  {
 		return postingDate;
 	}
 
-	public void setpostingDate(Date postingDate) {
+	public void setPostingDate(Date postingDate) {
 		this.postingDate = postingDate;
 	}
 
@@ -244,6 +249,24 @@ public class Reckoning extends Notable implements Serializable  {
 		this.tags = tags;
 	}
 	
+	@XmlElement(name = "commentary")
+	public String getCommentary() {
+		return commentary;
+	}
+
+	public void setCommentary(String commentary) {
+		this.commentary = commentary;
+	}
+
+	@XmlElement(name = "commentary_user_id")
+	public String getCommentaryUserId() {
+		return commentaryUserId;
+	}
+
+	public void setCommentaryUserId(String commentaryUserId) {
+		this.commentaryUserId = commentaryUserId;
+	}
+
 	// Gets the comments in this reckoning with a particular userId.
 	public List<Comment> getCommentsByUser (String userId) {
 		List<Comment> userComments = new LinkedList<Comment>();
@@ -296,19 +319,13 @@ public class Reckoning extends Notable implements Serializable  {
 	// Used to extract a particular user's vote out of this Reckoning object.
 	public List<Vote> getVoteByUser(String userId) {
 		List<Vote> userReckoningVote = new LinkedList<Vote> ();
-		boolean search = true;
 		
 		// Assuming one vote per result set, so stop the search once found to save time.
 		for (Answer answer : getAnswers()) {
 			if (answer.getVotes() != null) {
-				for (Vote vote : answer.getVotes()) {
-					if (vote.getVoterId().equals(userId)) {
-						userReckoningVote.add(vote);
-						search = false;
-						break;
-					}
+				if (answer.getVotes().containsKey(userId)) {
+					userReckoningVote.add(new Vote(userId, this.id, answer.getIndex()));
 				}
-				if (!search) break;
 			}
 		}	
 		

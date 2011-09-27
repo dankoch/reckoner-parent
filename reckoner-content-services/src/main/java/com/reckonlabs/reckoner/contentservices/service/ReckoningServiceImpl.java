@@ -39,6 +39,9 @@ public class ReckoningServiceImpl implements ReckoningService {
 	@Autowired
 	ReckoningCache reckoningCache;
 	
+	@Autowired
+	UserService userService;
+	
 	private static final Logger log = LoggerFactory
 			.getLogger(ReckoningServiceImpl.class);
 	
@@ -58,7 +61,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			reckoning.setApproved(false);
 			reckoning.setRejected(false);
 			reckoning.setSubmissionDate(DateUtility.now());
-			reckoning.setpostingDate(null);
+			reckoning.setPostingDate(null);
 			reckoning.setClosingDate(null);
 			reckoning.setHighlighted(false);
 			reckoning.setFlags(null);
@@ -101,7 +104,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			List<Reckoning> approvedReckoning = reckoningRepo.findById(id);
 			
 			if (approvedReckoning != null && approvedReckoning.size() > 0) {
-				reckoningRepoCustom.approveReckoning(id, "THX1138", DateUtility.now(), 
+				reckoningRepoCustom.approveReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId(), DateUtility.now(), 
 						new Date(DateUtility.now().getTime() + approvedReckoning.get(0).getInterval()));
 			} else {
 				log.info("Request to approve non-existent reckoning: " + id);
@@ -129,7 +132,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			List<Reckoning> rejectedReckoning = reckoningRepo.findById(id);
 			
 			if (rejectedReckoning != null && rejectedReckoning.size() > 0) {
-				reckoningRepoCustom.rejectReckoning(id, "THX1138");
+				reckoningRepoCustom.rejectReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId());
 			} else {
 				log.info("Request to reject non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					

@@ -30,7 +30,7 @@ public interface ReckoningRepoCustom {
 	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	
-	public void insertReckoningVote (Vote vote, Integer answerIndex, String reckoningId) throws DBUpdateException;
+	public void insertReckoningVote (String voterId, Integer answerIndex, String reckoningId) throws DBUpdateException;
 	
 	public void insertReckoningFavorite (Favorite favorite, String reckoningId) throws DBUpdateException;
 	

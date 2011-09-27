@@ -144,11 +144,11 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	}
 	
 	@Override
-	public void insertReckoningVote(Vote vote, Integer answerIndex,
+	public void insertReckoningVote(String voterId, Integer answerIndex,
 			String reckoningId) throws DBUpdateException {
 		
 		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
-				MongoDbQueryFactory.buildReckoningVoteUpdate(vote, answerIndex), RECKONING_COLLECTION);
+				MongoDbQueryFactory.buildReckoningVoteUpdate(voterId, answerIndex), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());		
 		

@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.contentservices.service;
 
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +16,8 @@ import com.reckonlabs.reckoner.contentservices.cache.VoteCache;
 import com.reckonlabs.reckoner.contentservices.cache.ReckoningCache;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
+import com.reckonlabs.reckoner.contentservices.repo.VoteRepo;
+import com.reckonlabs.reckoner.contentservices.repo.VoteRepoCustom;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
@@ -34,9 +37,13 @@ public class VoteServiceImpl implements VoteService {
 	
 	@Autowired
 	ReckoningRepo reckoningRepo;
-	
 	@Autowired
 	ReckoningRepoCustom reckoningRepoCustom;
+	
+	@Autowired
+	VoteRepo voteRepo;
+	@Autowired
+	VoteRepoCustom voteRepoCustom;
 	
 	@Autowired
 	VoteCache voteCache;
@@ -46,8 +53,6 @@ public class VoteServiceImpl implements VoteService {
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(VoteServiceImpl.class);
-	
-	private static final int ANONYMOUS_VOTE_CHECK_NUMBER = 50;
 
 	@Override
 	public ServiceResponse postReckoningVote(Vote vote, String reckoningId, Integer answerIndex) {
@@ -69,28 +74,21 @@ public class VoteServiceImpl implements VoteService {
 			
 			// If the user isn't logged in, let's check the IP/User-Agent combo to see if they're pulling a fast one.
 			if (vote.isAnonymous()) {
-				List<Reckoning> reckonings = reckoningRepo.getReckoningVotesByReckoningId(reckoningId);
-				for (Reckoning reckoning : reckonings) {
-					for (Answer answer : reckoning.getAnswers()) {
-						int checked = 0;
-						if (answer.getVotes() != null) {
-							for (Vote reckonVote : answer.getVotes()) {
-								if (reckonVote.isAnonymous()) {
-									if (reckonVote.getIp().equalsIgnoreCase(vote.getIp()) && 
-											reckonVote.getUserAgent().equalsIgnoreCase(vote.getUserAgent())) {
-										// Got a recent IP / User Agent match.  Reject the vote.
-										return (new ServiceResponse(new Message(MessageEnum.R602_POST_VOTE), false));
-									}							
-									checked++;
-								}
-								if (checked > ANONYMOUS_VOTE_CHECK_NUMBER) {break;}
-							}
-						}
-					}
+				List<Vote> previousVote = voteRepo.findByReckoningIdAndIpAndUserAgent(reckoningId, 
+						vote.getIp(), vote.getUserAgent());
+				
+				if (!previousVote.isEmpty()) {
+					// Got a recent IP / User Agent match.  Reject the vote.
+					return (new ServiceResponse(new Message(MessageEnum.R602_POST_VOTE), false));					
 				}
 			}
+			
+			// Update both the Reckoning and the Vote collections with the new vote.  The Reckoning is the authoritative store,
+			// and the Vote collection is used for anonymous duplicate vote checking.
 			vote.setVotingDate(DateUtility.now());
-			reckoningRepoCustom.insertReckoningVote(vote, answerIndex, reckoningId);
+			vote.setReckoningId(reckoningId);
+			reckoningRepoCustom.insertReckoningVote(vote.getVoterId(), answerIndex, reckoningId);
+			voteRepoCustom.insertVote(vote);
 			
 			// Cache management.  Cache the vote to confirm the user has voted for this one.
 			List<Vote> voteCacheEntry = new LinkedList<Vote>();
@@ -138,9 +136,11 @@ public class VoteServiceImpl implements VoteService {
 					if (!vote.isEmpty()) {
 						for (Answer answer : reckoning.getAnswers()) {
 							if (answer.getIndex() == vote.get(0).getAnswerIndex()) {
-								answer.setVotes(vote);
+								Hashtable<String, Boolean> answerVote = new Hashtable<String, Boolean>();
+								answerVote.put(userId, true);
+								answer.setVotes(answerVote);
 							} else {
-								answer.setVotes(new LinkedList<Vote> ());
+								answer.setVotes(new Hashtable<String, Boolean> ());
 							}
 						}
 					}
