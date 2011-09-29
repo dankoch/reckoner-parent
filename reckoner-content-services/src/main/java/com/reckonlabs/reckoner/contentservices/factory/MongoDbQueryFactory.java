@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.contentservices.factory;
 
 import java.util.Date;
+import java.util.Map;
 
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
@@ -11,6 +12,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
+import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
@@ -76,6 +78,19 @@ public final class MongoDbQueryFactory {
 	
 	public static DBObject buildAnswerIndexExists (Integer index) {
 		return new BasicDBObject("answers.index", index);
+	}
+	
+	public static Update buildReckoningUpdate(Reckoning reckoning) {
+		Update reckoningUpdate = new Update();
+		
+		Map<String, Object> reckonMap = reckoning.toHashMap();
+		for (Map.Entry<String, Object> entry: reckonMap.entrySet()) {
+			if (entry.getValue() != null && !entry.getValue().equals("")) {
+				reckoningUpdate.set(entry.getKey(), entry.getValue());
+			}
+		}
+		
+		return reckoningUpdate;
 	}
 	
 	public static Update buildApprovalUpdate(String approver, Date postingDate, Date closingDate) {

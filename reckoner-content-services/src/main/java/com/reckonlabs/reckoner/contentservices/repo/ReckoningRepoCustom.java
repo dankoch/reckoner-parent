@@ -16,6 +16,8 @@ public interface ReckoningRepoCustom {
 	
 	public void updateReckoning (Reckoning reckoning);
 	
+	public void mergeReckoning(Reckoning reckoning) throws DBUpdateException;
+	
 	public void approveReckoning (String id, String accepter, Date postingDate, Date closingDate) throws DBUpdateException;
 	
 	public void rejectReckoning (String id, String rejecter) throws DBUpdateException;

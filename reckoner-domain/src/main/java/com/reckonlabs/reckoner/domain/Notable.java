@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 
-public class Notable implements Serializable {
+public abstract class Notable implements Serializable {
 
 	/**
 	 * 
@@ -22,9 +22,6 @@ public class Notable implements Serializable {
 	private List<Flag> flags;
 	@Column(name="favorites")
 	private List<Favorite> favorites;
-	
-	@Column(name="highlighted")
-	private boolean highlighted;
 
 	@XmlElementWrapper(name = "flags")
 	@XmlElement(name = "flag")
@@ -58,15 +55,6 @@ public class Notable implements Serializable {
 			this.favorites = new LinkedList<Favorite> ();
 		}
 		this.favorites.add(favorite);
-	}
-
-	@XmlElement(name = "highlighted")
-	public boolean isHighlighted() {
-		return highlighted;
-	}
-
-	public void setHighlighted(boolean highlighted) {
-		this.highlighted = highlighted;
 	}
 	
 	// Responsible for finding the favorite that the given user has made for this particular notable object.

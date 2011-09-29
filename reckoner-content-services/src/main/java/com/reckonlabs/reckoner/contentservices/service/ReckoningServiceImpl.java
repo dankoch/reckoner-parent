@@ -82,10 +82,19 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
-	public ServiceResponse updateReckoning (Reckoning reckoning, String sessionId) {
+	public ServiceResponse updateReckoning (Reckoning reckoning, boolean merge, String sessionId) {
 		
 		try {
-			reckoningRepoCustom.updateReckoning(reckoning);
+			if (merge) {
+				if (reckoningRepoCustom.confirmReckoningExists(reckoning.getId())) {
+					reckoningRepoCustom.mergeReckoning(reckoning);
+				}
+				else {
+					return (new ServiceResponse(new Message(MessageEnum.R106_POST_RECKONING), false));
+				}
+			} else {
+				reckoningRepoCustom.updateReckoning(reckoning);
+			}
 			
 			reckoningCache.removeCachedReckoning(reckoning.getId());
 		} catch (Exception e) {
@@ -105,7 +114,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			
 			if (approvedReckoning != null && approvedReckoning.size() > 0) {
 				reckoningRepoCustom.approveReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId(), DateUtility.now(), 
-						new Date(DateUtility.now().getTime() + approvedReckoning.get(0).getInterval()));
+						new Date(DateUtility.now().getTime() + approvedReckoning.get(0).getInterval() * 60000));
 			} else {
 				log.info("Request to approve non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					

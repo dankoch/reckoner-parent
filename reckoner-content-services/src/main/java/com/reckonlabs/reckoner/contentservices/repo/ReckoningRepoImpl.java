@@ -37,9 +37,20 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		mongoTemplate.insert(reckoning, RECKONING_COLLECTION);
 	}
 	
+	// Performs an 'upsert' on the given Reckoning.  
+	// If a matching ID is found, it's overwritten with the provided Reckoning.  Otherwise, a new one is inserted.
 	public void updateReckoning (Reckoning reckoning) {
 		mongoTemplate.save(reckoning, RECKONING_COLLECTION);
 	}
+	
+	// Merges the provided reckoning into the existing reckoning found with the given ID.
+	// Does nothing if no matches are found.
+	public void mergeReckoning (Reckoning reckoning) throws DBUpdateException {
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoning.getId())), 
+				MongoDbQueryFactory.buildReckoningUpdate(reckoning), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());
+	}	
 	
 	public void approveReckoning (String id, String approver, Date postingDate, Date closingDate) throws DBUpdateException {
 		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(id)), 

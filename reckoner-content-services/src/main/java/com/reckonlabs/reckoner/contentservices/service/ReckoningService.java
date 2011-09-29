@@ -11,7 +11,7 @@ public interface ReckoningService {
 	
 	public ServiceResponse postReckoning (Reckoning reckoning, String sessionId);
 	
-	public ServiceResponse updateReckoning (Reckoning reckoning, String sessionId);
+	public ServiceResponse updateReckoning (Reckoning reckoning, boolean overwrite, String sessionId);
 	
 	public ServiceResponse approveReckoning (String id, String sessionId);
 	

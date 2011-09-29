@@ -1,8 +1,11 @@
 package com.reckonlabs.reckoner.domain.reckoning;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.io.Serializable;
 import javax.persistence.Column;
@@ -14,6 +17,9 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.reckonlabs.reckoner.domain.Notable;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
@@ -22,6 +28,9 @@ import com.reckonlabs.reckoner.domain.utility.DateUtility;
 @Entity
 @XmlRootElement(name = "reckoning")
 public class Reckoning extends Notable implements Serializable  {
+	
+	private static final Logger log = LoggerFactory
+			.getLogger(Reckoning.class);
 
 	private static final long serialVersionUID = 9172808928286702823L;
 
@@ -70,6 +79,9 @@ public class Reckoning extends Notable implements Serializable  {
 	private String commentary;
 	@Column(name="commentary_user_id")
 	private String commentaryUserId;
+	
+	@Column(name="highlighted")
+	private boolean highlighted;
 	
 	@Column(name="tags")
 	private List<String> tags;
@@ -238,6 +250,15 @@ public class Reckoning extends Notable implements Serializable  {
 	public int getCommentIndex() {
 		return this.commentIndex;
 	}
+	
+	@XmlElement(name = "highlighted")
+	public boolean isHighlighted() {
+		return highlighted;
+	}
+
+	public void setHighlighted(boolean highlighted) {
+		this.highlighted = highlighted;
+	}
 
 	@XmlElementWrapper(name = "tags")
 	@XmlElement(name = "tag")
@@ -319,8 +340,7 @@ public class Reckoning extends Notable implements Serializable  {
 	// Used to extract a particular user's vote out of this Reckoning object.
 	public List<Vote> getVoteByUser(String userId) {
 		List<Vote> userReckoningVote = new LinkedList<Vote> ();
-		
-		// Assuming one vote per result set, so stop the search once found to save time.
+
 		for (Answer answer : getAnswers()) {
 			if (answer.getVotes() != null) {
 				if (answer.getVotes().containsKey(userId)) {
@@ -330,5 +350,26 @@ public class Reckoning extends Notable implements Serializable  {
 		}	
 		
 		return userReckoningVote;
+	}
+	
+	// Generates a HashMap of the Reckoning as follows:
+	//   * Key: Element Name
+	//   * Value: Object value
+	// This is used when generating DB Merge queries as a way of quickly encapsulating the object.
+	public Map<String, Object> toHashMap() {
+		Map<String, Object> reckoningHash = new HashMap<String, Object> ();
+		
+		try {
+			for (Field field : Reckoning.class.getDeclaredFields()) {
+				reckoningHash.put(field.getName(), field.get(this));
+			}
+			
+			reckoningHash.remove("log");
+			reckoningHash.remove("serialVersionUID");
+		} catch (Exception e) {
+			log.warn("Failed to marshal reckoning " + this.id + " to hash map.", e);
+		}
+		
+		return reckoningHash;
 	}
 }

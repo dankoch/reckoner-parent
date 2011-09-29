@@ -115,16 +115,19 @@ public class ReckoningController {
 	 */
 	@RequestMapping(value = "/reckoning/update", method = RequestMethod.POST)
 	public @ResponseBody
-	ServiceResponse updateReckoning(@RequestBody PostReckoning updateReckoning)
+	ServiceResponse updateReckoning(@RequestBody PostReckoning updateReckoning,
+			@RequestParam(required = false, value = "merge") Boolean merge)
 			throws AuthenticationException, Exception {
-
+		
+		if (merge == null) { merge = true; }
+		
 		if (serviceProps.isEnableServiceAuthentication() && 
 				!userService.hasPermission(updateReckoning.getSessionId(), PermissionEnum.UPDATE_ALL_RECKONINGS)) {
 			log.info("User with insufficient privileges attempted to approve a reckoning: ");
 			log.info("Session ID: " + updateReckoning.getSessionId() + " Reckoning " + updateReckoning.getReckoning().getId());
 			throw new AuthenticationException();			
 		} else {
-			Message validationMessage = ReckoningValidator.validateReckoningPost(updateReckoning.getReckoning());
+			Message validationMessage = ReckoningValidator.validateReckoningUpdate(updateReckoning.getReckoning(), merge);
 			
 			if (validationMessage != null) {
 				log.info("Updated reckoning failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
@@ -132,7 +135,7 @@ public class ReckoningController {
 			}
 		}
 
-		return reckoningService.updateReckoning(updateReckoning.getReckoning(), updateReckoning.getSessionId());
+		return reckoningService.updateReckoning(updateReckoning.getReckoning(), merge, updateReckoning.getSessionId());
 	}
 	
 	/**

@@ -24,6 +24,17 @@ public class ReckoningValidator {
 		return null;
 	}
 	
+	public static Message validateReckoningUpdate(Reckoning posting, boolean merge) {
+		if (posting.getId() == null || posting.getId().equals("")) {
+			return (new Message(MessageEnum.R105_POST_RECKONING));
+		}
+		if (!merge) {
+			return validateReckoningPost(posting);
+		}
+		
+		return null;
+	}
+	
 	public static Message validateReckoningQuery(Integer page, Integer size) {
 		
 		if (page != null ^ size != null) {
