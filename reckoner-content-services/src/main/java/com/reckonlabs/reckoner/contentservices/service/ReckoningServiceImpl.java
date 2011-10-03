@@ -67,6 +67,9 @@ public class ReckoningServiceImpl implements ReckoningService {
 			reckoning.setFlags(null);
 			reckoning.setFavorites(null);
 			reckoning.setComments(null);
+			if (reckoning.getInterval() == null || reckoning.getInterval() == 0) {
+				reckoning.setInterval(10080);
+			}
 			
 			
 			reckoningRepoCustom.insertNewReckoning(reckoning);
