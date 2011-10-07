@@ -118,6 +118,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			if (approvedReckoning != null && approvedReckoning.size() > 0) {
 				reckoningRepoCustom.approveReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId(), DateUtility.now(), 
 						new Date(DateUtility.now().getTime() + approvedReckoning.get(0).getInterval() * 60000));
+				reckoningCache.removeCachedReckoning(id);
 			} else {
 				log.info("Request to approve non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -145,6 +146,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			
 			if (rejectedReckoning != null && rejectedReckoning.size() > 0) {
 				reckoningRepoCustom.rejectReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId());
+				reckoningCache.removeCachedReckoning(id);
 			} else {
 				log.info("Request to reject non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -166,12 +168,44 @@ public class ReckoningServiceImpl implements ReckoningService {
 	
 	@Override
 	public ReckoningServiceList getReckoning (String id, String sessionId) {
-		List<Reckoning> reckoning = null;
+		return getReckoning (id, false, sessionId);
+	}
+	
+	@Override
+	public ReckoningServiceList getReckoning (String id, boolean includeUnaccepted, String sessionId) {		
+		List<Reckoning> reckoningList = null;
 		try {
-			reckoning = reckoningCache.getCachedReckoning(id);
-			if (reckoning == null) {
-				reckoning = reckoningRepo.findById(id);
-				reckoningCache.setCachedReckoning(reckoning, id);
+			// Check the caches to see if the Reckoning has already been pulled.  If so, there you go.
+			reckoningList = reckoningCache.getCachedReckoning(id);
+			
+			// If not, pull it (excluding rejected reckonings as specified).
+			if (reckoningList == null) {
+				if (includeUnaccepted) {
+					reckoningList = reckoningRepo.findById(id);
+				} else {
+					reckoningList = reckoningRepo.findByIdAndApproved(id, true);
+				}
+				
+				if (reckoningList != null && !reckoningList.isEmpty()) {
+					// Iterate through the comments to add the pertinent user information necessary to render them.
+					if (reckoningList.get(0).getComments() != null) {
+						for (Comment comment : reckoningList.get(0).getComments()) {
+							comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
+						}
+					}
+					// Get the summary for the Commentary user
+					if (reckoningList.get(0).getCommentaryUserId() != null) {
+						reckoningList.get(0).setCommentaryUser(userService.getUserByUserId
+								(reckoningList.get(0).getCommentaryUserId(), true).getUser());
+					}
+					// Get the summary for the Posting user
+					if (reckoningList.get(0).getSubmitterId() != null) {
+						reckoningList.get(0).setPostingUser(userService.getUserByUserId
+								(reckoningList.get(0).getSubmitterId(), true).getUser());
+					}					
+					
+					reckoningCache.setCachedReckoning(reckoningList, id);
+				}
 			}
 		} catch (Exception e) {
 			log.error("General exception when retrieving a reckoning: " + e.getMessage());
@@ -179,7 +213,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}	
 		
-		return new ReckoningServiceList(reckoning, new Message(), true);
+		return new ReckoningServiceList(reckoningList, new Message(), true);
 	}
 	
 	@Override

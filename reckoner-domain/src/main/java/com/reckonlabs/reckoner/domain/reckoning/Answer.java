@@ -18,7 +18,7 @@ public class Answer implements Serializable {
 	private String text;
 	private String subtitle;
 	private int voteTotal;
-	private Map<String, Boolean> votes;
+	private Map<String, String> votes;
 	
 	public Answer() {
 		
@@ -66,19 +66,19 @@ public class Answer implements Serializable {
 	}
 
 	@XmlTransient
-	public Map<String, Boolean> getVotes() {
+	public Map<String, String> getVotes() {
 		return votes;
 	}
 
-	public void setVotes(Map<String, Boolean> votes) {
+	public void setVotes(Map<String, String> votes) {
 		this.votes = votes;
 	}
 	
 	public void addVote(String voterId) {
 		if (this.votes == null) {
-			this.votes = new HashMap<String, Boolean> ();
+			this.votes = new HashMap<String, String> ();
 		}
-		this.votes.put(voterId, true);
+		this.votes.put(voterId, "1");
 
 		incrementVoteTotal();
 	}

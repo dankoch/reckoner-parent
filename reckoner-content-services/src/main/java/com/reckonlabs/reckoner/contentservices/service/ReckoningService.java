@@ -19,6 +19,8 @@ public interface ReckoningService {
 	
 	public ReckoningServiceList getReckoning (String id, String sessionId);
 	
+	public ReckoningServiceList getReckoning (String id, boolean includeUnaccepted, String sessionId);
+	
 	public ReckoningServiceList getApprovalQueue (Integer page, Integer size, Boolean latestFirst, String sessionId);
 	
 	public ReckoningServiceList getReckoningSummariesByUser (String submitterId, Integer page, Integer size, String sessionId);

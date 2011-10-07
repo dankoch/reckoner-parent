@@ -6,10 +6,12 @@ import java.util.List;
 import java.io.Serializable;
 
 import javax.persistence.Column;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import com.reckonlabs.reckoner.domain.Notable;
+import com.reckonlabs.reckoner.domain.user.User;
 
 @XmlRootElement(name = "comment")
 public class Comment extends Notable implements Serializable{
@@ -24,6 +26,11 @@ public class Comment extends Notable implements Serializable{
 	String posterId;
 	@Column (name="posting_date")
 	Date postingDate;
+	
+	// Used to store more detailed user information for comments returned by the services.
+	// Should NOT be stored in the database.
+	@Transient
+	User user;
 	
 	@XmlElement(name="comment_id")	
 	public String getCommentId() {
@@ -55,5 +62,12 @@ public class Comment extends Notable implements Serializable{
 	public void setPostingDate(Date postingDate) {
 		this.postingDate = postingDate;
 	}
-
+	
+	@XmlElement(name="user")
+	public User getUser() {
+		return user;
+	}
+	public void setUser(User user) {
+		this.user = user;
+	}
 }

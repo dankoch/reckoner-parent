@@ -220,8 +220,11 @@ public class ReckoningController {
 	public @ResponseBody
 	ReckoningServiceList getReckoningById(
 			@PathVariable String id,		
-			@RequestParam(required = false, value = "session_id") String sessionId) 
-				throws AuthenticationException {
+			@RequestParam(required = false, value = "session_id") String sessionId,
+			@RequestParam(required = false, value = "include_unaccepted") Boolean includeUnaccepted) 
+					throws AuthenticationException {
+
+			if (includeUnaccepted == null) { includeUnaccepted = false; }
 
 		if (serviceProps.isEnableServiceAuthentication() && 
 				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
@@ -230,7 +233,7 @@ public class ReckoningController {
 			throw new AuthenticationException();			
 		}
 		
-		return reckoningService.getReckoning(id, sessionId);
+		return reckoningService.getReckoning(id, includeUnaccepted, sessionId);
 	}
 	
 	/**

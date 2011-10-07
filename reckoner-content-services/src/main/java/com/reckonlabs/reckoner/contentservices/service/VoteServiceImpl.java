@@ -136,11 +136,11 @@ public class VoteServiceImpl implements VoteService {
 					if (!vote.isEmpty()) {
 						for (Answer answer : reckoning.getAnswers()) {
 							if (answer.getIndex() == vote.get(0).getAnswerIndex()) {
-								Hashtable<String, Boolean> answerVote = new Hashtable<String, Boolean>();
-								answerVote.put(userId, true);
+								Hashtable<String, String> answerVote = new Hashtable<String, String>();
+								answerVote.put(userId, "1");
 								answer.setVotes(answerVote);
 							} else {
-								answer.setVotes(new Hashtable<String, Boolean> ());
+								answer.setVotes(new Hashtable<String, String> ());
 							}
 						}
 					}

@@ -16,6 +16,8 @@ public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 	// Leave off all of the votes for the regular request.  It's a lot of overhead we won't need.
 	@Query(value = "{'id' : ?0}", fields="{'answers.votes' : 0}")
 	List<Reckoning> findById(String id);
+	@Query(value = "{'id' : ?0, 'approved' : ?1}", fields="{'answers.votes' : 0}")
+	List<Reckoning> findByIdAndApproved(String id, boolean approved);
 	
 	List<Reckoning> findByApproved(boolean approved);
 	List<Reckoning> findByRejected(boolean rejected);

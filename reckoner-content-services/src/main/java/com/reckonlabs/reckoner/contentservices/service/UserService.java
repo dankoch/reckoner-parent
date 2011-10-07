@@ -23,6 +23,8 @@ public interface UserService {
 	
 	public UserServiceResponse getUserByUserId(String userId);
 	
+	public UserServiceResponse getUserByUserId(String userId, boolean summary);
+	
 	public UserServiceResponse updateUserPermissions(PostActionEnum action, Set<GroupEnum> groups,
 			Boolean active, String userId);
 	

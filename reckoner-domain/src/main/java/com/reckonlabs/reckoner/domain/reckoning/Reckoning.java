@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.reckonlabs.reckoner.domain.Notable;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
+import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 @Entity
@@ -79,6 +80,13 @@ public class Reckoning extends Notable implements Serializable  {
 	private String commentary;
 	@Column(name="commentary_user_id")
 	private String commentaryUserId;
+	
+	// Used to store complete commentary and posting user information for display purposes.
+	// Do NOT store in the database;
+	@Transient
+	private User commentaryUser;
+	@Transient
+	private User postingUser;
 	
 	@Column(name="highlighted")
 	private boolean highlighted;
@@ -250,7 +258,7 @@ public class Reckoning extends Notable implements Serializable  {
 	public int getCommentIndex() {
 		return this.commentIndex;
 	}
-	
+
 	@XmlElement(name = "highlighted")
 	public boolean isHighlighted() {
 		return highlighted;
@@ -286,6 +294,22 @@ public class Reckoning extends Notable implements Serializable  {
 
 	public void setCommentaryUserId(String commentaryUserId) {
 		this.commentaryUserId = commentaryUserId;
+	}
+	
+	@XmlElement(name = "commentary_user")	
+	public User getCommentaryUser() {
+		return commentaryUser;
+	}
+	public void setCommentaryUser(User commentaryUser) {
+		this.commentaryUser = commentaryUser;
+	}
+
+	@XmlElement(name = "posting_user")
+	public User getPostingUser() {
+		return postingUser;
+	}
+	public void setPostingUser(User postingUser) {
+		this.postingUser = postingUser;
 	}
 
 	// Gets the comments in this reckoning with a particular userId.

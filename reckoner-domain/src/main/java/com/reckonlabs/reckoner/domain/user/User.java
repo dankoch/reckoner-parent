@@ -167,13 +167,17 @@ public class User implements Serializable {
 	@XmlElementWrapper(name = "permissions")
 	@XmlElement(name = "permission")
 	public Set<PermissionEnum> getPermissions() {
-		Set<PermissionEnum> returnVal = new HashSet<PermissionEnum>();
-		Set<GroupEnum> groups = getGroups();
-		for (GroupEnum group : groups) {
-			returnVal.addAll(GroupEnum.getPermissions(group));
+		if (getGroups() != null) {
+			Set<PermissionEnum> returnVal = new HashSet<PermissionEnum>();
+			Set<GroupEnum> groups = getGroups();
+			for (GroupEnum group : groups) {
+				returnVal.addAll(GroupEnum.getPermissions(group));
+			}
+			
+			return returnVal;
 		}
 		
-		return returnVal;
+		return null;
 	}
 	
 	public boolean hasPermission(PermissionEnum perm) {

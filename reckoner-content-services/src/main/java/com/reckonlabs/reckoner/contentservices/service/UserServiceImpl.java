@@ -193,10 +193,20 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public UserServiceResponse getUserByUserId(String userId) {
+		return getUserByUserId(userId, false);
+	}
+	
+	@Override
+	public UserServiceResponse getUserByUserId(String userId, boolean summary) {
 		User authUser = null;
+		List<User> authUsers = null;
 		
 		try {
-			List<User> authUsers = userRepo.findById(userId);
+			if (summary) {
+				authUsers = userRepo.findByIdSummary(userId);
+			} else {
+				authUsers = userRepo.findById(userId);
+			}
 			if (!authUsers.isEmpty()) {
 				authUser = authUsers.get(0);
 			}
