@@ -8,6 +8,7 @@ public enum MessageEnum {
     R104_POST_RECKONING ("R104"), R105_POST_RECKONING ("R105"), R106_POST_RECKONING ("R106"),
 	
 	R200_GET_RECKONING ("R200"), R201_GET_RECKONING ("R201"), R202_GET_RECKONING ("R202"), R203_GET_RECKONING ("R203"),
+	R204_GET_RECKONING ("R204"),
 	
 	R300_APPROVE_RECKONING("R300"),
 	
@@ -56,6 +57,7 @@ public enum MessageEnum {
 			case R201_GET_RECKONING:  return ("Page value for reckoning queries cannot be negative.");
 			case R202_GET_RECKONING:  return ("Size value for reckoning queries cannot be less than one.");
 			case R203_GET_RECKONING:  return ("Paged reckoning queries need both a valid page and size value.");
+			case R204_GET_RECKONING:  return ("You need to request either open or closed reckonings (or both).");
 			
 			case R300_APPROVE_RECKONING: return ("No reckoning of that ID is available to approve.");
 			

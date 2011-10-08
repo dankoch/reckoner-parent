@@ -4,6 +4,7 @@ import java.lang.Boolean;
 import java.util.Date;
 
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 
@@ -31,4 +32,6 @@ public interface ReckoningService {
 			Date closedAfter, Date closedBefore, String sessionId);
 
 	public ReckoningServiceList getReckoningSummariesByTag (String tag, Integer page, Integer size, String sessionId);
+
+	public ReckoningServiceList getRandomReckoning(ReckoningTypeEnum reckoningType);
 }

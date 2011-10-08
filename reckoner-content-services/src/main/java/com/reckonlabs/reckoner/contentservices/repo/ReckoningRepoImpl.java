@@ -3,6 +3,7 @@ package com.reckonlabs.reckoner.contentservices.repo;
 import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Random;
 
 import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
@@ -19,6 +20,7 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
@@ -113,20 +115,6 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		
 		return mongoTemplate.find(query, Reckoning.class);
 	}
-	
-	public List<Reckoning> getReckoningSummaries (Integer page, Integer size) {
-		BasicQuery query = null;
-		
-		query = new BasicQuery(MongoDbQueryFactory.buildValidReckoningQuery(), 
-				MongoDbQueryFactory.buildReckoningSummaryFields());
-		
-		if (page != null && size != null) {
-			query.limit(size.intValue());
-			query.skip(page.intValue() * size.intValue());
-		}
-		
-		return mongoTemplate.find(query, Reckoning.class);
-	}
 
 	@Override
 	public List<Reckoning> getReckoningSummariesByTag(String tag, Integer page, Integer size) {
@@ -143,6 +131,46 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		return mongoTemplate.find(query, Reckoning.class);
 	}
 
+	public List<Reckoning> getReckoningSummaries (Integer page, Integer size) {
+		BasicQuery query = null;
+		
+		query = new BasicQuery(MongoDbQueryFactory.buildValidReckoningQuery(), 
+				MongoDbQueryFactory.buildReckoningSummaryFields());
+		
+		if (page != null && size != null) {
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
+		}
+		
+		return mongoTemplate.find(query, Reckoning.class);
+	}
+	
+	public List<Reckoning> getRandomReckoningSummary(ReckoningTypeEnum type) {
+		List<Reckoning> returnList = null;
+		double randIndex = new Random().nextDouble();
+		
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildRandomReckoningQuery(type, 
+				randIndex, false), MongoDbQueryFactory.buildReckoningSummaryFields());
+		
+		Reckoning randomReckoning = mongoTemplate.findOne(query, Reckoning.class);
+		
+		// If no random reckoning turned up searching one direction from the random index,
+		// try the other direction.
+		if (randomReckoning == null) {
+			query = new BasicQuery(MongoDbQueryFactory.buildRandomReckoningQuery(type, 
+					randIndex, true), MongoDbQueryFactory.buildReckoningSummaryFields());
+
+			randomReckoning = mongoTemplate.findOne(query, Reckoning.class);
+		}
+		
+		if (randomReckoning != null) {
+			returnList = new LinkedList<Reckoning>();
+			returnList.add(randomReckoning);
+		}
+		
+		return returnList;
+	}
+	
 	@Override
 	public void insertReckoningComment(Comment comment, String reckoningId)
 			throws DBUpdateException {

@@ -41,6 +41,9 @@ public class CommentServiceImpl implements CommentService {
 	@Autowired
 	ReckoningCache reckoningCache;
 	
+	@Autowired
+	UserService userService;
+	
 	private static final Logger log = LoggerFactory
 			.getLogger(CommentServiceImpl.class);
 
@@ -67,6 +70,7 @@ public class CommentServiceImpl implements CommentService {
 					if (cacheReckoning.get(0).getComments() == null) {
 						cacheReckoning.get(0).setComments(new LinkedList<Comment> ());
 					} 
+					comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
 					cacheReckoning.get(0).addComment(comment);
 				}
 				

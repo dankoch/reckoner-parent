@@ -93,6 +93,9 @@ public class Reckoning extends Notable implements Serializable  {
 	
 	@Column(name="tags")
 	private List<String> tags;
+	
+	@Column(name="random_select")
+	private double randomSelect;
 
 	public String getId() {
 		return id;
@@ -311,6 +314,15 @@ public class Reckoning extends Notable implements Serializable  {
 	public void setPostingUser(User postingUser) {
 		this.postingUser = postingUser;
 	}
+	
+	@XmlElement(name = "random_select")
+	public double getRandomSelect() {
+		return randomSelect;
+	}
+
+	public void setRandomSelect(double randomSelect) {
+		this.randomSelect = randomSelect;
+	}
 
 	// Gets the comments in this reckoning with a particular userId.
 	public List<Comment> getCommentsByUser (String userId) {
@@ -390,6 +402,7 @@ public class Reckoning extends Notable implements Serializable  {
 			
 			reckoningHash.remove("log");
 			reckoningHash.remove("serialVersionUID");
+			reckoningHash.remove("randomSelect");
 		} catch (Exception e) {
 			log.warn("Failed to marshal reckoning " + this.id + " to hash map.", e);
 		}

@@ -3,6 +3,7 @@ package com.reckonlabs.reckoner.contentservices.service;
 import java.lang.Boolean;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 import com.reckonlabs.reckoner.domain.utility.ListPagingUtility;
@@ -71,7 +73,9 @@ public class ReckoningServiceImpl implements ReckoningService {
 				reckoning.setInterval(10080);
 			}
 			
-			
+			// Set the random select number to be a double between 0 and 1.  This is used to
+			// enable random Reckoning selection.
+			reckoning.setRandomSelect(new Random().nextDouble());
 			reckoningRepoCustom.insertNewReckoning(reckoning);
 			
 			reckoningCache.removeCachedUserReckoningSummaries(reckoning.getSubmitterId());
@@ -328,6 +332,21 @@ public class ReckoningServiceImpl implements ReckoningService {
 		}
 		
 		return new ReckoningServiceList(reckonings, new Message(), true);
-	}	
+	}
 
+	@Override
+	public ReckoningServiceList getRandomReckoning(
+			ReckoningTypeEnum reckoningType) {
+		List<Reckoning> reckonings = null;		
+		try {
+			reckonings = reckoningRepoCustom.getRandomReckoningSummary(reckoningType);
+		}
+		catch (Exception e) {
+			log.error("General exception when getting random reckoning: " + e.getMessage());
+			log.debug("Stack Trace:", e);
+			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ReckoningServiceList(reckonings, new Message(), true);
+	}	
 }

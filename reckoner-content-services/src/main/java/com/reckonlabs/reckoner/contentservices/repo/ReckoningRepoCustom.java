@@ -8,7 +8,7 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.Vote;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 
 public interface ReckoningRepoCustom {
 	
@@ -28,7 +28,9 @@ public interface ReckoningRepoCustom {
 	
 	public List<Reckoning> getReckoningSummariesByTag (String tag, Integer page, Integer size);
 	
-	public List<Reckoning> getReckoningSummaries(Integer page, Integer size);
+	public List<Reckoning> getReckoningSummaries (Integer page, Integer size);
+	
+	public List<Reckoning> getRandomReckoningSummary (ReckoningTypeEnum type);
 	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	

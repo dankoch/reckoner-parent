@@ -13,13 +13,31 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 public final class MongoDbQueryFactory {
 	
 	public static DBObject buildValidReckoningQuery() {
-		return new BasicDBObject("rejected", false);
+		BasicDBObject query = new BasicDBObject("approved", true);
+		query.append("rejected", false);
+		
+		return query;
+	}
+	
+	public static DBObject buildOpenReckoningQuery () {
+		BasicDBObject dateQuery = new BasicDBObject("$gt", DateUtility.now());
+		BasicDBObject mainQuery = new BasicDBObject("closingDate", dateQuery);
+		
+		return mainQuery;
+	}
+	
+	public static DBObject buildClosedReckoningQuery () {
+		BasicDBObject dateQuery = new BasicDBObject("$lt", DateUtility.now());
+		BasicDBObject mainQuery = new BasicDBObject("closingDate", dateQuery);
+		
+		return mainQuery;
 	}
 	
 	public static DBObject buildReckoningIdQuery (String id) {
@@ -78,6 +96,24 @@ public final class MongoDbQueryFactory {
 	
 	public static DBObject buildAnswerIndexExists (Integer index) {
 		return new BasicDBObject("answers.index", index);
+	}
+	
+	public static DBObject buildRandomReckoningQuery (ReckoningTypeEnum type, double randIndex, boolean direction) {
+		BasicDBObject randomQuery = new BasicDBObject("$lte", randIndex);
+		if (direction) {
+			randomQuery = new BasicDBObject("$gte", randIndex);
+		}
+		
+		BasicDBObject mainQuery = new BasicDBObject("randomSelect", randomQuery);
+		mainQuery.putAll(buildValidReckoningQuery());
+		
+		if (type == ReckoningTypeEnum.CLOSED) {
+			mainQuery.putAll(buildClosedReckoningQuery());
+		} else if (type == ReckoningTypeEnum.OPEN) {
+			mainQuery.putAll(buildOpenReckoningQuery());
+		} 
+		
+		return mainQuery;
 	}
 	
 	public static Update buildReckoningUpdate(Reckoning reckoning) {
@@ -167,8 +203,7 @@ public final class MongoDbQueryFactory {
 	}*/
 	
 	public static DBObject buildReckoningSummaryFields() {
-		BasicDBObject fields = new BasicDBObject("id", 1);
-		fields.append("answers.votes", 0);
+		BasicDBObject fields = new BasicDBObject("answers.votes", 0);
 		fields.append("comments", 0);
 		fields.append("favorites", 0);
 		fields.append("flags", 0);

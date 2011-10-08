@@ -29,11 +29,13 @@ import com.reckonlabs.reckoner.contentservices.service.ReckoningService;
 import com.reckonlabs.reckoner.contentservices.service.UserService;
 import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.Message;
+import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.PostReckoning;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
 import com.reckonlabs.reckoner.domain.user.PermissionEnum;
@@ -216,7 +218,7 @@ public class ReckoningController {
 	 * @throws Exception
 	 *            exception
 	 */	
-	@RequestMapping(value = "/reckoning/{id}", method = RequestMethod.GET)	
+	@RequestMapping(value = "/reckoning/id/{id}", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getReckoningById(
 			@PathVariable String id,		
@@ -481,5 +483,83 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummariesByTag(tag, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of a random Reckoning.
+	 * 
+	 * @param id
+	 *           String
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/random", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getRandomReckoning(	
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view a random reckoning: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		}
+		
+		return reckoningService.getRandomReckoning(ReckoningTypeEnum.OPEN_AND_CLOSED);
+	}
+	
+	/**
+	 * This method allows for the retrieval of a random closed Reckoning.
+	 * 
+	 * @param id
+	 *           String
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/random/closed", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getRandomClosedReckoning(	
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view a random closed reckoning: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		}
+		
+		return reckoningService.getRandomReckoning(ReckoningTypeEnum.CLOSED);
+	}
+	
+	/**
+	 * This method allows for the retrieval of a random open Reckoning.
+	 * 
+	 * @param id
+	 *           String
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/random/open", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getRandomOpenReckoning(	
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view a random open reckoning: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		}
+		
+		return reckoningService.getRandomReckoning(ReckoningTypeEnum.OPEN);
 	}
 }
