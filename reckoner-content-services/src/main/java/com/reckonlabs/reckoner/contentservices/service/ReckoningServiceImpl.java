@@ -172,15 +172,24 @@ public class ReckoningServiceImpl implements ReckoningService {
 	
 	@Override
 	public ReckoningServiceList getReckoning (String id, String sessionId) {
-		return getReckoning (id, false, sessionId);
+		return getReckoning (id, false, false, sessionId);
 	}
 	
 	@Override
-	public ReckoningServiceList getReckoning (String id, boolean includeUnaccepted, String sessionId) {		
+	public ReckoningServiceList getReckoning (String id, boolean includeUnaccepted, boolean pageVisit, String sessionId) {		
 		List<Reckoning> reckoningList = null;
 		try {
 			// Check the caches to see if the Reckoning has already been pulled.  If so, there you go.
 			reckoningList = reckoningCache.getCachedReckoning(id);
+			
+			// If this is a 'page visit', (i.e. a unique display of this Reckoning on an end client), increment
+			// the views value for this Reckoning in the DB.  Also, update the value returned from the cache.
+			if (pageVisit) {
+				reckoningRepoCustom.incrementReckoningViews(id);
+				if (reckoningList != null && !reckoningList.isEmpty()) {
+					reckoningList.get(0).incrementViews();
+				}
+			}
 			
 			// If not, pull it (excluding rejected reckonings as specified).
 			if (reckoningList == null) {

@@ -202,6 +202,13 @@ public final class MongoDbQueryFactory {
 		return voteInsert;
 	}*/
 	
+	public static Update incrementReckoningViews() {
+		Update viewIncrement = new Update();
+		viewIncrement.inc("views", 1);
+		
+		return viewIncrement;
+	}
+	
 	public static DBObject buildReckoningSummaryFields() {
 		BasicDBObject fields = new BasicDBObject("answers.votes", 0);
 		fields.append("comments", 0);

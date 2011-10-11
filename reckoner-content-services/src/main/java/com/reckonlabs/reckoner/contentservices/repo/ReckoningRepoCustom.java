@@ -40,6 +40,8 @@ public interface ReckoningRepoCustom {
 	
 	public void insertReckoningFlag (Flag flag, String reckoningId) throws DBUpdateException;
 	
+	public void incrementReckoningViews (String reckoningId) throws DBUpdateException;
+	
 	public void updateComment (Comment comment) throws DBUpdateException;
 	
 	// Waiting for Mongo DB to fix SERVER-831.

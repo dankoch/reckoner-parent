@@ -94,6 +94,9 @@ public class Reckoning extends Notable implements Serializable  {
 	@Column(name="tags")
 	private List<String> tags;
 	
+	@Column (name="views")
+	private int views;
+	
 	@Column(name="random_select")
 	private double randomSelect;
 
@@ -315,6 +318,19 @@ public class Reckoning extends Notable implements Serializable  {
 		this.postingUser = postingUser;
 	}
 	
+	@XmlElement(name = "views")
+	public int getViews() {
+		return views;
+	}
+
+	public void setViews(int views) {
+		this.views = views;
+	}
+	
+	public void incrementViews() {
+		this.views ++;
+	}
+
 	@XmlElement(name = "random_select")
 	public double getRandomSelect() {
 		return randomSelect;
@@ -403,6 +419,7 @@ public class Reckoning extends Notable implements Serializable  {
 			reckoningHash.remove("log");
 			reckoningHash.remove("serialVersionUID");
 			reckoningHash.remove("randomSelect");
+			reckoningHash.remove("views");
 		} catch (Exception e) {
 			log.warn("Failed to marshal reckoning " + this.id + " to hash map.", e);
 		}

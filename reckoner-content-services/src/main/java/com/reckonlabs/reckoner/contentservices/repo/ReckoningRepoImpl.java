@@ -237,6 +237,15 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	} */
 	
 	@Override
+	public void incrementReckoningViews(String reckoningId) throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+				MongoDbQueryFactory.incrementReckoningViews(), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());	
+	}
+	
+	@Override
 	public void updateComment(Comment comment) 
 			throws DBUpdateException {
 		

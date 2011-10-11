@@ -223,10 +223,12 @@ public class ReckoningController {
 	ReckoningServiceList getReckoningById(
 			@PathVariable String id,		
 			@RequestParam(required = false, value = "session_id") String sessionId,
-			@RequestParam(required = false, value = "include_unaccepted") Boolean includeUnaccepted) 
+			@RequestParam(required = false, value = "include_unaccepted") Boolean includeUnaccepted,
+			@RequestParam(required = false, value = "page_visit") Boolean pageVisit) 
 					throws AuthenticationException {
 
 			if (includeUnaccepted == null) { includeUnaccepted = false; }
+			if (pageVisit == null) { pageVisit = false; }
 
 		if (serviceProps.isEnableServiceAuthentication() && 
 				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
@@ -235,7 +237,7 @@ public class ReckoningController {
 			throw new AuthenticationException();			
 		}
 		
-		return reckoningService.getReckoning(id, includeUnaccepted, sessionId);
+		return reckoningService.getReckoning(id, includeUnaccepted, pageVisit, sessionId);
 	}
 	
 	/**
