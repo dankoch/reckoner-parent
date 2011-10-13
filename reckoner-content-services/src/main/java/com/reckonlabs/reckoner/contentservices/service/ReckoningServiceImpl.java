@@ -2,6 +2,7 @@ package com.reckonlabs.reckoner.contentservices.service;
 
 import java.lang.Boolean;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -75,6 +76,10 @@ public class ReckoningServiceImpl implements ReckoningService {
 			
 			// Set the random select number to be a double between 0 and 1.  This is used to
 			// enable random Reckoning selection.
+			
+			// Clean up the tags.
+			reckoning.setTags(formatTags(reckoning.getTags()));
+			
 			reckoning.setRandomSelect(new Random().nextDouble());
 			reckoningRepoCustom.insertNewReckoning(reckoning);
 			
@@ -92,8 +97,11 @@ public class ReckoningServiceImpl implements ReckoningService {
 	public ServiceResponse updateReckoning (Reckoning reckoning, boolean merge, String sessionId) {
 		
 		try {
+			// Clean up the tags (if any).
+			reckoning.setTags(formatTags(reckoning.getTags()));
+			
 			if (merge) {
-				if (reckoningRepoCustom.confirmReckoningExists(reckoning.getId())) {
+				if (reckoningRepoCustom.confirmReckoningExists(reckoning.getId())) {					
 					reckoningRepoCustom.mergeReckoning(reckoning);
 				}
 				else {
@@ -279,16 +287,15 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 
 	@Override
-	public ReckoningServiceList getHighlightedReckonings(Boolean open, String sessionId) {
+	public ReckoningServiceList getHighlightedReckonings(ReckoningTypeEnum reckoningType, Integer page, Integer size, String sessionId) {
 		List<Reckoning> reckonings = null;
 		
 		try {
-			if (open == null) {
-				reckonings = reckoningRepo.findByHighlighted(true);
-			} else if (open.booleanValue()) {
-				reckonings = reckoningRepo.findByHighlightedAndClosingDateGreaterThan(true, DateUtility.now());
-			} else {
-				reckonings = reckoningRepo.findByHighlightedAndClosingDateLessThan(true, DateUtility.now());				
+			reckonings = reckoningRepoCustom.getHighlightedReckoningSummaries(reckoningType, page, size);
+			// Get the summaries for the Posting Users
+			for (Reckoning reckoning : reckonings) {
+				reckoning.setPostingUser(userService.getUserByUserId
+								(reckoning.getSubmitterId(), true).getUser());
 			}
 		} catch (Exception e) {
 			log.error("General exception when getting highlighted reckonings: " + e.getMessage());
@@ -300,42 +307,28 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 
 	@Override
-	public ReckoningServiceList getReckoningSummaries(Integer page,
-			Integer size, Date postedAfter, Date postedBefore,
-			Date closedAfter, Date closedBefore, String sessionId) {
+	public ReckoningServiceList getReckoningSummaries(ReckoningTypeEnum reckoningType, 
+			Date postedAfter, Date postedBefore,
+			Date closedAfter, Date closedBefore,
+			List<String> includeTags, List<String> excludeTags,
+			String sortBy, Boolean ascending,
+			Integer page, Integer size, String sessionId) {
 		List<Reckoning> reckonings = null;
 
 		try {
-			if (postedAfter != null || postedBefore != null) {
-				reckonings = reckoningRepoCustom.getReckoningSummariesByPostingDate(page, size, postedBefore, postedAfter);
-			} else if (closedAfter != null || closedBefore != null) {
-				reckonings = reckoningRepoCustom.getReckoningSummariesByClosingDate(page, size, closedBefore, closedAfter);
-			} else {
-				reckonings = reckoningRepoCustom.getReckoningSummaries(page, size);
-			} 
-		}
-		catch (Exception e) {
-			log.error("General exception when getting reckoning summaries: " + e.getMessage());
-			log.debug("Stack Trace:", e);
-			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
-		}
-		
-		return new ReckoningServiceList(reckonings, new Message(), true);
-	}
-
-	@Override
-	public ReckoningServiceList getReckoningSummariesByTag(String tag, Integer page,
-			Integer size, String sessionId) {
-		List<Reckoning> reckonings = null;		
-		try {
-			reckonings = reckoningCache.getCachedTagReckoningSummaries(tag, page, size);
-			if (reckonings == null) {
-				reckonings = reckoningRepoCustom.getReckoningSummariesByTag(tag, page, size);
-				reckoningCache.setCachedTagReckoningSummaries(reckonings, tag, page, size);
+			includeTags = formatTags(includeTags);
+			excludeTags = formatTags(excludeTags);
+			
+			reckonings = reckoningRepoCustom.getReckoningSummaries(reckoningType, postedBefore, postedAfter, closedBefore, 
+					closedAfter, includeTags, excludeTags, sortBy, ascending, page, size);
+			
+			for (Reckoning reckoning : reckonings) {
+				reckoning.setPostingUser(userService.getUserByUserId
+								(reckoning.getSubmitterId(), true).getUser());
 			}
 		}
 		catch (Exception e) {
-			log.error("General exception when getting reckonings by tag: " + e.getMessage());
+			log.error("General exception when getting reckoning summaries: " + e.getMessage());
 			log.debug("Stack Trace:", e);
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
@@ -358,4 +351,17 @@ public class ReckoningServiceImpl implements ReckoningService {
 		
 		return new ReckoningServiceList(reckonings, new Message(), true);
 	}	
+	
+	private static List<String> formatTags(List<String> tags) {
+		List<String> formattedTags = null;
+		
+		if (tags != null) {
+			formattedTags = new LinkedList<String> ();
+			for (String tag : tags) {
+				formattedTags.add(tag.trim().toLowerCase());
+			}
+		}
+		
+		return formattedTags;
+	}
 }

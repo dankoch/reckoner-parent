@@ -22,15 +22,15 @@ public interface ReckoningRepoCustom {
 	
 	public void rejectReckoning (String id, String rejecter) throws DBUpdateException;
 	
-	public List<Reckoning> getReckoningSummariesByPostingDate (Integer page, Integer size, Date beforeDate, Date afterDate);
-	
-	public List<Reckoning> getReckoningSummariesByClosingDate (Integer page, Integer size, Date beforeDate, Date afterDate);
-	
-	public List<Reckoning> getReckoningSummariesByTag (String tag, Integer page, Integer size);
-	
-	public List<Reckoning> getReckoningSummaries (Integer page, Integer size);
+	public List<Reckoning> getReckoningSummaries (ReckoningTypeEnum reckoningType, 
+			Date postedBeforeDate, Date postedAfterDate,
+			Date closedBeforeDate, Date closedAfterDate, 
+			List<String> includeTag, List<String> excludeTag, 
+			String sortBy, Boolean ascending, Integer page, Integer size);
 	
 	public List<Reckoning> getRandomReckoningSummary (ReckoningTypeEnum type);
+	
+	public List<Reckoning> getHighlightedReckoningSummaries (ReckoningTypeEnum reckoningType, Integer page, Integer size);
 	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	

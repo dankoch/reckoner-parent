@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.data.mongodb.core.query.Order;
 
 import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
 import com.reckonlabs.reckoner.domain.message.Message;
@@ -68,79 +69,47 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		if (result.getError() != null) throw new DBUpdateException(result.getError());
 	}
 	
-	public List<Reckoning> getReckoningSummariesByPostingDate (Integer page, Integer size, Date beforeDate, Date afterDate) {
+	public List<Reckoning> getReckoningSummaries (ReckoningTypeEnum reckoningType, 
+			Date postedBeforeDate, Date postedAfterDate,
+			Date closedBeforeDate, Date closedAfterDate, 
+			List<String> includeTags, List<String> excludeTags,
+			String sortBy, Boolean ascending, Integer page, Integer size) {
 		BasicQuery query = null;
 		
-		if (beforeDate != null && afterDate != null) {
-			query = new BasicQuery(MongoDbQueryFactory.buildReckoningPostedBetweenDateQuery(beforeDate, afterDate),
-					MongoDbQueryFactory.buildReckoningSummaryFields());
-		} else if (beforeDate != null) {
-			query = new BasicQuery(MongoDbQueryFactory.buildReckoningPostedBeforeDateQuery(beforeDate),
-					MongoDbQueryFactory.buildReckoningSummaryFields());			
-		} else if (afterDate != null) {
-			query = new BasicQuery(MongoDbQueryFactory.buildReckoningPostedAfterDateQuery(afterDate),
-					MongoDbQueryFactory.buildReckoningSummaryFields());			
-		} else {
-			return null;
-		}
+		query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
+				closedBeforeDate, closedAfterDate, includeTags, excludeTags),
+				MongoDbQueryFactory.buildReckoningSummaryFields());
 		
 		if (page != null && size != null) {
-			query.limit(page.intValue());
+			query.limit(size.intValue());
 			query.skip(page.intValue() * page.intValue());
 		}
 		
-		return mongoTemplate.find(query, Reckoning.class);
+		if (sortBy != null && sortBy != "") {
+			if (ascending != null && ascending.booleanValue()) {
+				query.sort().on(sortBy, Order.ASCENDING);
+			} else {
+				query.sort().on(sortBy, Order.DESCENDING);				
+			}
+		}
+
+		return mongoTemplate.find(query, Reckoning.class);		
 	}
 	
-	public List<Reckoning> getReckoningSummariesByClosingDate (Integer page, Integer size, Date beforeDate, Date afterDate) {
-		BasicQuery query = null;
-		
-		if (beforeDate != null && afterDate != null) {
-			query = new BasicQuery(MongoDbQueryFactory.buildReckoningClosedBetweenDateQuery(beforeDate, afterDate),
-					MongoDbQueryFactory.buildReckoningSummaryFields());
-		} else if (beforeDate != null) {
-			query = new BasicQuery(MongoDbQueryFactory.buildReckoningClosedBeforeDateQuery(beforeDate),
-					MongoDbQueryFactory.buildReckoningSummaryFields());			
-		} else if (afterDate != null) {
-			query = new BasicQuery(MongoDbQueryFactory.buildReckoningClosedAfterDateQuery(afterDate),
-					MongoDbQueryFactory.buildReckoningSummaryFields());			
-		} else {
-			return null;
-		}
-		
-		if (page != null && size != null) {
-			query.limit(page.intValue());
-			query.skip(page.intValue() * page.intValue());
-		}
-		
-		return mongoTemplate.find(query, Reckoning.class);
-	}
-
 	@Override
-	public List<Reckoning> getReckoningSummariesByTag(String tag, Integer page, Integer size) {
+	public List<Reckoning> getHighlightedReckoningSummaries(ReckoningTypeEnum reckoningType, 
+			Integer page, Integer size) {
 		BasicQuery query = null;
-
-		query = new BasicQuery(MongoDbQueryFactory.buildReckoningTagQuery(tag), 
+		
+		query = new BasicQuery(MongoDbQueryFactory.buildHighlightedReckoningQuery(reckoningType), 
 				MongoDbQueryFactory.buildReckoningSummaryFields());
 		
 		if (page != null && size != null) {
 			query.limit(size.intValue());
 			query.skip(page.intValue() * size.intValue());
-		}
+		}		
 		
-		return mongoTemplate.find(query, Reckoning.class);
-	}
-
-	public List<Reckoning> getReckoningSummaries (Integer page, Integer size) {
-		BasicQuery query = null;
-		
-		query = new BasicQuery(MongoDbQueryFactory.buildValidReckoningQuery(), 
-				MongoDbQueryFactory.buildReckoningSummaryFields());
-		
-		if (page != null && size != null) {
-			query.limit(size.intValue());
-			query.skip(page.intValue() * size.intValue());
-		}
+		query.sort().on("postingDate", Order.DESCENDING);
 		
 		return mongoTemplate.find(query, Reckoning.class);
 	}
@@ -279,5 +248,4 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		
 		return true;
 	}
-
 }

@@ -2,6 +2,7 @@ package com.reckonlabs.reckoner.contentservices.service;
 
 import java.lang.Boolean;
 import java.util.Date;
+import java.util.List;
 
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
@@ -26,12 +27,14 @@ public interface ReckoningService {
 	
 	public ReckoningServiceList getReckoningSummariesByUser (String submitterId, Integer page, Integer size, String sessionId);
 	
-	public ReckoningServiceList getHighlightedReckonings (Boolean open, String sessionId);
+	public ReckoningServiceList getHighlightedReckonings (ReckoningTypeEnum reckoningType, Integer page, Integer size, String sessionId);
 	
-	public ReckoningServiceList getReckoningSummaries (Integer page, Integer size, Date postedAfter, Date postedBefore,
-			Date closedAfter, Date closedBefore, String sessionId);
-
-	public ReckoningServiceList getReckoningSummariesByTag (String tag, Integer page, Integer size, String sessionId);
+	public ReckoningServiceList getReckoningSummaries (ReckoningTypeEnum reckoningType, 
+			Date postedAfter, Date postedBefore,
+			Date closedAfter, Date closedBefore,
+			List<String> includeTags, List<String> excludeTags,
+			String sortBy, Boolean ascending, Integer page, Integer size, 
+			String sessionId);
 
 	public ReckoningServiceList getRandomReckoning(ReckoningTypeEnum reckoningType);
 }

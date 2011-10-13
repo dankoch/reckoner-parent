@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.contentservices.factory;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.mongodb.DBObject;
@@ -94,8 +95,66 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("tags", tag);
 	}
 	
+	public static DBObject buildReckoningTagsQuery (List<String> includeTags) {
+		DBObject innerQuery = new BasicDBObject("$in", includeTags);
+		return new BasicDBObject("tags", innerQuery);
+	}
+	
+	public static DBObject buildExcludeReckoningTagsQuery (List<String> excludeTags) {
+		DBObject innerQuery = new BasicDBObject("$in", excludeTags);
+		DBObject notQuery = new BasicDBObject("$not", innerQuery);
+		return new BasicDBObject("tags", notQuery);
+	}
+	
 	public static DBObject buildAnswerIndexExists (Integer index) {
 		return new BasicDBObject("answers.index", index);
+	}
+	
+	public static DBObject buildReckoningQuery (ReckoningTypeEnum type, Date postedBeforeDate, Date postedAfterDate,
+			Date closedBeforeDate, Date closedAfterDate, List<String> includeTags, List<String> excludeTags) {
+
+		DBObject mainQuery = buildValidReckoningQuery();
+				
+		// Add in the necessary OPEN/CLOSED checks, and make sure that the date parameters are correct for any 
+		// subsequent date processing.
+		if (type == ReckoningTypeEnum.CLOSED) {
+			if (closedBeforeDate == null || closedBeforeDate.after(DateUtility.now())) {
+				closedBeforeDate = DateUtility.now();				
+			}
+		} else if (type == ReckoningTypeEnum.OPEN) {
+			if (closedAfterDate == null || closedAfterDate.before(DateUtility.now())) {
+				closedAfterDate = DateUtility.now();				
+			}
+		} 
+		
+		if (postedBeforeDate != null & postedAfterDate != null) {
+			mainQuery.putAll(buildReckoningPostedBetweenDateQuery(postedBeforeDate, postedAfterDate));
+		}
+		else if (postedBeforeDate != null) {
+			mainQuery.putAll(buildReckoningPostedBeforeDateQuery(postedBeforeDate));
+		}
+		else if (postedAfterDate != null) {
+			mainQuery.putAll(buildReckoningPostedAfterDateQuery(postedAfterDate));
+		}
+		
+		if (closedBeforeDate != null & closedAfterDate != null) {
+			mainQuery.putAll(buildReckoningClosedBetweenDateQuery(closedBeforeDate, closedAfterDate));
+		}		
+		else if (closedBeforeDate != null) {
+			mainQuery.putAll(buildReckoningClosedBeforeDateQuery(closedBeforeDate));
+		}
+		else if (closedAfterDate != null) {
+			mainQuery.putAll(buildReckoningClosedAfterDateQuery(closedAfterDate));
+		}
+		
+		if (includeTags != null) {
+			mainQuery.putAll(buildReckoningTagsQuery(includeTags));
+		}
+		if (excludeTags != null) {
+			mainQuery.putAll(buildExcludeReckoningTagsQuery(excludeTags));
+		}
+		
+		return mainQuery;
 	}
 	
 	public static DBObject buildRandomReckoningQuery (ReckoningTypeEnum type, double randIndex, boolean direction) {
@@ -114,6 +173,19 @@ public final class MongoDbQueryFactory {
 		} 
 		
 		return mainQuery;
+	}
+	
+	public static DBObject buildHighlightedReckoningQuery (ReckoningTypeEnum type) {
+		BasicDBObject highlightedQuery = new BasicDBObject ("highlighted", true);
+		highlightedQuery.putAll(buildValidReckoningQuery());
+		
+		if (type == ReckoningTypeEnum.CLOSED) {
+			highlightedQuery.putAll(buildClosedReckoningQuery());
+		} else if (type == ReckoningTypeEnum.OPEN) {
+			highlightedQuery.putAll(buildOpenReckoningQuery());
+		} 
+		
+		return highlightedQuery;		
 	}
 	
 	public static Update buildReckoningUpdate(Reckoning reckoning) {
