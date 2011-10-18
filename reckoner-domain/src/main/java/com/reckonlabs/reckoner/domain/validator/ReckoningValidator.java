@@ -98,7 +98,7 @@ public class ReckoningValidator {
 	}
 	
 	public static boolean validSortCriteria(String sortCriteria) {
-		String[] validCriteria = {"postingDate", "closingDate"};
+		String[] validCriteria = {"postingDate", "closingDate", "views"};
 		
 		return Arrays.asList(validCriteria).contains(sortCriteria);
 	}
