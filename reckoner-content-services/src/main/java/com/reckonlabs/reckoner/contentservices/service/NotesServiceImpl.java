@@ -65,6 +65,7 @@ public class NotesServiceImpl implements NotesService {
 			// Verify the data in the request:
 			//   * Confirm that the specified user ID exists.
 			//   * If so, confirm that the reckoning itself exists to favorite.
+			//   * Verify that the user isn't trying to favorite their own reckoning.
 			//   * Verify that the user hasn't already favorited the reckoning.
 			
 			if (userService.getUserByUserId(favorite.getUserId()).getUser() == null) {
@@ -174,7 +175,8 @@ public class NotesServiceImpl implements NotesService {
 			// Verify the data in the request:
 			//   * Confirm that the specified user ID exists.
 			//   * If so, confirm that the reckoning itself exists to favorite.
-			//   * Verify that the user hasn't already favorited the reckoning.
+			//   * Verify that the user isn't favoriting their own comment.
+			//   * Verify that the user hasn't already favorited the comment.
 			
 			if (userService.getUserByUserId(favorite.getUserId()).getUser() == null) {
 				log.warn("Attempted to favorite comment on behalf of non-existent user: " + favorite.getUserId());
@@ -186,6 +188,10 @@ public class NotesServiceImpl implements NotesService {
 				{
 					favoritedComment = commentedReckoning.get(0).getComments();
 					for (Comment comment : favoritedComment) {
+						if (comment.getPosterId().equals(favorite.getUserId())){
+							log.info("User " + favorite.getUserId() + " attempted to favorite their own comment: " + comment.getCommentId());
+							return (new ServiceResponse(new Message(MessageEnum.R805_POST_NOTE), false));
+						}
 						if (comment.getFavoriteByUser(favorite.getUserId()) != null) {
 							log.warn("User " + favorite.getUserId() + " attempted to favorite comment multiple times: " + commentId);
 							return (new ServiceResponse(new Message(MessageEnum.R804_POST_NOTE), false));							

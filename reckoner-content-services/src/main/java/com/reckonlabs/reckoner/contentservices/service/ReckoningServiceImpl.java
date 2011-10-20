@@ -196,6 +196,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 				reckoningRepoCustom.incrementReckoningViews(id);
 				if (reckoningList != null && !reckoningList.isEmpty()) {
 					reckoningList.get(0).incrementViews();
+					reckoningCache.setCachedReckoning(reckoningList, id);
 				}
 			}
 			

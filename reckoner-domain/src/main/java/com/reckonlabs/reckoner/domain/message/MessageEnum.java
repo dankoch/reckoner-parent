@@ -23,6 +23,7 @@ public enum MessageEnum {
 	R710_AUTH_USER("R710"),
 	
 	R800_POST_NOTE("R800"), R801_POST_NOTE("R801"), R802_POST_NOTE("R802"), R803_POST_NOTE("R803"), R804_POST_NOTE("R804"),
+	R805_POST_NOTE("R805"),
 	
 	R900_GET_NOTE("R900");
 	
@@ -92,6 +93,7 @@ public enum MessageEnum {
 			case R802_POST_NOTE: return ("Specified comment does not exist.");
 			case R803_POST_NOTE: return ("Specified user does not exist.");		
 			case R804_POST_NOTE: return ("Specified user has already favorited / flagged this reckoning.");
+			case R805_POST_NOTE: return ("Specified user is trying to favorite their own comment/reckoning.");
 			
 			case R900_GET_NOTE: return ("Paged flag/favorite queries need both a valid page and size value.");
 			
