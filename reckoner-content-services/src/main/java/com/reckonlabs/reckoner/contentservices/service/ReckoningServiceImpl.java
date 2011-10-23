@@ -288,45 +288,30 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 
 	@Override
-	public ReckoningServiceList getHighlightedReckonings(ReckoningTypeEnum reckoningType, Integer page, Integer size, String sessionId) {
-		List<Reckoning> reckonings = null;
-		
-		try {
-			reckonings = reckoningRepoCustom.getHighlightedReckoningSummaries(reckoningType, page, size);
-			// Get the summaries for the Posting Users
-			for (Reckoning reckoning : reckonings) {
-				reckoning.setPostingUser(userService.getUserByUserId
-								(reckoning.getSubmitterId(), true).getUser());
-			}
-		} catch (Exception e) {
-			log.error("General exception when getting highlighted reckonings: " + e.getMessage());
-			log.debug("Stack Trace:", e);
-			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
-		}
-		
-		return new ReckoningServiceList(reckonings, new Message(), true);
-	}
-
-	@Override
 	public ReckoningServiceList getReckoningSummaries(ReckoningTypeEnum reckoningType, 
 			Date postedAfter, Date postedBefore,
 			Date closedAfter, Date closedBefore,
 			List<String> includeTags, List<String> excludeTags,
+			Boolean highlighted,
 			String sortBy, Boolean ascending,
 			Integer page, Integer size, String sessionId) {
 		List<Reckoning> reckonings = null;
+		Long count = null;
 
 		try {
 			includeTags = formatTags(includeTags);
 			excludeTags = formatTags(excludeTags);
 			
 			reckonings = reckoningRepoCustom.getReckoningSummaries(reckoningType, postedBefore, postedAfter, closedBefore, 
-					closedAfter, includeTags, excludeTags, sortBy, ascending, page, size);
+					closedAfter, includeTags, excludeTags, highlighted, sortBy, ascending, page, size);
 			
 			for (Reckoning reckoning : reckonings) {
 				reckoning.setPostingUser(userService.getUserByUserId
 								(reckoning.getSubmitterId(), true).getUser());
 			}
+			
+			count = reckoningRepoCustom.getReckoningCount(reckoningType, postedBefore, postedAfter, 
+					closedBefore, closedAfter, includeTags, excludeTags, highlighted);			
 		}
 		catch (Exception e) {
 			log.error("General exception when getting reckoning summaries: " + e.getMessage());
@@ -334,7 +319,28 @@ public class ReckoningServiceImpl implements ReckoningService {
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
 		
-		return new ReckoningServiceList(reckonings, new Message(), true);
+		return new ReckoningServiceList(reckonings, count, new Message(), true);
+	}
+	
+	@Override
+	public ReckoningServiceList getReckoningCount(ReckoningTypeEnum reckoningType, 
+			Date postedAfter, Date postedBefore,
+			Date closedAfter, Date closedBefore,
+			List<String> includeTags, List<String> excludeTags,
+			Boolean highlighted) {
+		Long count = null;
+		
+		try {
+			count = reckoningRepoCustom.getReckoningCount(reckoningType, postedBefore, postedAfter, 
+					closedBefore, closedAfter, includeTags, excludeTags, highlighted);
+			
+		} catch (Exception e) {
+			log.error("General exception when getting reckoning count: " + e.getMessage());
+			log.debug("Stack Trace:", e);
+			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ReckoningServiceList(null, count, new Message(), true);
 	}
 
 	@Override

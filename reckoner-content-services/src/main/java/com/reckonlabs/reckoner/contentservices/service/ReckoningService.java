@@ -27,14 +27,19 @@ public interface ReckoningService {
 	
 	public ReckoningServiceList getReckoningSummariesByUser (String submitterId, Integer page, Integer size, String sessionId);
 	
-	public ReckoningServiceList getHighlightedReckonings (ReckoningTypeEnum reckoningType, Integer page, Integer size, String sessionId);
-	
 	public ReckoningServiceList getReckoningSummaries (ReckoningTypeEnum reckoningType, 
 			Date postedAfter, Date postedBefore,
 			Date closedAfter, Date closedBefore,
 			List<String> includeTags, List<String> excludeTags,
+			Boolean highlighted,
 			String sortBy, Boolean ascending, Integer page, Integer size, 
 			String sessionId);
+	
+	public ReckoningServiceList getReckoningCount (ReckoningTypeEnum reckoningType, 
+			Date postedAfter, Date postedBefore,
+			Date closedAfter, Date closedBefore,
+			List<String> includeTags, List<String> excludeTags,
+			Boolean highlighted);
 
 	public ReckoningServiceList getRandomReckoning(ReckoningTypeEnum reckoningType);
 }

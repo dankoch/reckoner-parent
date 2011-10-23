@@ -68,21 +68,22 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());
 	}
-	
+
 	public List<Reckoning> getReckoningSummaries (ReckoningTypeEnum reckoningType, 
 			Date postedBeforeDate, Date postedAfterDate,
 			Date closedBeforeDate, Date closedAfterDate, 
-			List<String> includeTags, List<String> excludeTags,
+			List<String> includeTags, List<String> excludeTags, 
+			Boolean highlighted,
 			String sortBy, Boolean ascending, Integer page, Integer size) {
 		BasicQuery query = null;
 		
 		query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
-				closedBeforeDate, closedAfterDate, includeTags, excludeTags),
+				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted),
 				MongoDbQueryFactory.buildReckoningSummaryFields());
 		
 		if (page != null && size != null) {
 			query.limit(size.intValue());
-			query.skip(page.intValue() * page.intValue());
+			query.skip(page.intValue() * size.intValue());
 		}
 		
 		if (sortBy != null && sortBy != "") {
@@ -96,22 +97,17 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		return mongoTemplate.find(query, Reckoning.class);		
 	}
 	
-	@Override
-	public List<Reckoning> getHighlightedReckoningSummaries(ReckoningTypeEnum reckoningType, 
-			Integer page, Integer size) {
-		BasicQuery query = null;
+	public Long getReckoningCount(ReckoningTypeEnum reckoningType, 
+			Date postedBeforeDate, Date postedAfterDate,
+			Date closedBeforeDate, Date closedAfterDate, 
+			List<String> includeTags, List<String> excludeTags,
+			Boolean highlighted) {
 		
-		query = new BasicQuery(MongoDbQueryFactory.buildHighlightedReckoningQuery(reckoningType), 
-				MongoDbQueryFactory.buildReckoningSummaryFields());
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
+				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted),
+				MongoDbQueryFactory.buildReckoningSummaryFields());	
 		
-		if (page != null && size != null) {
-			query.limit(size.intValue());
-			query.skip(page.intValue() * size.intValue());
-		}		
-		
-		query.sort().on("postingDate", Order.DESCENDING);
-		
-		return mongoTemplate.find(query, Reckoning.class);
+		return mongoTemplate.getCollection(RECKONING_COLLECTION).count(query.getQueryObject());		
 	}
 	
 	public List<Reckoning> getRandomReckoningSummary(ReckoningTypeEnum type) {

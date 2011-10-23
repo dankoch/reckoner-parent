@@ -26,11 +26,16 @@ public interface ReckoningRepoCustom {
 			Date postedBeforeDate, Date postedAfterDate,
 			Date closedBeforeDate, Date closedAfterDate, 
 			List<String> includeTag, List<String> excludeTag, 
+			Boolean highlighted,
 			String sortBy, Boolean ascending, Integer page, Integer size);
 	
-	public List<Reckoning> getRandomReckoningSummary (ReckoningTypeEnum type);
+	public Long getReckoningCount (ReckoningTypeEnum reckoningType, 
+			Date postedBeforeDate, Date postedAfterDate,
+			Date closedBeforeDate, Date closedAfterDate, 
+			List<String> includeTag, List<String> excludeTag,
+			Boolean highlighted);
 	
-	public List<Reckoning> getHighlightedReckoningSummaries (ReckoningTypeEnum reckoningType, Integer page, Integer size);
+	public List<Reckoning> getRandomReckoningSummary (ReckoningTypeEnum type);
 	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	

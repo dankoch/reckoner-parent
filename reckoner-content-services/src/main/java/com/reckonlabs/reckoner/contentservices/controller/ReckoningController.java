@@ -322,90 +322,6 @@ public class ReckoningController {
 		
 		return reckoningService.getReckoningSummariesByUser (submitterId, page, size, sessionId);
 	}
-
-	/**
-	 * This method allows for the retrieval of highlighted reckonings (sorted by most recent posting).
-	 * 
-	 * @param sessionId
-	 *           String          
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/reckoning/highlighted", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getHighlightedReckonings(
-			@RequestParam(required = false, value = "page") Integer page,
-			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = false, value = "session_id") String sessionId) 
-				throws AuthenticationException {
-		
-		if (serviceProps.isEnableServiceAuthentication() && 
-				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
-			log.info("User with insufficient privileges attempted to view highlighted reckonings: ");
-			log.info("Session ID: " + sessionId);
-			throw new AuthenticationException();			
-		}
-		
-		return reckoningService.getHighlightedReckonings(ReckoningTypeEnum.OPEN_AND_CLOSED, page, size, sessionId);
-	}
-	
-	/**
-	 * This method allows for the retrieval of open highlighted reckonings (sorted by most recent posting).
-	 * 
-	 * @param sessionId
-	 *           String   
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/reckoning/highlighted/open", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getHighlightedOpenReckoning(
-			@RequestParam(required = false, value = "page") Integer page,
-			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = false, value = "session_id") String sessionId) 
-				throws AuthenticationException {
-
-		if (serviceProps.isEnableServiceAuthentication() && 
-				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
-			log.info("User with insufficient privileges attempted to view highlighted reckonings: ");
-			log.info("Session ID: " + sessionId);
-			throw new AuthenticationException();			
-		}
-		
-		return reckoningService.getHighlightedReckonings(ReckoningTypeEnum.OPEN, page, size, sessionId);
-	}
-	
-	/**
-	 * This method allows for the retrieval of the most recent closed highlighted reckoning (sorted by most recent posting).
-	 * 
-	 * @param sessionId
-	 *           String   
-	 * @return reckoningServiceList
-	 *            ReckoningServiceList
-	 * @throws Exception
-	 *            exception
-	 */	
-	@RequestMapping(value = "/reckoning/highlighted/closed", method = RequestMethod.GET)	
-	public @ResponseBody
-	ReckoningServiceList getHighlightedClosedReckoning(
-			@RequestParam(required = false, value = "page") Integer page,
-			@RequestParam(required = false, value = "size") Integer size,
-			@RequestParam(required = false, value = "session_id") String sessionId) 
-				throws AuthenticationException {
-		
-		if (serviceProps.isEnableServiceAuthentication() && 
-				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
-			log.info("User with insufficient privileges attempted to view highlighted reckonings: ");
-			log.info("Session ID: " + sessionId);
-			throw new AuthenticationException();
-		}
-		
-		return reckoningService.getHighlightedReckonings(ReckoningTypeEnum.CLOSED, page, size, sessionId);
-	}
 	
 	/**
 	 * This method allows for the general retrieval of open reckoning summaries.
@@ -440,9 +356,10 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "closed_before") Date closedBefore,
 			@RequestParam(required = false, value = "include_tags") String includeTagsString,
 			@RequestParam(required = false, value = "exclude_tags") String excludeTagsString,
+			@RequestParam(required = false, value = "highlighted") Boolean highlighted,
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
-			@RequestParam(required = false, value = "session_id") String sessionId) 
+			@RequestParam(required = false, value = "session_id") String sessionId)
 				throws AuthenticationException {
 		
 		List<String> includeTagsList = convertList(includeTagsString);
@@ -464,7 +381,8 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size, sessionId);
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted,
+				sortBy, ascending, page, size, sessionId);
 	}
 	
 	/**
@@ -500,6 +418,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "closed_before") Date closedBefore,
 			@RequestParam(required = false, value = "include_tags") String includeTagsString,
 			@RequestParam(required = false, value = "exclude_tags") String excludeTagsString,
+			@RequestParam(required = false, value = "highlighted") Boolean highlighted,
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
 			@RequestParam(required = false, value = "session_id") String sessionId) 
@@ -524,7 +443,8 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size, sessionId);
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted,
+				sortBy, ascending, page, size, sessionId);
 	}
 	
 	/**
@@ -560,6 +480,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "closed_before") Date closedBefore,
 			@RequestParam(required = false, value = "include_tags") String includeTagsString,
 			@RequestParam(required = false, value = "exclude_tags") String excludeTagsString,
+			@RequestParam(required = false, value = "highlighted") Boolean highlighted,
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
 			@RequestParam(required = false, value = "session_id") String sessionId) 
@@ -584,7 +505,8 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.CLOSED, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size, sessionId);
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted,
+				sortBy, ascending, page, size, sessionId);
 	}
 	
 	/**

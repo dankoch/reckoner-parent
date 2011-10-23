@@ -106,12 +106,27 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("tags", notQuery);
 	}
 	
+	public static DBObject buildIncludeExcludeReckoningTagsQuery (List<String> includeTags, List<String> excludeTags) {
+		DBObject combinedQuery = new BasicDBObject("$in", includeTags);
+		
+		DBObject innerQuery = new BasicDBObject("$in", excludeTags);
+		DBObject excludeQuery = new BasicDBObject("$not", innerQuery);	
+		combinedQuery.putAll(excludeQuery);
+		
+		return new BasicDBObject("tags", combinedQuery);
+	}
+	
+	public static DBObject buildHighlightedQuery(boolean highlighted) {
+		return new BasicDBObject ("highlighted", highlighted);
+	}
+	
 	public static DBObject buildAnswerIndexExists (Integer index) {
 		return new BasicDBObject("answers.index", index);
 	}
 	
 	public static DBObject buildReckoningQuery (ReckoningTypeEnum type, Date postedBeforeDate, Date postedAfterDate,
-			Date closedBeforeDate, Date closedAfterDate, List<String> includeTags, List<String> excludeTags) {
+			Date closedBeforeDate, Date closedAfterDate, List<String> includeTags, List<String> excludeTags,
+			Boolean highlighted) {
 
 		DBObject mainQuery = buildValidReckoningQuery();
 				
@@ -127,7 +142,7 @@ public final class MongoDbQueryFactory {
 			}
 		} 
 		
-		if (postedBeforeDate != null & postedAfterDate != null) {
+		if (postedBeforeDate != null && postedAfterDate != null) {
 			mainQuery.putAll(buildReckoningPostedBetweenDateQuery(postedBeforeDate, postedAfterDate));
 		}
 		else if (postedBeforeDate != null) {
@@ -147,11 +162,18 @@ public final class MongoDbQueryFactory {
 			mainQuery.putAll(buildReckoningClosedAfterDateQuery(closedAfterDate));
 		}
 		
-		if (includeTags != null) {
-			mainQuery.putAll(buildReckoningTagsQuery(includeTags));
+		if (includeTags != null && excludeTags != null) {
+			mainQuery.putAll(buildIncludeExcludeReckoningTagsQuery(includeTags, excludeTags));
 		}
-		if (excludeTags != null) {
+		else if (includeTags != null) {
+			mainQuery.putAll(buildReckoningTagsQuery(includeTags));
+		} 
+		else if (excludeTags != null) {
 			mainQuery.putAll(buildExcludeReckoningTagsQuery(excludeTags));
+		}
+		
+		if (highlighted != null) {
+			mainQuery.putAll(buildHighlightedQuery(highlighted.booleanValue()));
 		}
 		
 		return mainQuery;
@@ -173,19 +195,6 @@ public final class MongoDbQueryFactory {
 		} 
 		
 		return mainQuery;
-	}
-	
-	public static DBObject buildHighlightedReckoningQuery (ReckoningTypeEnum type) {
-		BasicDBObject highlightedQuery = new BasicDBObject ("highlighted", true);
-		highlightedQuery.putAll(buildValidReckoningQuery());
-		
-		if (type == ReckoningTypeEnum.CLOSED) {
-			highlightedQuery.putAll(buildClosedReckoningQuery());
-		} else if (type == ReckoningTypeEnum.OPEN) {
-			highlightedQuery.putAll(buildOpenReckoningQuery());
-		} 
-		
-		return highlightedQuery;		
 	}
 	
 	public static Update buildReckoningUpdate(Reckoning reckoning) {
