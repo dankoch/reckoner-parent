@@ -116,21 +116,20 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildRandomReckoningQuery(type, 
 				randIndex, false), MongoDbQueryFactory.buildReckoningSummaryFields());
+		query.sort().on("randomSelect", Order.DESCENDING);
+		query.limit(1);
 		
-		Reckoning randomReckoning = mongoTemplate.findOne(query, Reckoning.class);
+		returnList = mongoTemplate.find(query, Reckoning.class);
 		
 		// If no random reckoning turned up searching one direction from the random index,
 		// try the other direction.
-		if (randomReckoning == null) {
+		if (returnList == null || returnList.isEmpty()) {
 			query = new BasicQuery(MongoDbQueryFactory.buildRandomReckoningQuery(type, 
 					randIndex, true), MongoDbQueryFactory.buildReckoningSummaryFields());
-
-			randomReckoning = mongoTemplate.findOne(query, Reckoning.class);
-		}
-		
-		if (randomReckoning != null) {
-			returnList = new LinkedList<Reckoning>();
-			returnList.add(randomReckoning);
+			query.sort().on("randomSelect", Order.ASCENDING);
+			query.limit(1);
+			
+			returnList = mongoTemplate.find(query, Reckoning.class);
 		}
 		
 		return returnList;
