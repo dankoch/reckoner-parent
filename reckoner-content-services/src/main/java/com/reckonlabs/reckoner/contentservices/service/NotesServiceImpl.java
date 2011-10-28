@@ -212,7 +212,7 @@ public class NotesServiceImpl implements NotesService {
 			// Cache management. Remove this user's favorited comments cache entry because of the update.  
 			reckoningCache.removeCachedUserFavoritedReckoningComments(favorite.getUserId());
 			
-			// Cache management.  If the Reckoning is in the cache, pull it, add the favorite yourself, and roll it back in.
+			// Cache management.  If the Reckoning is in the cache, pull it, add the favorite to the comment yourself, and roll it back in.
 			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(commentedReckoning.get(0).getId());
 			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
 				for (Comment comment : cacheReckoning.get(0).getComments()) {
@@ -289,14 +289,20 @@ public class NotesServiceImpl implements NotesService {
 	@Override
 	public ReckoningServiceList getFavoritedReckoningsByUser(String userId, Integer page, Integer size, String sessionId) {
 		List<Reckoning> favoritedReckonings = null;
+		long count = 0;
 		
 		try {
 			favoritedReckonings = reckoningCache.getCachedUserFavoritedReckonings(userId);
 			if (favoritedReckonings == null) {
 				favoritedReckonings = reckoningRepo.getReckoningSummariesFavoritedByUser(userId);
-				reckoningCache.setCachedUserReckoningSummaries(userId, favoritedReckonings);
+				for (Reckoning reckoning : favoritedReckonings) {
+					reckoning.setPostingUser(userService.getUserByUserId
+									(reckoning.getSubmitterId(), true).getUser());
+				}
+				
+				reckoningCache.setCachedUserFavoritedReckonings(favoritedReckonings, userId);
 			}
-			
+			count = Long.valueOf(favoritedReckonings.size());
 			favoritedReckonings = (List<Reckoning>) ListPagingUtility.pageList(favoritedReckonings, page, size);
 		} catch (Exception e) {
 			log.error("General exception when getting favorited reckoning summaries by user: " + e.getMessage());
@@ -304,13 +310,14 @@ public class NotesServiceImpl implements NotesService {
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
 		
-		return new ReckoningServiceList(favoritedReckonings, new Message(), true);
+		return new ReckoningServiceList(favoritedReckonings, count, new Message(), true);
 	}
 
 	@Override
 	public ReckoningServiceList getFavoritedCommentsByUser(String userId,
 			Integer page, Integer size, String sessionId) {
 		List<Reckoning> commentedReckonings = null;
+		long count = 0;
 		
 		try {
 			commentedReckonings = reckoningCache.getCachedUserFavoritedReckoningComments(userId);
@@ -320,10 +327,15 @@ public class NotesServiceImpl implements NotesService {
 				if (commentedReckonings != null) {
 					for (Reckoning commentedReckoning : commentedReckonings) {
 						commentedReckoning.setComments(commentedReckoning.getFavoritedCommentsByUser(userId));
+						count += commentedReckoning.getFavoritedCommentsByUser(userId).size();
 					}
 				}
 			
-				reckoningCache.setCachedUserReckoningSummaries(userId, commentedReckonings);
+				reckoningCache.setCachedUserFavoritedReckoningComments(commentedReckonings, userId);
+			} else {
+				for (Reckoning commentedReckoning : commentedReckonings) {
+					count += commentedReckoning.getComments().size();
+				}				
 			}
 			
 			commentedReckonings = (List<Reckoning>) ListPagingUtility.pageList(commentedReckonings, page, size);
@@ -333,7 +345,7 @@ public class NotesServiceImpl implements NotesService {
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
 		
-		return new ReckoningServiceList(commentedReckonings, new Message(), true);
+		return new ReckoningServiceList(commentedReckonings, count, new Message(), true);
 	}
 	
 }

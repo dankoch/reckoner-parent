@@ -31,15 +31,6 @@ public interface ReckoningCache {
 
 	public void removeCachedUserReckoningSummaries(String userId);
 	
-	public void setCachedTagReckoningSummaries(List<Reckoning> reckonings, 
-			String tag, Integer page, Integer size);
-
-	public List<Reckoning> getCachedTagReckoningSummaries(String tag, 
-			Integer page, Integer size);
-
-	public void removeCachedTagReckoningSummaries(String tag, 
-			Integer page, Integer size);
-	
 	public void setCachedUserCommentedReckonings(List<Reckoning> reckonings, 
 			String userId);
 

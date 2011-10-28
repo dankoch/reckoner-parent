@@ -39,6 +39,7 @@ import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
@@ -357,6 +358,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "include_tags") String includeTagsString,
 			@RequestParam(required = false, value = "exclude_tags") String excludeTagsString,
 			@RequestParam(required = false, value = "highlighted") Boolean highlighted,
+			@RequestParam(required = false, value = "submitted_by") String submittedBy,			
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
 			@RequestParam(required = false, value = "session_id") String sessionId)
@@ -381,7 +383,7 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted,
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
 				sortBy, ascending, page, size, sessionId);
 	}
 	
@@ -419,6 +421,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "include_tags") String includeTagsString,
 			@RequestParam(required = false, value = "exclude_tags") String excludeTagsString,
 			@RequestParam(required = false, value = "highlighted") Boolean highlighted,
+			@RequestParam(required = false, value = "submitted_by") String submittedBy,		
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
 			@RequestParam(required = false, value = "session_id") String sessionId) 
@@ -443,7 +446,7 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted,
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
 				sortBy, ascending, page, size, sessionId);
 	}
 	
@@ -481,6 +484,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "include_tags") String includeTagsString,
 			@RequestParam(required = false, value = "exclude_tags") String excludeTagsString,
 			@RequestParam(required = false, value = "highlighted") Boolean highlighted,
+			@RequestParam(required = false, value = "submitted_by") String submittedBy,		
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
 			@RequestParam(required = false, value = "session_id") String sessionId) 
@@ -505,7 +509,7 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.CLOSED, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted,
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
 				sortBy, ascending, page, size, sessionId);
 	}
 	

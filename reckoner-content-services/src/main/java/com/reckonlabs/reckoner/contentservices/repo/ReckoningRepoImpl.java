@@ -21,6 +21,7 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
@@ -74,11 +75,13 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			Date closedBeforeDate, Date closedAfterDate, 
 			List<String> includeTags, List<String> excludeTags, 
 			Boolean highlighted,
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending, Integer page, Integer size) {
 		BasicQuery query = null;
 		
 		query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
-				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted),
+				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus),
 				MongoDbQueryFactory.buildReckoningSummaryFields());
 		
 		if (page != null && size != null) {
@@ -101,10 +104,12 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			Date postedBeforeDate, Date postedAfterDate,
 			Date closedBeforeDate, Date closedAfterDate, 
 			List<String> includeTags, List<String> excludeTags,
-			Boolean highlighted) {
+			Boolean highlighted, 
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus) {
 		
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
-				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted),
+				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus),
 				MongoDbQueryFactory.buildReckoningSummaryFields());	
 		
 		return mongoTemplate.getCollection(RECKONING_COLLECTION).count(query.getQueryObject());		
@@ -133,6 +138,24 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		}
 		
 		return returnList;
+	}
+	
+	@Override
+	public List<Reckoning> getUserVotedReckonings(String userId) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildVotedOnByUser(userId),
+				MongoDbQueryFactory.buildReckoningVotedFields());	
+		
+		query.sort().on("closingDate", Order.DESCENDING);
+		return mongoTemplate.find(query, Reckoning.class);	
+	}
+	
+	@Override
+	public List<Reckoning> getUserCommentedReckonings(String userId) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildCommentedOnByUser(userId),
+				MongoDbQueryFactory.buildReckoningSummaryFieldsPlusComments());	
+		
+		query.sort().on("closingDate", Order.DESCENDING);
+		return mongoTemplate.find(query, Reckoning.class);	
 	}
 	
 	@Override

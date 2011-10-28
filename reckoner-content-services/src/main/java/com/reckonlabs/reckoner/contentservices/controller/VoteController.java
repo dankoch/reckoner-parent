@@ -155,7 +155,9 @@ public class VoteController {
 	@RequestMapping(value = "/vote/user/{id}", method = RequestMethod.GET)	
 	public @ResponseBody
 	ServiceResponse getUserVotingRecord(@PathVariable String id,
-			@RequestParam(required = true, value = "session_id") String sessionId)
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
 			throws AuthenticationException, Exception {
 
 		if (serviceProps.isEnableServiceAuthentication() && 
@@ -165,7 +167,14 @@ public class VoteController {
 			throw new AuthenticationException();			
 		} 
 		
-		return voteService.getUserVotedReckonings(id);
+		Message validationMessage = ReckoningValidator.validateReckoningQuery(page, size);
+		
+		if (validationMessage != null) {
+			log.info("Voting record request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}	
+		
+		return voteService.getUserVotedReckonings(id, page, size);
 	}
 
 }

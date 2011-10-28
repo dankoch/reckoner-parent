@@ -51,6 +51,9 @@ public class VoteServiceImpl implements VoteService {
 	@Autowired
 	ReckoningCache reckoningCache;
 	
+	@Autowired
+	UserService userService;
+	
 	private static final Logger log = LoggerFactory
 			.getLogger(VoteServiceImpl.class);
 
@@ -122,13 +125,14 @@ public class VoteServiceImpl implements VoteService {
 	}
 
 	@Override
-	public ReckoningServiceList getUserVotedReckonings(String userId) {
+	public ReckoningServiceList getUserVotedReckonings(String userId, Integer page, Integer size) {
 		List<Reckoning> userVotedReckonings = null;
+		long count = 0;
 		
 		try {
 			userVotedReckonings = reckoningCache.getCachedUserVotedReckonings(userId);
-			if (userVotedReckonings == null) {
-				userVotedReckonings = reckoningRepo.getVotesByUser(userId);
+			if (userVotedReckonings == null || userVotedReckonings.isEmpty()) {
+				userVotedReckonings = reckoningRepoCustom.getUserVotedReckonings(userId);
 				for (Reckoning reckoning : userVotedReckonings) {
 					List<Vote> vote = reckoning.getVoteByUser(userId);
 					
@@ -139,21 +143,29 @@ public class VoteServiceImpl implements VoteService {
 								Hashtable<String, String> answerVote = new Hashtable<String, String>();
 								answerVote.put(userId, "1");
 								answer.setVotes(answerVote);
+								answer.setVoteTotal(1);
 							} else {
 								answer.setVotes(new Hashtable<String, String> ());
+								answer.setVoteTotal(0);
 							}
 						}
 					}
+					
+					reckoning.setPostingUser(userService.getUserByUserId
+							(reckoning.getSubmitterId(), true).getUser());
 				}
 				reckoningCache.setCachedUserVotedReckonings(userVotedReckonings, userId);
 			}
+			
+			count = userVotedReckonings.size();
+			userVotedReckonings = (List<Reckoning>) ListPagingUtility.pageList(userVotedReckonings, page, size);
 		} catch (Exception e) {
 		   log.error("General exception when getting reckonings voted by user: " + e.getMessage());
 		   log.debug("Stack Trace:", e);			
 		   return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 	    }
 		
-		return new ReckoningServiceList(userVotedReckonings, new Message(), true);		
+		return new ReckoningServiceList(userVotedReckonings, count, new Message(), true);		
 	}
 
 	@Override

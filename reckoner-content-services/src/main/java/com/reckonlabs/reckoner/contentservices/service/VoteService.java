@@ -12,7 +12,7 @@ public interface VoteService {
 	
 	public ServiceResponse postReckoningVote (Vote vote, String reckonId, Integer answerIndex);
 	
-	public ReckoningServiceList getUserVotedReckonings (String userId);
+	public ReckoningServiceList getUserVotedReckonings (String userId, Integer page, Integer size);
 	
 	public VoteServiceList getUserReckoningVote (String userId, String reckonId);
 }

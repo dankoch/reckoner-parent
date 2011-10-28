@@ -8,6 +8,7 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 
 public interface ReckoningRepoCustom {
@@ -27,15 +28,23 @@ public interface ReckoningRepoCustom {
 			Date closedBeforeDate, Date closedAfterDate, 
 			List<String> includeTag, List<String> excludeTag, 
 			Boolean highlighted,
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending, Integer page, Integer size);
 	
 	public Long getReckoningCount (ReckoningTypeEnum reckoningType, 
 			Date postedBeforeDate, Date postedAfterDate,
 			Date closedBeforeDate, Date closedAfterDate, 
 			List<String> includeTag, List<String> excludeTag,
-			Boolean highlighted);
+			Boolean highlighted,
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus);
 	
 	public List<Reckoning> getRandomReckoningSummary (ReckoningTypeEnum type);
+	
+	public List<Reckoning> getUserVotedReckonings (String userId);
+	
+	public List<Reckoning> getUserCommentedReckonings (String userId);
 	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	

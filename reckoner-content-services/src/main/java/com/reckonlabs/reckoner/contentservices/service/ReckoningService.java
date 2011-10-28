@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
@@ -32,6 +33,8 @@ public interface ReckoningService {
 			Date closedAfter, Date closedBefore,
 			List<String> includeTags, List<String> excludeTags,
 			Boolean highlighted,
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending, Integer page, Integer size, 
 			String sessionId);
 	
@@ -39,7 +42,9 @@ public interface ReckoningService {
 			Date postedAfter, Date postedBefore,
 			Date closedAfter, Date closedBefore,
 			List<String> includeTags, List<String> excludeTags,
-			Boolean highlighted);
+			Boolean highlighted,
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus);
 
 	public ReckoningServiceList getRandomReckoning(ReckoningTypeEnum reckoningType);
 }

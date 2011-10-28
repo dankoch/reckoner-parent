@@ -19,18 +19,15 @@ public class ReckoningCacheMemImpl implements ReckoningCache {
 
 	public static final int RECKONING_CACHE_LIFESPAN = 604800;
 	public static final int RECKONING_SUMMARY_CACHE_LIFESPAN = 604800;
-	public static final int USER_RECKONING_SUMMARY_CACHE_LIFESPAN = 604800;
-	// Cut to 30 minutes.  We don't manually clear the tag caches when a new reckoning gets posted.
-	public static final int TAG_RECKONING_SUMMARY_CACHE_LIFESPAN = 1800;	
-	public static final int USER_COMMENTED_RECKONING_CACHE_LIFESPAN = 604800;
-	public static final int USER_VOTED_RECKONING_CACHE_LIFESPAN = 604800;
-	public static final int USER_FAVORITED_RECKONING_CACHE_LIFESPAN = 604800;
-	public static final int USER_FAVORITED_COMMENT_CACHE_LIFESPAN = 604800;
+	public static final int USER_RECKONING_SUMMARY_CACHE_LIFESPAN = 1800;
+	public static final int USER_COMMENTED_RECKONING_CACHE_LIFESPAN = 1800;
+	public static final int USER_VOTED_RECKONING_CACHE_LIFESPAN = 1800;
+	public static final int USER_FAVORITED_RECKONING_CACHE_LIFESPAN = 1800;
+	public static final int USER_FAVORITED_COMMENT_CACHE_LIFESPAN = 1800;
 	
 	public static final String RECKONING_CACHE_PREFIX = "reckoning_";
 	public static final String RECKONING_SUMMARY_CACHE_PREFIX = "reckoning_summary_";
 	public static final String USER_RECKONING_SUMMARY_CACHE_PREFIX = "user_reckoning_summary_";
-	public static final String TAG_RECKONING_SUMMARY_CACHE_PREFIX = "tag_reckoning_summary_";
 	public static final String USER_COMMENTED_RECKONING_CACHE_PREFIX = "user_commented_reckoning_";
 	public static final String USER_RECKONING_VOTE_CACHE_PREFIX = "user_reckoning_vote_";
 	public static final String USER_VOTED_RECKONING_CACHE_PREFIX = "user_vote_";
@@ -102,41 +99,22 @@ public class ReckoningCacheMemImpl implements ReckoningCache {
 	public void removeCachedUserReckoningSummaries(String userId) {
 		removeCacheElement(USER_RECKONING_SUMMARY_CACHE_PREFIX + userId);
 	}
-
-	@Override
-	public void setCachedTagReckoningSummaries(List<Reckoning> reckonings,
-			String tag, Integer page, Integer size) {
-		setCacheElement(TAG_RECKONING_SUMMARY_CACHE_PREFIX + tag + page + size, 
-				TAG_RECKONING_SUMMARY_CACHE_LIFESPAN, reckonings);
-	}
-
-	@Override
-	public List<Reckoning> getCachedTagReckoningSummaries(String tag, Integer page,
-			Integer size) {
-		return getCacheElement(TAG_RECKONING_SUMMARY_CACHE_PREFIX + tag + page + size);
-	}
-
-	@Override
-	public void removeCachedTagReckoningSummaries(String tag, Integer page,
-			Integer size) {
-		removeCacheElement(TAG_RECKONING_SUMMARY_CACHE_PREFIX + tag + page + size);
-	}
 	
 	@Override
 	public void setCachedUserCommentedReckonings(List<Reckoning> reckonings,
 			String userId) {
-		setCacheElement(TAG_RECKONING_SUMMARY_CACHE_PREFIX + userId, 
-				TAG_RECKONING_SUMMARY_CACHE_LIFESPAN, reckonings);
+		setCacheElement(USER_COMMENTED_RECKONING_CACHE_PREFIX + userId, 
+				USER_COMMENTED_RECKONING_CACHE_LIFESPAN, reckonings);
 	}
 
 	@Override
 	public List<Reckoning> getCachedUserCommentedReckonings(String userId) {
-		return getCacheElement(TAG_RECKONING_SUMMARY_CACHE_PREFIX + userId);
+		return getCacheElement(USER_COMMENTED_RECKONING_CACHE_PREFIX + userId);
 	}
 
 	@Override
 	public void removeCachedUserCommentedReckonings(String userId) {
-		removeCacheElement(TAG_RECKONING_SUMMARY_CACHE_PREFIX + userId);
+		removeCacheElement(USER_COMMENTED_RECKONING_CACHE_PREFIX + userId);
 	}
 	
 	@Override

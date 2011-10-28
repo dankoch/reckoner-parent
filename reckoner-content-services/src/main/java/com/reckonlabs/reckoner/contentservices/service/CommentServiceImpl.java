@@ -22,6 +22,7 @@ import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.message.CommentServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 import com.reckonlabs.reckoner.domain.utility.ListPagingUtility;
@@ -113,23 +114,36 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public ReckoningServiceList getCommentsByUser(String userId, Integer page,
 			Integer size, String sessionId) {
-		List<Reckoning> commentedReckonings = null;	
+		List<Reckoning> commentedReckonings = null;
+		long count = 0;
 		
 		try {
 			// Check the cache to see if the list already exists.  If not, create it and cache.
 			commentedReckonings = reckoningCache.getCachedUserCommentedReckonings(userId);
 			
 			if (commentedReckonings == null) {
-				commentedReckonings = reckoningRepo.getReckoningSummariesCommentedOnByUser(userId);
+				commentedReckonings = reckoningRepoCustom.getUserCommentedReckonings(userId);
+				User user = userService.getUserByUserId(userId, true).getUser();
 				
 				// Remove all of the comments from the reckonings except those made by the specified user.
 				for (Reckoning commentedReckoning : commentedReckonings) {
 					List<Comment> userComments = commentedReckoning.getCommentsByUser(userId);
+					count += userComments.size();
+					
+					// Pull the user profile associated with the user id and attach it to each Reckoning.
+					for (Comment comment : userComments) {
+						comment.setUser(user);
+					}
+					
 					commentedReckoning.setComments(userComments);
 					commentedReckoning.setCommentIndex(userComments.size());
 				}
 				
 				reckoningCache.setCachedUserCommentedReckonings(commentedReckonings, userId);
+			} else {
+				for (Reckoning commentedReckoning : commentedReckonings) {
+					count += commentedReckoning.getComments().size();
+				}
 			}
 			
 			commentedReckonings = (List <Reckoning>) ListPagingUtility.pageList(commentedReckonings, page, size);
@@ -139,7 +153,7 @@ public class CommentServiceImpl implements CommentService {
 		   return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 	    }
 		
-		return new ReckoningServiceList(commentedReckonings, new Message(), true);
+		return new ReckoningServiceList(commentedReckonings, count, new Message(), true);
 	}
 	
 }

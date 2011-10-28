@@ -11,13 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import com.reckonlabs.reckoner.contentservices.cache.ReckoningCache;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
-import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoImpl;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
@@ -25,7 +23,9 @@ import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
+import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 import com.reckonlabs.reckoner.domain.utility.ListPagingUtility;
@@ -131,6 +131,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 				reckoningRepoCustom.approveReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId(), DateUtility.now(), 
 						new Date(DateUtility.now().getTime() + approvedReckoning.get(0).getInterval() * 60000));
 				reckoningCache.removeCachedReckoning(id);
+				reckoningCache.removeCachedUserReckoningSummaries(approvedReckoning.get(0).getSubmitterId());
 			} else {
 				log.info("Request to approve non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -159,6 +160,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			if (rejectedReckoning != null && rejectedReckoning.size() > 0) {
 				reckoningRepoCustom.rejectReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId());
 				reckoningCache.removeCachedReckoning(id);
+				reckoningCache.removeCachedUserReckoningSummaries(rejectedReckoning.get(0).getSubmitterId());
 			} else {
 				log.info("Request to reject non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -267,13 +269,24 @@ public class ReckoningServiceImpl implements ReckoningService {
 	}
 	
 	@Override
+	// NOTE:  This is separate from the standard Reckoning Summary query because of the use of caching, as well
+	// as a different pagination policy.
 	public ReckoningServiceList getReckoningSummariesByUser(String submitterId, Integer page, Integer size, String sessionId) {
-		List<Reckoning> reckonings = null;
-		
+		List<Reckoning> reckonings = new LinkedList<Reckoning>();
 		try {
 			reckonings = reckoningCache.getCachedUserReckoningSummaries(submitterId);
 			if (reckonings == null) {
-				reckonings = reckoningRepo.findBySubmitterIdSummary(submitterId);
+				reckonings = reckoningRepoCustom.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, 
+						null, null, null, null, null, null, null, 
+						submitterId, ReckoningApprovalStatusEnum.APPROVED_AND_PENDING, 
+						"submissionDate", null, null, null);
+				
+				// Pull the user profile associated with the submitter Id and attach it to each Reckoning.
+				User user = userService.getUserByUserId(submitterId, true).getUser();
+				for (Reckoning reckoning : reckonings) {
+					reckoning.setPostingUser(user);
+				}
+				
 				reckoningCache.setCachedUserReckoningSummaries(submitterId, reckonings);
 			}
 			
@@ -284,7 +297,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
 		
-		return new ReckoningServiceList(reckonings, new Message(), true);
+		return new ReckoningServiceList(reckonings, Long.valueOf(reckonings.size()), new Message(), true);
 	}
 
 	@Override
@@ -293,6 +306,8 @@ public class ReckoningServiceImpl implements ReckoningService {
 			Date closedAfter, Date closedBefore,
 			List<String> includeTags, List<String> excludeTags,
 			Boolean highlighted,
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending,
 			Integer page, Integer size, String sessionId) {
 		List<Reckoning> reckonings = null;
@@ -303,7 +318,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			excludeTags = formatTags(excludeTags);
 			
 			reckonings = reckoningRepoCustom.getReckoningSummaries(reckoningType, postedBefore, postedAfter, closedBefore, 
-					closedAfter, includeTags, excludeTags, highlighted, sortBy, ascending, page, size);
+					closedAfter, includeTags, excludeTags, highlighted, submitterId, approvalStatus, sortBy, ascending, page, size);
 			
 			for (Reckoning reckoning : reckonings) {
 				reckoning.setPostingUser(userService.getUserByUserId
@@ -311,7 +326,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			}
 			
 			count = reckoningRepoCustom.getReckoningCount(reckoningType, postedBefore, postedAfter, 
-					closedBefore, closedAfter, includeTags, excludeTags, highlighted);			
+					closedBefore, closedAfter, includeTags, excludeTags, highlighted, submitterId, approvalStatus);			
 		}
 		catch (Exception e) {
 			log.error("General exception when getting reckoning summaries: " + e.getMessage());
@@ -327,12 +342,14 @@ public class ReckoningServiceImpl implements ReckoningService {
 			Date postedAfter, Date postedBefore,
 			Date closedAfter, Date closedBefore,
 			List<String> includeTags, List<String> excludeTags,
-			Boolean highlighted) {
+			Boolean highlighted,
+			String submitterId,
+			ReckoningApprovalStatusEnum approvalStatus) {
 		Long count = null;
 		
 		try {
 			count = reckoningRepoCustom.getReckoningCount(reckoningType, postedBefore, postedAfter, 
-					closedBefore, closedAfter, includeTags, excludeTags, highlighted);
+					closedBefore, closedAfter, includeTags, excludeTags, highlighted, submitterId, approvalStatus);
 			
 		} catch (Exception e) {
 			log.error("General exception when getting reckoning count: " + e.getMessage());

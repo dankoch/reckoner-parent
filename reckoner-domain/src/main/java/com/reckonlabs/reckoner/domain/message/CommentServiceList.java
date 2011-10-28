@@ -17,15 +17,27 @@ public class CommentServiceList extends ServiceResponse implements Serializable 
 	
 	@Column (name = "comments")
 	private List<Comment> comments;
-
+	
+	@Column (name = "count")
+	private Long count;
+	
 	public CommentServiceList() {
 		setComments(null);
+		setCount(null);
 		setMessage(new Message());
 		setSuccess(true);
 	}
 	
 	public CommentServiceList(List<Comment> Comment, Message message, boolean success) {
 		setComments(Comment);
+		setCount(null);
+		setMessage(message);
+		setSuccess(success);
+	}
+	
+	public CommentServiceList(List<Comment> Comment, Long count, Message message, boolean success) {
+		setComments(Comment);
+		setCount(count);
 		setMessage(message);
 		setSuccess(success);
 	}	
@@ -40,4 +52,12 @@ public class CommentServiceList extends ServiceResponse implements Serializable 
 		this.comments = comments;
 	}
 
+	@XmlElement (name = "count")
+	public Long getCount() {
+		return count;
+	}
+
+	public void setCount(Long count) {
+		this.count = count;
+	}
 }

@@ -14,15 +14,35 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 public final class MongoDbQueryFactory {
 	
-	public static DBObject buildValidReckoningQuery() {
+	public static DBObject buildAcceptedReckoningQuery() {
 		BasicDBObject query = new BasicDBObject("approved", true);
 		query.append("rejected", false);
+		
+		return query;
+	}
+	
+	public static DBObject buildPendingReckoningQuery() {
+		BasicDBObject query = new BasicDBObject("approved", false);
+		query.append("rejected", false);
+		
+		return query;
+	}
+	
+	public static DBObject buildRejectedReckoningQuery() {
+		BasicDBObject query = new BasicDBObject("rejected", true);
+		
+		return query;
+	}
+	
+	public static DBObject buildAcceptedAndPendingReckoningQuery() {
+		BasicDBObject query = new BasicDBObject("rejected", false);
 		
 		return query;
 	}
@@ -124,11 +144,37 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("answers.index", index);
 	}
 	
+	public static DBObject buildVotedOnByUser (String userId) {
+		return new BasicDBObject("answers.votes." + userId, true);
+	}
+	
+	public static DBObject buildCommentedOnByUser (String userId) {
+		return new BasicDBObject("comments.posterId", userId);
+	}
+	
+	public static DBObject buildPostedByQuery (String submitterId) {
+		return new BasicDBObject("submitterId", submitterId);
+	}
+	
+	public static DBObject buildApprovalStatusQuery (ReckoningApprovalStatusEnum approvalStatus) {
+		if (approvalStatus == ReckoningApprovalStatusEnum.APPROVED) {
+			return buildAcceptedReckoningQuery();
+		} else if (approvalStatus == ReckoningApprovalStatusEnum.PENDING) {
+			return buildPendingReckoningQuery();
+		} else if (approvalStatus == ReckoningApprovalStatusEnum.REJECTED) {
+			return buildRejectedReckoningQuery();
+		} else if (approvalStatus == ReckoningApprovalStatusEnum.APPROVED_AND_PENDING) {
+			return buildAcceptedAndPendingReckoningQuery();
+		} 
+		
+		return new BasicDBObject();
+	}
+	
 	public static DBObject buildReckoningQuery (ReckoningTypeEnum type, Date postedBeforeDate, Date postedAfterDate,
 			Date closedBeforeDate, Date closedAfterDate, List<String> includeTags, List<String> excludeTags,
-			Boolean highlighted) {
+			Boolean highlighted, String submitterId, ReckoningApprovalStatusEnum approvalStatus) {
 
-		DBObject mainQuery = buildValidReckoningQuery();
+		DBObject mainQuery = buildApprovalStatusQuery(approvalStatus);
 				
 		// Add in the necessary OPEN/CLOSED checks, and make sure that the date parameters are correct for any 
 		// subsequent date processing.
@@ -172,8 +218,12 @@ public final class MongoDbQueryFactory {
 			mainQuery.putAll(buildExcludeReckoningTagsQuery(excludeTags));
 		}
 		
-		if (highlighted != null) {
+		if (highlighted != null && highlighted.booleanValue()) {
 			mainQuery.putAll(buildHighlightedQuery(highlighted.booleanValue()));
+		}
+		
+		if (submitterId != null) {
+			mainQuery.putAll(buildPostedByQuery(submitterId));
 		}
 		
 		return mainQuery;
@@ -186,7 +236,7 @@ public final class MongoDbQueryFactory {
 		}
 		
 		BasicDBObject mainQuery = new BasicDBObject("randomSelect", randomQuery);
-		mainQuery.putAll(buildValidReckoningQuery());
+		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
 		
 		if (type == ReckoningTypeEnum.CLOSED) {
 			mainQuery.putAll(buildClosedReckoningQuery());
@@ -298,6 +348,22 @@ public final class MongoDbQueryFactory {
 		
 		return fields;
 	}
+	
+	public static DBObject buildReckoningSummaryFieldsPlusComments() {
+		BasicDBObject fields = new BasicDBObject("answers.votes", 0);
+		fields.append("favorites", 0);
+		fields.append("flags", 0);
+		
+		return fields;
+	}	
+	
+	public static DBObject buildReckoningVotedFields() {
+		BasicDBObject fields = new BasicDBObject("comments", 0);
+		fields.append("favorites", 0);
+		fields.append("flags", 0);
+		
+		return fields;
+	}	
 	
 	public static DBObject buildReckoningIdField() {
 		BasicDBObject fields = new BasicDBObject("id", 1);
