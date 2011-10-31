@@ -6,6 +6,9 @@ public class ServiceProps {
 	int votePersistenceSize;
 	String defaultBio;
 
+	String googleAppId;
+	String googleAppSecret;
+
 	public boolean isEnableServiceAuthentication() {
 		return enableServiceAuthentication;
 	}

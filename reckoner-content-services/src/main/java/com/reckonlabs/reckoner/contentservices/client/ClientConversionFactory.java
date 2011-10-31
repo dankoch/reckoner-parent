@@ -1,9 +1,8 @@
 package com.reckonlabs.reckoner.contentservices.client;
 
-import com.reckonlabs.reckoner.domain.client.google.GoogleTokenResponse;
-import com.reckonlabs.reckoner.domain.client.google.profile.PluralSubfield;
-import com.reckonlabs.reckoner.domain.client.google.profile.Profile;
-import com.reckonlabs.reckoner.domain.user.AuthSession;
+import com.google.api.services.plus.model.Person;
+import com.google.api.services.plus.model.PersonEmails;
+
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
 import com.reckonlabs.reckoner.domain.user.User;
 
@@ -27,13 +26,13 @@ public final class ClientConversionFactory {
 		
 	}
 	
-	public static final User createReckonerUserFromGoogle(Profile googleUser) {
+	public static final User createReckonerUserFromGoogle(Person googleUser) {
 		User reckonerUser = new User();
 		
 		reckonerUser.setAuthProvider(ProviderEnum.GOOGLE);
 		reckonerUser.setAuthProviderId(googleUser.getId());
-		if (!googleUser.getEmails().isEmpty()) {
-			for (PluralSubfield email : googleUser.getEmails()) {
+		if (googleUser.getEmails()!=null && !googleUser.getEmails().isEmpty()) {
+			for (PersonEmails email : googleUser.getEmails()) {
 				if (email.getPrimary()) {
 					reckonerUser.setEmail(email.getValue());
 				}
@@ -60,10 +59,9 @@ public final class ClientConversionFactory {
 			reckonerUser.setLastName(googleUser.getName().getFamilyName());
 		}
 		
-		reckonerUser.setProfileUrl(googleUser.getProfileUrl());
-		reckonerUser.setProfilePictureUrl(googleUser.getThumbnailUrl());
+		reckonerUser.setProfileUrl(googleUser.getUrl());
+		reckonerUser.setProfilePictureUrl(googleUser.getImage().getUrl());
 		
-		return reckonerUser;
+		return reckonerUser;		
 	}
-	
 }

@@ -1,20 +1,21 @@
 package com.reckonlabs.reckoner.contentservices.client;
 
-import java.util.HashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.reckonlabs.reckoner.contentservices.service.UserServiceImpl;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.http.HttpResponseException;
+import com.google.api.client.googleapis.auth.oauth2.draft10.GoogleAccessProtectedResource;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.plus.model.Person;
+import com.google.api.services.plus.Plus;
+
 import com.reckonlabs.reckoner.domain.client.google.GoogleTokenResponse;
-import com.reckonlabs.reckoner.domain.client.google.profile.ProfileParent;
 import com.reckonlabs.reckoner.domain.user.AuthSession;
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
 import com.reckonlabs.reckoner.domain.user.User;
@@ -40,20 +41,27 @@ public class GoogleAuthClient implements AuthClient {
 		User reckonerUser = null;
 		
 		try {
-			HashMap<String, String> map = new HashMap<String, String>();
-			map.put("alt", "json");
-			map.put("oauth_token", userToken);
-			
-			ProfileParent googleProfile = restTemplate.getForObject
-					(userSelfProfileUrl, ProfileParent.class, map);
+		    GoogleAccessProtectedResource requestInitializer =
+		            new GoogleAccessProtectedResource(
+		                userToken,
+		                new NetHttpTransport(),
+		                new GsonFactory(),
+		                clientId,
+		                clientSecret,
+		                null);
+		    Plus plus = new Plus(new NetHttpTransport(), requestInitializer, new GsonFactory());
+		    
+		    plus.setOauthToken(userToken);
+		    Person googleProfile = plus.people.get("me").execute();
 			
 			if (googleProfile != null) {
-				reckonerUser = ClientConversionFactory.createReckonerUserFromGoogle(googleProfile.getData());
+				reckonerUser = ClientConversionFactory.createReckonerUserFromGoogle(googleProfile);
 			}
-		} catch (HttpClientErrorException e) {
+		} catch (HttpResponseException e) {
 			// Buzz API queries return a 404 when you try to pull information from a Google account
 			// that doesn't have a Profile.  In this case, return a User ID with a sentinel for the Service to handle.
-			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+
+			if (e.response.statusCode == 404) {
 				log.info("Got 404 when pulling a user's profile information from Google.  Probably a non G+ account.",
 						e);
 				
@@ -79,6 +87,8 @@ public class GoogleAuthClient implements AuthClient {
 		AuthSession newSession = null;
 		
 		try {
+			// This is should eventually be ported to use the Google Java API.  In the meantime, until
+			// this needs to be updated, we're making a manual REST call.
 			MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
 			map.add("client_id", clientId);
 			map.add("client_secret", clientSecret);
