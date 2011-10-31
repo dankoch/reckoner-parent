@@ -86,7 +86,7 @@ public enum MessageEnum {
 			case R707_AUTH_USER: return ("This Google account is not a G+ enabled account.  Only G+ accounts (with a profile) are valid.");
 			case R708_AUTH_USER: return ("Action needs to be specified when changing the permissions for this user account.");
 			case R709_AUTH_USER: return ("User ID needs to be specified when changing this user account.");
-			case R710_AUTH_USER: return ("No user found with the specified ID.");
+			case R710_AUTH_USER: return ("No user found with the specified ID.");	
 			
 			case R800_POST_NOTE: return ("No user ID specified as favoriting/flagging agent.");
 			case R801_POST_NOTE: return ("Specified reckoning does not exist.");

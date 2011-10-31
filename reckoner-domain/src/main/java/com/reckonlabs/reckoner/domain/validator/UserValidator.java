@@ -6,6 +6,7 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.PostOAuthUser;
 import com.reckonlabs.reckoner.domain.message.PostPermission;
+import com.reckonlabs.reckoner.domain.message.PostUser;
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
 import com.reckonlabs.reckoner.domain.user.User;
 
@@ -41,5 +42,16 @@ public class UserValidator {
 		
 		return null;
 	}
+	
+	public static Message validateUserUpdate(PostUser postUser) {
+		
+		if (postUser.getUser() == null) {
+			return (new Message(MessageEnum.R709_AUTH_USER));			
+		} else if (postUser.getUser().getId() == null) {
+			return (new Message(MessageEnum.R709_AUTH_USER));				
+		}
+		
+		return null;
+	}	
 
 }

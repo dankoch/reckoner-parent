@@ -18,6 +18,7 @@ import com.reckonlabs.reckoner.contentservices.repo.AuthSessionRepo;
 import com.reckonlabs.reckoner.contentservices.repo.AuthSessionRepoCustom;
 import com.reckonlabs.reckoner.contentservices.repo.UserRepo;
 import com.reckonlabs.reckoner.contentservices.repo.UserRepoCustom;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.PostActionEnum;
 import com.reckonlabs.reckoner.domain.message.UserServiceResponse;
 import com.reckonlabs.reckoner.domain.message.Message;
@@ -52,6 +53,9 @@ public class UserServiceImpl implements UserService {
 
 	@Resource
 	AuthClient googleAuthClient;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(UserServiceImpl.class);
@@ -98,12 +102,13 @@ public class UserServiceImpl implements UserService {
 					authUser.setLastLogin(DateUtility.now());
 					authUser.addGroup(GroupEnum.USER);
 					authUser.setActive(true);
+					authUser.setBio(serviceProps.getDefaultBio());
 					userRepoCustom.insertNewUser(authUser);
 					
 					existingUser = userRepo.findByAuthProviderAndAuthProviderId
 							(provider.getProvider(), authUser.getAuthProviderId());
 				} else {
-					existingUser.set(0, mergeUpdatedUser(existingUser.get(0), authUser));
+					existingUser.set(0, mergeOAuthUser(existingUser.get(0), authUser));
 					existingUser.get(0).setLastLogin(DateUtility.now());
 					
 					userRepoCustom.updateUser(existingUser.get(0));
@@ -269,6 +274,26 @@ public class UserServiceImpl implements UserService {
 		
 		return new UserServiceResponse(null, null, new Message(), true);
 	}
+	
+	@Override
+	public UserServiceResponse updateUserInformation(User user) {
+		
+		try {
+			List<User> currentUser = userRepo.findById(user.getId());
+			if (!currentUser.isEmpty()) {
+				User changeUser = mergeUpdatedUser(currentUser.get(0), user);
+				userRepoCustom.updateUser(changeUser);
+			} else {
+				return (new UserServiceResponse(null, null, new Message(MessageEnum.R710_AUTH_USER), false));					
+			}
+		} catch (Exception e) {
+			log.error("General exception when updating a user: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new UserServiceResponse(null, null, new Message(), true);
+	}
 
 	@Override
 	public boolean hasPermission(String sessionId, PermissionEnum perm) {
@@ -285,13 +310,22 @@ public class UserServiceImpl implements UserService {
 	
 	// This method is responsible for controlling how an existing user gets updated
 	// when a user re-authenticates.
-	private static User mergeUpdatedUser(User existingUser, User newUser) {
+	private static User mergeOAuthUser(User existingUser, User newUser) {
 		existingUser.setUsername(newUser.getUsername());
 		existingUser.setFirstName(newUser.getFirstName());
 		existingUser.setLastName(newUser.getLastName());
 		existingUser.setEmail(newUser.getEmail());
 		existingUser.setProfilePictureUrl(newUser.getProfilePictureUrl());
 		existingUser.setProfileUrl(newUser.getProfileUrl());
+		
+		return existingUser;
+	}
+	
+	// This method is responsible for controlling how an existing user gets updated
+	// when an update call is made.  This only updates information that isn't bound to an OAuth account.
+	// SEE mergeOAuthUser for OAuth bound fields.
+	private static User mergeUpdatedUser(User existingUser, User newUser) {
+		existingUser.setBio(newUser.getBio());
 		
 		return existingUser;
 	}

@@ -11,6 +11,7 @@ import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.user.GroupEnum;
 import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
+import com.reckonlabs.reckoner.domain.user.User;
 
 public interface UserService {
 	
@@ -27,6 +28,8 @@ public interface UserService {
 	
 	public UserServiceResponse updateUserPermissions(PostActionEnum action, Set<GroupEnum> groups,
 			Boolean active, String userId);
+	
+	public UserServiceResponse updateUserInformation(User user);
 	
 	public boolean hasPermission (String sessionId, PermissionEnum perm);
 }

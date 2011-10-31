@@ -30,14 +30,14 @@ import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostOAuthUser;
 import com.reckonlabs.reckoner.domain.message.PostPermission;
-import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
+import com.reckonlabs.reckoner.domain.message.PostUser;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.message.UserServiceResponse;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
-import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
 import com.reckonlabs.reckoner.domain.validator.UserValidator;
 import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
+import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 
 /**
@@ -142,7 +142,7 @@ public class UserController {
 		
 		return userService.getUserBySessionId(sessionId);
 	}
-	
+		
 	/**
 	 * This method retrieves the information associated with the specified user.
 	 * 
@@ -211,5 +211,48 @@ public class UserController {
 		
 		return userService.updateUserPermissions(postPermission.getAction(), 
 				postPermission.getGroups(), postPermission.getActive(), postPermission.getUserId());
-	}	
+	}
+	
+	/**
+	 * This method updates the the user-maintained pieces of a user account (i.e. the pieces
+	 * not directly bound to an OAUTH provider)
+	 * 
+	 * @param sessionId
+	 *            String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/user/update", method = RequestMethod.POST)
+	public @ResponseBody
+	UserServiceResponse updateUserInformation(@RequestBody PostUser postUser) 
+			throws AuthenticationException, Exception {	
+		
+		// Validate the input and necessary permissions.
+		if (serviceProps.isEnableServiceAuthentication()) {
+			UserServiceResponse user = userService.getUserBySessionId(postUser.getSessionId());
+			if ((user.getUser() == null) || !(user.getUser().getId().equals(postUser.getUser().getId()))) {
+				if (!userService.hasPermission(postUser.getSessionId(), PermissionEnum.UPDATE_PROFILE_INFO)) {
+					log.info("User with insufficient privileges attempted to change permmissions: ");
+					log.info("Session ID: " + postUser.getSessionId() + " User ID: " + postUser.getUser().getId());
+					throw new AuthenticationException();
+				}	
+			}
+		}
+		else {
+			Message validationMessage = UserValidator.validateUserUpdate(postUser);
+			
+			if (validationMessage != null) {
+				log.info("Posted authentication failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				UserServiceResponse response = new UserServiceResponse();
+				response.setMessage(validationMessage);
+				response.setSuccess(false);
+				
+				return response;
+			}
+		}
+		
+		return userService.updateUserInformation(postUser.getUser());
+	}
 }

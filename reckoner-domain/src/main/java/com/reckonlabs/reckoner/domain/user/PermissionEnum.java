@@ -15,11 +15,11 @@ public enum PermissionEnum {
 	FLAG("flag"), 
 	FAVORITE("favorite"), 
 	VIEW_PROFILE("view_profile"), 
-	VIEW_ALL_PROFILES("view_all_profiles"), 
 	APPROVAL("approval"), 
 	BLOG_POST("blog_post"), 
 	HIGHLIGHT("highlight"), 
-	UPDATE_PERMS("update_perms");
+	UPDATE_PERMS("update_perms"),
+	UPDATE_PROFILE_INFO("update_info");
 	
 	private final String code;
 	

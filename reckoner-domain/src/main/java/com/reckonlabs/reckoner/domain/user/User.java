@@ -52,6 +52,9 @@ public class User implements Serializable {
 	@Column (name = "active")
 	private boolean active;
 	
+	@Column (name = "bio")
+	private String bio;
+	
 	public User() {
 	}
 
@@ -204,5 +207,14 @@ public class User implements Serializable {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	@XmlElement(name = "bio")
+	public String getBio() {
+		return bio;
+	}
+
+	public void setBio(String bio) {
+		this.bio = bio;
 	}
 }
