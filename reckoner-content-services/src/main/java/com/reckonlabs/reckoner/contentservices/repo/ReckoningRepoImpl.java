@@ -243,6 +243,16 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	}
 	
 	@Override
+	public void deleteComment(String commentId) 
+			throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildCommentIdQuery(commentId)), 
+				MongoDbQueryFactory.deleteByCommentId(commentId), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());			
+	}
+	
+	@Override
 	public boolean confirmReckoningExists(String reckoningId) {
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId), 
 				MongoDbQueryFactory.buildReckoningIdField());

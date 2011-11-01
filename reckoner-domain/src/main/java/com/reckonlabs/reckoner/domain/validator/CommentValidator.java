@@ -43,4 +43,15 @@ public class CommentValidator {
 		
 		return null;
 	}
+	
+	public static Message validateCommentUpdate(Comment comment) {
+		
+		if (comment.getComment() == null) {
+			return (new Message(MessageEnum.R400_POST_COMMENT));
+		} else if (comment.getCommentId() == null) {
+			return (new Message(MessageEnum.R403_POST_COMMENT));
+		}
+		
+		return null;
+	}
 }

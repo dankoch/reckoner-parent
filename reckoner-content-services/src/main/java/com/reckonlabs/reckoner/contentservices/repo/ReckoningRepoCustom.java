@@ -56,7 +56,9 @@ public interface ReckoningRepoCustom {
 	
 	public void incrementReckoningViews (String reckoningId) throws DBUpdateException;
 	
-	public void updateComment (Comment comment) throws DBUpdateException;
+	public void updateComment(Comment comment) throws DBUpdateException;
+	
+	public void deleteComment (String commentId) throws DBUpdateException;
 	
 	// Waiting for Mongo DB to fix SERVER-831.
 	// public void insertCommentFavorite (Favorite favorite, String commentId) throws DBUpdateException;

@@ -48,6 +48,7 @@ public enum GroupEnum {
 				permissions.add(PermissionEnum.APPROVAL);
 				permissions.add(PermissionEnum.BLOG_POST);
 				permissions.add(PermissionEnum.HIGHLIGHT);
+				permissions.add(PermissionEnum.UPDATE_ALL_COMMENTS);
 				permissions.add(PermissionEnum.UPDATE_ALL_RECKONINGS);
 				permissions.add(PermissionEnum.UPDATE_PROFILE_INFO);
 				break;

@@ -166,7 +166,7 @@ public class NotesServiceImpl implements NotesService {
 	}
 
 	@Override
-	public ServiceResponse postCommentFavorite(Favorite favorite,
+	public ServiceResponse postReckoningCommentFavorite(Favorite favorite,
 			String commentId, String sessionId) {
 		try {
 			List<Reckoning> commentedReckoning = null;
@@ -182,7 +182,7 @@ public class NotesServiceImpl implements NotesService {
 				log.warn("Attempted to favorite comment on behalf of non-existent user: " + favorite.getUserId());
 				return (new ServiceResponse(new Message(MessageEnum.R803_POST_NOTE), false));				
 			} else {
-				commentedReckoning = commentService.getComment(commentId, sessionId).getReckonings();
+				commentedReckoning = commentService.getReckoningComment(commentId).getReckonings();
 				if ((commentedReckoning != null) && (!commentedReckoning.isEmpty()) && 
 						(commentedReckoning.get(0).getComments() != null) && (!commentedReckoning.get(0).getComments().isEmpty())) 
 				{
@@ -237,7 +237,7 @@ public class NotesServiceImpl implements NotesService {
 	}
 
 	@Override
-	public ServiceResponse postCommentFlag(Flag flag, String commentId, String sessionId) {
+	public ServiceResponse postReckoningCommentFlag(Flag flag, String commentId, String sessionId) {
 		try {
 			List<Reckoning> commentedReckoning = null;
 			List<Comment> flaggedComment = null;
@@ -251,7 +251,7 @@ public class NotesServiceImpl implements NotesService {
 				log.warn("Attempted to flag comment on behalf of non-existent user: " + flag.getUserId());
 				return (new ServiceResponse(new Message(MessageEnum.R803_POST_NOTE), false));				
 			} else {
-				commentedReckoning = commentService.getComment(commentId, sessionId).getReckonings();
+				commentedReckoning = commentService.getReckoningComment(commentId).getReckonings();
 				if ((commentedReckoning != null) && (!commentedReckoning.isEmpty()) && 
 						(commentedReckoning.get(0).getComments() != null) && (!commentedReckoning.get(0).getComments().isEmpty())) 
 				{
@@ -273,6 +273,18 @@ public class NotesServiceImpl implements NotesService {
 			flag.setFlagDate(DateUtility.now());
 			flaggedComment.get(0).addFlag(flag);
 			reckoningRepoCustom.updateComment(flaggedComment.get(0));
+			
+			// Cache management.  If the Reckoning is in the cache, pull it, add the flag to the comment yourself, and roll it back in.
+			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(commentedReckoning.get(0).getId());
+			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
+				for (Comment comment : cacheReckoning.get(0).getComments()) {
+					if (comment.getCommentId().equals(commentId)) {
+						comment.addFlag(flag);
+					}
+				}
+				
+				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when flagging a reckoning comment: " + dbE.getMessage());
 			log.debug("Stack Trace:", dbE);			

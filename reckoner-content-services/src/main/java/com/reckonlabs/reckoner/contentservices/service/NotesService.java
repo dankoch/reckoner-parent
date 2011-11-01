@@ -16,9 +16,9 @@ public interface NotesService {
 	
 	public ServiceResponse postReckoningFlag (Flag flag, String reckoningId, String sessionId);
 	
-	public ServiceResponse postCommentFavorite (Favorite favorite, String commentId, String sessionId);
+	public ServiceResponse postReckoningCommentFavorite (Favorite favorite, String commentId, String sessionId);
 	
-	public ServiceResponse postCommentFlag (Flag flag, String commentId, String sessionId);
+	public ServiceResponse postReckoningCommentFlag (Flag flag, String commentId, String sessionId);
 	
 	public ReckoningServiceList getFavoritedCommentsByUser (String userId, Integer page, Integer size, String sessionId);
 

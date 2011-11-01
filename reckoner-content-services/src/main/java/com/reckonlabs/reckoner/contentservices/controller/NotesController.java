@@ -172,7 +172,7 @@ public class NotesController {
 			}
 		}
 
-		return notesService.postCommentFavorite(postFavorite.getFavorite(), id, postFavorite.getSessionId());
+		return notesService.postReckoningCommentFavorite(postFavorite.getFavorite(), id, postFavorite.getSessionId());
 	}
 
 	
@@ -207,7 +207,7 @@ public class NotesController {
 			}
 		}
 
-		return notesService.postCommentFlag(postFlag.getFlag(), id, postFlag.getSessionId());
+		return notesService.postReckoningCommentFlag(postFlag.getFlag(), id, postFlag.getSessionId());
 	}
 	
 	/**

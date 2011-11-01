@@ -49,7 +49,7 @@ public class CommentServiceImpl implements CommentService {
 			.getLogger(CommentServiceImpl.class);
 
 	@Override
-	public ServiceResponse postReckoningComment(Comment comment, String sessionId, String reckoningId) {
+	public ServiceResponse postReckoningComment(Comment comment, String reckoningId) {
 		
 		try {
 			if (!reckoningRepoCustom.confirmReckoningExists(reckoningId)) {
@@ -91,7 +91,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	public ReckoningServiceList getComment(String commentId, String sessionId) {
+	public ReckoningServiceList getReckoningComment(String commentId) {
 		List<Reckoning> commentedReckonings = new LinkedList<Reckoning>();
 		
 		try {
@@ -112,8 +112,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 	
 	@Override
-	public ReckoningServiceList getCommentsByUser(String userId, Integer page,
-			Integer size, String sessionId) {
+	public ReckoningServiceList getReckoningCommentsByUser(String userId, Integer page, Integer size) {
 		List<Reckoning> commentedReckonings = null;
 		long count = 0;
 		
@@ -148,12 +147,58 @@ public class CommentServiceImpl implements CommentService {
 			
 			commentedReckonings = (List <Reckoning>) ListPagingUtility.pageList(commentedReckonings, page, size);
 		} catch (Exception e) {
-		   log.error("General exception when getting comments by user: " + e.getMessage());
-		   log.debug("Stack Trace:", e);			
-		   return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		    log.error("General exception when getting comments by user: " + e.getMessage());
+		    log.debug("Stack Trace:", e);			
+		    return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 	    }
 		
 		return new ReckoningServiceList(commentedReckonings, count, new Message(), true);
 	}
+
+	@Override
+	public ServiceResponse updateReckoningComment(Comment comment) {
+		try {
+			List<Reckoning> commentedReckoning = getReckoningComment(comment.getCommentId()).getReckonings();
+			if (commentedReckoning == null || commentedReckoning.isEmpty()) {
+				return (new ServiceResponse(new Message(MessageEnum.R501_GET_COMMENT), false));				
+			}
+			
+			Comment updateComment = commentedReckoning.get(0).getComments().get(0);
+			updateComment.mergeComment(comment);
+			reckoningRepoCustom.updateComment(updateComment);
+			
+			// Cache management. 
+			// Delete the individual reckoning cache (these should be rare, so we're not doing an in-place update).
+			// Ignoring the user caches -- those will clear soon enough.
+			reckoningCache.removeCachedReckoning(commentedReckoning.get(0).getId());
+		} catch (Exception e) {
+		    log.error("General exception when deleting comment " + comment.getCommentId() + " : " + e.getMessage());
+		    log.debug("Stack Trace:", e);			
+		    return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ServiceResponse();
+	}
 	
+	@Override
+	public ServiceResponse deleteReckoningComment(String commentId) {
+		try {
+			List<Reckoning> commentedReckoning = getReckoningComment(commentId).getReckonings();
+			if (commentedReckoning == null || commentedReckoning.isEmpty()) {
+				return (new ServiceResponse(new Message(MessageEnum.R501_GET_COMMENT), false));				
+			}
+			reckoningRepoCustom.deleteComment(commentId);
+			
+			// Cache management. 
+			// Delete the individual reckoning cache (these should be rare, so we're not doing an in-place update).
+			// Ignoring the user caches -- those will clear soon enough.
+			reckoningCache.removeCachedReckoning(commentedReckoning.get(0).getId());
+		} catch (Exception e) {
+		    log.error("General exception when deleting comment " + commentId + " : " + e.getMessage());
+		    log.debug("Stack Trace:", e);			
+		    return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ServiceResponse();
+	}
 }

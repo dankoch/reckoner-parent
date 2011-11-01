@@ -10,6 +10,7 @@ public enum PermissionEnum {
 	POST_RECKONING("post_reckoning"), 
 	UPDATE_RECKONING("update_reckoning"), 
 	UPDATE_ALL_RECKONINGS("update_all_reckonings"),
+	UPDATE_ALL_COMMENTS("update_all_comments"),
 	VOTE("vote"), 
 	COMMENT("comment"), 
 	FLAG("flag"), 

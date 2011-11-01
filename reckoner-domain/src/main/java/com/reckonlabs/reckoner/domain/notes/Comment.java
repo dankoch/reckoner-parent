@@ -70,4 +70,11 @@ public class Comment extends Notable implements Serializable{
 	public void setUser(User user) {
 		this.user = user;
 	}
+	
+	// Merges the content of the specified comment into the existing comment.
+	public void mergeComment(Comment mergeUpdates) {
+		if (mergeUpdates.getComment() != null) {
+			this.comment = mergeUpdates.getComment();
+		}
+	}
 }

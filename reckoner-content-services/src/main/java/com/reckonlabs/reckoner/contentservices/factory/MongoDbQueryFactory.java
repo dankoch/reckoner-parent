@@ -152,6 +152,10 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("comments.posterId", userId);
 	}
 	
+	public static DBObject buildCommentByIdQuery (String commentId) {
+		return new BasicDBObject("comments.commentId", commentId);
+	}
+	
 	public static DBObject buildPostedByQuery (String submitterId) {
 		return new BasicDBObject("submitterId", submitterId);
 	}
@@ -338,6 +342,13 @@ public final class MongoDbQueryFactory {
 		viewIncrement.inc("views", 1);
 		
 		return viewIncrement;
+	}
+	
+	public static Update deleteByCommentId (String commentId) {		
+		Update deleteComment = new Update();
+		deleteComment.pull("comments", new BasicDBObject("commentId", commentId));
+		
+		return deleteComment;
 	}
 	
 	public static DBObject buildReckoningSummaryFields() {

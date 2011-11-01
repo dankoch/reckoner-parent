@@ -12,7 +12,7 @@ public enum MessageEnum {
 	
 	R300_APPROVE_RECKONING("R300"),
 	
-	R400_POST_COMMENT("R400"), R401_POST_COMMENT("R401"), R402_POST_COMMENT("R402"),
+	R400_POST_COMMENT("R400"), R401_POST_COMMENT("R401"), R402_POST_COMMENT("R402"), R403_POST_COMMENT("R403"),
 	
 	R500_GET_COMMENT("R500"), R501_GET_COMMENT("R501"),
 	
@@ -68,6 +68,7 @@ public enum MessageEnum {
 			case R400_POST_COMMENT: return ("No text included with comment.");
 			case R401_POST_COMMENT: return ("No user ID included with comment.");
 			case R402_POST_COMMENT: return ("No reckoning associated with the provided ID.");
+			case R403_POST_COMMENT: return ("No comment ID specified to update.");
 			
 			case R500_GET_COMMENT: return ("Paged comment queries need both a valid page and size value.");
 			case R501_GET_COMMENT: return ("No comment found with specified ID.");			

@@ -102,7 +102,7 @@ public class CommentController {
 			}
 		}
 
-		return commentService.postReckoningComment(postComment.getComment(), postComment.getSessionId(), id);
+		return commentService.postReckoningComment(postComment.getComment(), id);
 	}
 	
 	/**
@@ -115,7 +115,7 @@ public class CommentController {
 	 * @throws Exception
 	 *            exception
 	 */	
-	@RequestMapping(value = "/comments/id/{id}", method = RequestMethod.GET)	
+	@RequestMapping(value = "/comments/reckoning/id/{id}", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getCommentById(@PathVariable String id,
 			@RequestParam(required = false, value = "session_id") String sessionId)
@@ -135,11 +135,11 @@ public class CommentController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return commentService.getComment(id, sessionId);
+		return commentService.getReckoningComment(id);
 	}
 	
 	/**
-	 * This method allows for the retrieval of all comments made by a specified user (including associated reckoning summaries).
+	 * This method allows for the retrieval of all reckoning comments made by a specified user (including associated reckoning summaries).
 	 * Paging is by the number of reckonings on which the user has commented.
 	 * 
 	 * @param userId
@@ -149,7 +149,7 @@ public class CommentController {
 	 * @throws Exception
 	 *            exception
 	 */	
-	@RequestMapping(value = "/comments/user/{userId}", method = RequestMethod.GET)	
+	@RequestMapping(value = "/comments/reckoning/user/{userId}", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getUserCommentsById(@PathVariable String userId,
 			@RequestParam(required = false, value = "page") Integer page,
@@ -171,7 +171,66 @@ public class CommentController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return commentService.getCommentsByUser(userId, page, size, sessionId);
+		return commentService.getReckoningCommentsByUser(userId, page, size);
 	}
 	
+	
+	/**
+	 * This method allows for the update of a reckoning comment with the specified id.
+	 * 
+	 * @param commentId
+	 *           String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/comments/reckoning/update", method = RequestMethod.POST)	
+	public @ResponseBody
+	ServiceResponse updateReckoningCommentById(
+			@RequestBody PostComment postComment)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postComment.getSessionId(), PermissionEnum.UPDATE_ALL_COMMENTS)) {
+			log.info("User with insufficient privileges attempted to edit a user's comment: ");
+			log.info("Session ID: " + postComment.getSessionId());
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = CommentValidator.validateCommentUpdate(postComment.getComment());
+		
+		if (validationMessage != null) {
+			log.info("Update comment request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return commentService.updateReckoningComment(postComment.getComment());
+	}
+	
+	/**
+	 * This method allows for the deletion of a comment with the specified id.
+	 * 
+	 * @param commentId
+	 *           String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/comments/reckoning/id/{commentId}/delete", method = RequestMethod.GET)	
+	public @ResponseBody
+	ServiceResponse deleteReckoningCommentById(@PathVariable String commentId,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.UPDATE_ALL_COMMENTS)) {
+			log.info("User with insufficient privileges attempted to delete a user's comment: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		return commentService.deleteReckoningComment(commentId);
+	}	
 }
