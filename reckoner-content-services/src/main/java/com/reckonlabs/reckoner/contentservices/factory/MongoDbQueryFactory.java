@@ -21,6 +21,8 @@ import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 public final class MongoDbQueryFactory {
 	
+	public static String DELETE_SENTINEL = "null";
+	
 	public static DBObject buildAcceptedReckoningQuery() {
 		BasicDBObject query = new BasicDBObject("approved", true);
 		query.append("rejected", false);
@@ -257,7 +259,11 @@ public final class MongoDbQueryFactory {
 		Map<String, Object> reckonMap = reckoning.toHashMap();
 		for (Map.Entry<String, Object> entry: reckonMap.entrySet()) {
 			if (entry.getValue() != null && !entry.getValue().equals("")) {
-				reckoningUpdate.set(entry.getKey(), entry.getValue());
+				if (entry.getValue().equals(DELETE_SENTINEL)) {
+					reckoningUpdate.set(entry.getKey(), "");
+				} else {
+					reckoningUpdate.set(entry.getKey(), entry.getValue());
+				}
 			}
 		}
 		
@@ -385,6 +391,9 @@ public final class MongoDbQueryFactory {
 	public static DBObject buildReckoningIdAndAnswerIndexFields() {
 		BasicDBObject fields = new BasicDBObject("id", 1);
 		fields.append("answers.index", 1);
+		fields.append("approved", 1);
+		fields.append("rejected", 1);
+		fields.append("closingDate", 1);
 		
 		return fields;
 	}

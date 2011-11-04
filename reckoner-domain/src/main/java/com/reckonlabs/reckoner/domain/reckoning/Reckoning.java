@@ -175,7 +175,7 @@ public class Reckoning extends Notable implements Serializable  {
 	
 	@XmlElement(name = "open")
 	public boolean isOpen() {
-		if (isApproved() && getClosingDate() != null) {
+		if (isApproved() && !isRejected() && getClosingDate() != null) {
 			if (!DateUtility.isBeforeNow(getClosingDate())) {
 				this.open = true;
 				return this.open;

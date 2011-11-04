@@ -61,8 +61,8 @@ public class VoteServiceImpl implements VoteService {
 	public ServiceResponse postReckoningVote(Vote vote, String reckoningId, Integer answerIndex) {
 		
 		try {
-			// Confirm that the reckoning exists.
-			if (!reckoningRepoCustom.confirmReckoningAndAnswerExists(reckoningId, answerIndex)) {
+			// Confirm that the reckoning exists and isn't closed.
+			if (!reckoningRepoCustom.confirmReckoningIsVotingEligible(reckoningId, answerIndex)) {
 				log.warn("Attempted to post vote to non-existent reckoning: " + reckoningId);
 				return (new ServiceResponse(new Message(MessageEnum.R600_POST_VOTE), false));
 			}

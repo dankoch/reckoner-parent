@@ -73,7 +73,7 @@ public enum MessageEnum {
 			case R500_GET_COMMENT: return ("Paged comment queries need both a valid page and size value.");
 			case R501_GET_COMMENT: return ("No comment found with specified ID.");			
 			
-			case R600_POST_VOTE: return ("Attempted to vote for a non-existent reckoning/answer pairing.");	
+			case R600_POST_VOTE: return ("Attempted to vote for a non-existent or closed reckoning/answer pairing.");	
 			case R601_POST_VOTE: return ("This user has already voted for this reckoning.");
 			case R602_POST_VOTE: return ("An anonymous user with the same IP and user agent voted for this reckoning recently.  Vote is in escrow.");
 			

@@ -67,5 +67,5 @@ public interface ReckoningRepoCustom {
 	
 	public boolean confirmReckoningExists (String reckoningId);
 	
-	public boolean confirmReckoningAndAnswerExists(String reckoningId, int answerIndex);
+	public boolean confirmReckoningIsVotingEligible(String reckoningId, int answerIndex);
 }

@@ -51,7 +51,7 @@ public class VoteServiceImplTest {
 
 	@Test
 	public void testValidReckoningAnswerCheck() {
-		expect(mockReckoningRepoCustom.confirmReckoningAndAnswerExists(BAD_RECKONING, BAD_ANSWER)).andReturn(false);
+		expect(mockReckoningRepoCustom.confirmReckoningIsVotingEligible(BAD_RECKONING, BAD_ANSWER)).andReturn(false);
 		replay(mockReckoningRepoCustom);
 		
 		ServiceResponse response = voteService.postReckoningVote(new Vote(), BAD_RECKONING, BAD_ANSWER);
@@ -60,7 +60,7 @@ public class VoteServiceImplTest {
 	
 	@Test
 	public void testAlreadyVotedCache() {
-		expect(mockReckoningRepoCustom.confirmReckoningAndAnswerExists(VALID_RECKONING, VALID_ANSWER)).andReturn(true);
+		expect(mockReckoningRepoCustom.confirmReckoningIsVotingEligible(VALID_RECKONING, VALID_ANSWER)).andReturn(false);
 		expect(mockVoteCache.getCachedUserReckoningVote(USER_ID, VALID_RECKONING)).andReturn(buildVoteList(USER_ID, VALID_ANSWER, false, null, null));
 		replay(mockReckoningRepoCustom);
 		replay(mockVoteCache);

@@ -83,7 +83,7 @@ public class VoteController {
 	 */	
 	@RequestMapping(value = "/vote/reckoning/{id}/answer/{answer}", method = RequestMethod.POST)	
 	public @ResponseBody
-	ServiceResponse postReckoningComment(@PathVariable String id,
+	ServiceResponse postReckoningVote(@PathVariable String id,
 			@PathVariable Integer answer,
 			@RequestBody PostVote postVote)
 			throws AuthenticationException, Exception {

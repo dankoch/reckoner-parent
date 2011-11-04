@@ -261,9 +261,10 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		}
 		return false;
 	}
-	
+
 	@Override
-	public boolean confirmReckoningAndAnswerExists(String reckoningId, int answerIndex) {
+	public boolean confirmReckoningIsVotingEligible(String reckoningId,
+			int answerIndex) {
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId), 
 				MongoDbQueryFactory.buildReckoningIdAndAnswerIndexFields());
 		List<Reckoning> reckoning = mongoTemplate.find(query, Reckoning.class);
@@ -272,8 +273,9 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			return false;	
 		} else if (reckoning.get(0).getAnswers().size() <= answerIndex) {
 			return false;
-		}
-		
+		} else if (!reckoning.get(0).isOpen())
+			return false;
+			
 		return true;
 	}
 }
