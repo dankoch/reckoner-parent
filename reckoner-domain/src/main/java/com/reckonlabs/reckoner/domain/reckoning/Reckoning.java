@@ -52,16 +52,16 @@ public class Reckoning extends Notable implements Serializable  {
 	private String approverId;
 
 	@Column(name="approved")
-	private boolean approved;
+	private Boolean approved;
 	@Column(name="rejected")
-	private boolean rejected;
+	private Boolean rejected;
 	@Transient
-	private boolean open;
+	private Boolean open;
 	
 	@Column(name="anonymous_requested")
-	private boolean anonymousRequested;
+	private Boolean anonymousRequested;
 	@Column(name="anonymous")
-	private boolean anonymous;
+	private Boolean anonymous;
 	
 	@Column(name="submission_date")
 	private Date submissionDate;
@@ -75,7 +75,7 @@ public class Reckoning extends Notable implements Serializable  {
 	@Column(name="comments")
 	private List<Comment> comments;
 	@Column(name="comment_index")
-	private int commentIndex;
+	private Integer commentIndex;
 	
 	@Column(name="commentary")
 	private String commentary;
@@ -90,16 +90,16 @@ public class Reckoning extends Notable implements Serializable  {
 	private User postingUser;
 	
 	@Column(name="highlighted")
-	private boolean highlighted;
+	private Boolean highlighted;
 	
 	@Column(name="tags")
 	private List<String> tags;
 	
 	@Column (name="views")
-	private int views;
+	private Integer views;
 	
 	@Column(name="random_select")
-	private double randomSelect;
+	private Double randomSelect;
 
 	public String getId() {
 		return id;
@@ -156,25 +156,25 @@ public class Reckoning extends Notable implements Serializable  {
 	}
 
 	@XmlElement(name = "approved")
-	public boolean isApproved() {
+	public Boolean isApproved() {
 		return approved;
 	}
 
-	public void setApproved(boolean approved) {
+	public void setApproved(Boolean approved) {
 		this.approved = approved;
 	}
 	
 	@XmlElement(name = "rejected")
-	public boolean isRejected() {
+	public Boolean isRejected() {
 		return rejected;
 	}
 
-	public void setRejected(boolean rejected) {
+	public void setRejected(Boolean rejected) {
 		this.rejected = rejected;
 	}
 	
 	@XmlElement(name = "open")
-	public boolean isOpen() {
+	public Boolean isOpen() {
 		if (isApproved() && !isRejected() && getClosingDate() != null) {
 			if (!DateUtility.isBeforeNow(getClosingDate())) {
 				this.open = true;
@@ -187,20 +187,20 @@ public class Reckoning extends Notable implements Serializable  {
 	}
 
 	@XmlElement(name = "anonymous_requested")
-	public boolean isAnonymousRequested() {
+	public Boolean isAnonymousRequested() {
 		return anonymousRequested;
 	}
 
-	public void setAnonymousRequested(boolean anonymousRequested) {
+	public void setAnonymousRequested(Boolean anonymousRequested) {
 		this.anonymousRequested = anonymousRequested;
 	}
 
 	@XmlElement(name = "anonymous")
-	public boolean isAnonymous() {
+	public Boolean isAnonymous() {
 		return anonymous;
 	}
 
-	public void setAnonymous(boolean anonymous) {
+	public void setAnonymous(Boolean anonymous) {
 		this.anonymous = anonymous;
 	}
 
@@ -255,23 +255,28 @@ public class Reckoning extends Notable implements Serializable  {
 			this.comments = new LinkedList<Comment>();
 		}
 		this.comments.add(comment);
-		this.commentIndex++;
+		
+		if (commentIndex != null) {
+			this.commentIndex++;
+		} else {
+			commentIndex = 1;
+		}
 	}
 	
-	public void setCommentIndex(int commentIndex) {
+	public void setCommentIndex(Integer commentIndex) {
 		this.commentIndex = commentIndex;
 	}
 	
-	public int getCommentIndex() {
+	public Integer getCommentIndex() {
 		return this.commentIndex;
 	}
 
 	@XmlElement(name = "highlighted")
-	public boolean isHighlighted() {
+	public Boolean isHighlighted() {
 		return highlighted;
 	}
 
-	public void setHighlighted(boolean highlighted) {
+	public void setHighlighted(Boolean highlighted) {
 		this.highlighted = highlighted;
 	}
 
@@ -320,11 +325,11 @@ public class Reckoning extends Notable implements Serializable  {
 	}
 	
 	@XmlElement(name = "views")
-	public int getViews() {
+	public Integer getViews() {
 		return views;
 	}
 
-	public void setViews(int views) {
+	public void setViews(Integer views) {
 		this.views = views;
 	}
 	
@@ -333,11 +338,11 @@ public class Reckoning extends Notable implements Serializable  {
 	}
 
 	@XmlElement(name = "random_select")
-	public double getRandomSelect() {
+	public Double getRandomSelect() {
 		return randomSelect;
 	}
 
-	public void setRandomSelect(double randomSelect) {
+	public void setRandomSelect(Double randomSelect) {
 		this.randomSelect = randomSelect;
 	}
 
@@ -421,6 +426,8 @@ public class Reckoning extends Notable implements Serializable  {
 			reckoningHash.remove("serialVersionUID");
 			reckoningHash.remove("randomSelect");
 			reckoningHash.remove("views");
+			reckoningHash.remove("approved");
+			reckoningHash.remove("rejected");
 		} catch (Exception e) {
 			log.warn("Failed to marshal reckoning " + this.id + " to hash map.", e);
 		}

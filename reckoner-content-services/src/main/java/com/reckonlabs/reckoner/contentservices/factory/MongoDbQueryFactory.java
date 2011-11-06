@@ -258,7 +258,7 @@ public final class MongoDbQueryFactory {
 		
 		Map<String, Object> reckonMap = reckoning.toHashMap();
 		for (Map.Entry<String, Object> entry: reckonMap.entrySet()) {
-			if (entry.getValue() != null && !entry.getValue().equals("")) {
+			if (entry.getValue() != null) {
 				if (entry.getValue().equals(DELETE_SENTINEL)) {
 					reckoningUpdate.set(entry.getKey(), "");
 				} else {
