@@ -46,6 +46,14 @@ public interface ReckoningRepoCustom {
 	
 	public List<Reckoning> getUserCommentedReckonings (String userId);
 	
+	public List<Reckoning> getFavoritedReckonings (Date favoritedAfter, Integer page, Integer size);
+	
+	public List<Reckoning> getFlaggedReckonings (Date flaggedAfter, Integer page, Integer size);
+	
+	public List<Reckoning> getFavoritedReckoningComments (Date favoritedAfter, Integer page, Integer size);
+	
+	public List<Reckoning> getFlaggedReckoningComments (Date flaggedAfter, Integer page, Integer size);
+	
 	public void insertReckoningComment (Comment comment, String reckoningId) throws DBUpdateException;
 	
 	public void insertReckoningVote (String voterId, Integer answerIndex, String reckoningId) throws DBUpdateException;

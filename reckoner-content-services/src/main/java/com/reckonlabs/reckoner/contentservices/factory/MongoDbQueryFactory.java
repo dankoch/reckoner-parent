@@ -253,6 +253,50 @@ public final class MongoDbQueryFactory {
 		return mainQuery;
 	}
 	
+	public static DBObject buildFavoritedReckoningQuery (Date favoritedSince) {
+		DBObject mainQuery = new BasicDBObject("favorites", new BasicDBObject ("$exists", true));
+		if (favoritedSince != null) {
+			mainQuery = new BasicDBObject("favorites.favoriteDate", new BasicDBObject ("$gt", favoritedSince));
+		}
+		
+		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		
+		return mainQuery;
+	}
+	
+	public static DBObject buildFlaggedReckoningQuery (Date flaggedSince) {
+		DBObject mainQuery = new BasicDBObject("flags", new BasicDBObject ("$exists", true));
+		if (flaggedSince != null) {
+			mainQuery = new BasicDBObject("flags.flagDate", new BasicDBObject ("$gt", flaggedSince));
+		}
+		
+		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		
+		return mainQuery;
+	}
+	
+	public static DBObject buildFavoritedCommentQuery (Date favoritedSince) {
+		DBObject mainQuery = new BasicDBObject("comments.favorites", new BasicDBObject ("$exists", true));
+		if (favoritedSince != null) {
+			mainQuery = new BasicDBObject("comments.favorites.favoriteDate", new BasicDBObject ("$gt", favoritedSince));
+		}
+		
+		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		
+		return mainQuery;
+	}
+	
+	public static DBObject buildFlaggedCommentQuery (Date flaggedSince) {
+		DBObject mainQuery = new BasicDBObject("comments.flags", new BasicDBObject ("$exists", true));
+		if (flaggedSince != null) {
+			mainQuery = new BasicDBObject("comments.flags.flagDate", new BasicDBObject ("$gt", flaggedSince));
+		}
+		
+		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		
+		return mainQuery;
+	}
+	
 	public static Update buildReckoningUpdate(Reckoning reckoning) {
 		Update reckoningUpdate = new Update();
 		
@@ -355,6 +399,12 @@ public final class MongoDbQueryFactory {
 		deleteComment.pull("comments", new BasicDBObject("commentId", commentId));
 		
 		return deleteComment;
+	}
+	
+	public static DBObject buildExcludeVotesFields() {
+		BasicDBObject fields = new BasicDBObject("answers.votes", 0);
+		
+		return fields;
 	}
 	
 	public static DBObject buildReckoningSummaryFields() {

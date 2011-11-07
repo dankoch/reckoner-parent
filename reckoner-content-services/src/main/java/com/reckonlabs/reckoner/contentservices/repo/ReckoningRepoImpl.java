@@ -159,6 +159,62 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	}
 	
 	@Override
+	public List<Reckoning> getFavoritedReckonings(Date favoritedAfter, Integer page, Integer size) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFavoritedReckoningQuery(favoritedAfter),
+				MongoDbQueryFactory.buildExcludeVotesFields());	
+		
+		if (page != null && size != null) {
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
+		}
+		
+		query.sort().on("postingDate", Order.DESCENDING);
+		return mongoTemplate.find(query, Reckoning.class);	
+	}
+
+	@Override
+	public List<Reckoning> getFlaggedReckonings(Date flaggedAfter, Integer page, Integer size) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFlaggedReckoningQuery(flaggedAfter),
+				MongoDbQueryFactory.buildExcludeVotesFields());	
+		
+		if (page != null && size != null) {
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
+		}
+		
+		query.sort().on("postingDate", Order.DESCENDING);
+		return mongoTemplate.find(query, Reckoning.class);	
+	}
+	
+	@Override
+	public List<Reckoning> getFavoritedReckoningComments(Date favoritedAfter, Integer page, Integer size) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFavoritedCommentQuery(favoritedAfter),
+				MongoDbQueryFactory.buildExcludeVotesFields());	
+		
+		if (page != null && size != null) {
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
+		}
+		
+		query.sort().on("postingDate", Order.DESCENDING);
+		return mongoTemplate.find(query, Reckoning.class);	
+	}
+
+	@Override
+	public List<Reckoning> getFlaggedReckoningComments(Date flaggedAfter, Integer page, Integer size) {
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFlaggedCommentQuery(flaggedAfter),
+				MongoDbQueryFactory.buildExcludeVotesFields());	
+		
+		if (page != null && size != null) {
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
+		}
+		
+		query.sort().on("postingDate", Order.DESCENDING);
+		return mongoTemplate.find(query, Reckoning.class);	
+	}
+	
+	@Override
 	public void insertReckoningComment(Comment comment, String reckoningId)
 			throws DBUpdateException {
 		

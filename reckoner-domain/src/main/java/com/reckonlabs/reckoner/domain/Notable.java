@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.domain;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -81,5 +82,43 @@ public abstract class Notable implements Serializable {
 		}
 
 		return null;
+	}
+	
+	// Responsible for finding the favorites attached to this object made after a given date.
+	public List<Favorite> getFavoriteAfterDate (Date afterDate) {
+		List<Favorite> favorites = new LinkedList<Favorite>();
+		
+		if (getFavorites() != null) {
+			if (afterDate != null) {
+				for (Favorite favorite : getFavorites()) {
+					if (favorite.getFavoriteDate().after(afterDate)) {
+						favorites.add(favorite);
+					}
+				}	
+			} else {
+				favorites = getFavorites();
+			}
+		}
+		
+		return favorites;
+	}
+	
+	// Responsible for finding the flags attached to this object made after a given date.
+	public List<Flag> getFlagAfterDate (Date afterDate) {
+		List<Flag> flags = new LinkedList<Flag>();
+		
+		if (getFlags() != null) {
+			if (afterDate != null) {
+				for (Flag flag : getFlags()) {
+					if (flag.getFlagDate().after(afterDate)) {
+						flags.add(flag);
+					}
+				}
+			} else {
+				flags = getFlags();
+			}
+		}
+		
+		return flags;
 	}
 }

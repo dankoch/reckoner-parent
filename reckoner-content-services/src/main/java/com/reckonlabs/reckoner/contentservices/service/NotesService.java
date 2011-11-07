@@ -20,6 +20,14 @@ public interface NotesService {
 	
 	public ServiceResponse postReckoningCommentFlag (Flag flag, String commentId, String sessionId);
 	
+	public ReckoningServiceList getFavoritedReckonings (Date favoritedAfter, Integer page, Integer size, String sessionId);
+	
+	public ReckoningServiceList getFlaggedReckonings (Date flaggedAfter, Integer page, Integer size, String sessionId);	
+	
+	public ReckoningServiceList getFavoritedReckoningComments (Date favoritedAfter, Integer page, Integer size, String sessionId);	
+	
+	public ReckoningServiceList getFlaggedReckoningComments (Date flaggedAfter, Integer page, Integer size, String sessionId);	
+	
 	public ReckoningServiceList getFavoritedCommentsByUser (String userId, Integer page, Integer size, String sessionId);
 
 	public ReckoningServiceList getFavoritedReckoningsByUser (String userId, Integer page, Integer size, String sessionId);

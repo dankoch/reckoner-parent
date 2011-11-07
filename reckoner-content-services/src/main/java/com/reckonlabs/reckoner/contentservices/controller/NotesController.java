@@ -209,6 +209,150 @@ public class NotesController {
 
 		return notesService.postReckoningCommentFlag(postFlag.getFlag(), id, postFlag.getSessionId());
 	}
+
+	/**
+	 * This method allows for the retrieval of all favorited reckonings according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/reckoning/favorite", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getFavoritedReckonings(
+			@RequestParam(required = false, value = "flagged_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged reckoning request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFavoritedReckonings(flaggedAfter, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of all flagged reckonings according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/reckoning/flag", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getFlaggedReckonings(
+			@RequestParam(required = false, value = "flagged_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged reckoning request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFlaggedReckonings(flaggedAfter, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of all favorited reckoning comments according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/reckoning/comment/favorite", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getFavoritedReckoningComments(
+			@RequestParam(required = false, value = "favorited_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged reckoning comments: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged reckoning comment request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFavoritedReckoningComments(flaggedAfter, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of all flagged reckoning comments according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/reckoning/comment/flag", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getFlaggedReckoningComments(
+			@RequestParam(required = false, value = "flagged_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged reckoning comments: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged reckoning request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFlaggedReckoningComments(flaggedAfter, page, size, sessionId);
+	}
 	
 	/**
 	 * This method allows for the retrieval of all reckonings favorited by a specified user.

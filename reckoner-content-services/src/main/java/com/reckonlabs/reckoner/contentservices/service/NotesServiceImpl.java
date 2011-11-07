@@ -21,6 +21,7 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 import com.reckonlabs.reckoner.domain.utility.ListPagingUtility;
@@ -296,6 +297,109 @@ public class NotesServiceImpl implements NotesService {
 		}
 		
 		return new ServiceResponse();
+	}
+	
+	@Override
+	public ReckoningServiceList getFavoritedReckonings(Date favoritedAfter,
+			Integer page, Integer size, String sessionId) {
+		List<Reckoning> favoritedReckonings = null;
+		
+		try {
+			favoritedReckonings = reckoningRepoCustom.getFavoritedReckonings(favoritedAfter, page, size);
+			
+			// Pull the user profile associated with the submitter Id and attach it to each Reckoning.
+			for (Reckoning reckoning : favoritedReckonings) {
+				reckoning.setPostingUser(userService.getUserByUserId
+								(reckoning.getSubmitterId(), true).getUser());
+			}
+			
+		} catch (Exception e) {
+			log.error("General exception when getting favorited reckoning summaries: " + e.getMessage());
+			log.debug("Stack Trace:", e);
+			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ReckoningServiceList(favoritedReckonings, new Message(), true);
+	}
+
+	@Override
+	public ReckoningServiceList getFlaggedReckonings(Date flaggedAfter,
+			Integer page, Integer size, String sessionId) {
+		List<Reckoning> flaggedReckonings = null;
+		
+		try {
+			flaggedReckonings = reckoningRepoCustom.getFlaggedReckonings(flaggedAfter, page, size);
+			
+			// Pull the user profile associated with the submitter Id and attach it to each Reckoning.
+			for (Reckoning reckoning : flaggedReckonings) {
+				reckoning.setPostingUser(userService.getUserByUserId
+								(reckoning.getSubmitterId(), true).getUser());
+			}
+		} catch (Exception e) {
+			log.error("General exception when getting favorited reckoning summaries: " + e.getMessage());
+			log.debug("Stack Trace:", e);
+			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ReckoningServiceList(flaggedReckonings, new Message(), true);
+	}
+
+	@Override
+	public ReckoningServiceList getFavoritedReckoningComments(
+			Date favoritedAfter, Integer page, Integer size, String sessionId) {
+		List<Reckoning> favoritedCommentReckonings = null;
+		
+		try {
+			favoritedCommentReckonings = reckoningRepoCustom.getFavoritedReckoningComments(favoritedAfter, page, size);
+			// Sift through each reckoning and include only the comments that were flagged according to the criteria.
+			for (Reckoning reckoning : favoritedCommentReckonings) {
+				List<Comment> favoritedComments = new LinkedList<Comment> ();
+				for (Comment comment : reckoning.getComments()) {
+					if (!comment.getFavoriteAfterDate(favoritedAfter).isEmpty()) {
+						comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
+						favoritedComments.add(comment);
+					}
+				}
+				
+				reckoning.setComments(favoritedComments);
+			}
+			
+		} catch (Exception e) {
+			log.error("General exception when getting favorited reckoning comment summaries: " + e.getMessage());
+			log.debug("Stack Trace:", e);
+			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ReckoningServiceList(favoritedCommentReckonings, new Message(), true);
+	}
+
+	@Override
+	public ReckoningServiceList getFlaggedReckoningComments(Date flaggedAfter,
+			Integer page, Integer size, String sessionId) {
+		List<Reckoning> flaggedCommentReckonings = null;
+		
+		try {
+			flaggedCommentReckonings = reckoningRepoCustom.getFlaggedReckoningComments(flaggedAfter, page, size);
+			// Sift through each reckoning and include only the comments that were flagged according to the criteria.
+			for (Reckoning reckoning : flaggedCommentReckonings) {
+				List<Comment> flaggedComments = new LinkedList<Comment> ();
+				for (Comment comment : reckoning.getComments()) {
+					if (!comment.getFlagAfterDate(flaggedAfter).isEmpty()) {
+						comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
+						flaggedComments.add(comment);
+					}
+				}
+				
+				reckoning.setComments(flaggedComments);
+			}
+			
+		} catch (Exception e) {
+			log.error("General exception when getting flagged reckoning comment summaries: " + e.getMessage());
+			log.debug("Stack Trace:", e);
+			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ReckoningServiceList(flaggedCommentReckonings, new Message(), true);
 	}
 	
 	@Override
