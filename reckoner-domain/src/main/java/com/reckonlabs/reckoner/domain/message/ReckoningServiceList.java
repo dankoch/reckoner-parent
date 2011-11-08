@@ -20,6 +20,9 @@ public class ReckoningServiceList extends ServiceResponse implements Serializabl
 	
 	@Column (name = "count")
 	private Long count;
+	
+	@Column (name = "comment_count")
+	private Long commentCount;
 
 	public ReckoningServiceList() {
 		setReckonings(null);
@@ -30,6 +33,7 @@ public class ReckoningServiceList extends ServiceResponse implements Serializabl
 	
 	public ReckoningServiceList(List<Reckoning> reckoning, Message message, boolean success) {
 		setReckonings(reckoning);
+		setCommentCount(null);
 		setCount(null);
 		setMessage(message);
 		setSuccess(success);	
@@ -37,6 +41,15 @@ public class ReckoningServiceList extends ServiceResponse implements Serializabl
 	
 	public ReckoningServiceList(List<Reckoning> reckoning, Long count, Message message, boolean success) {
 		setReckonings(reckoning);
+		setCommentCount(null);
+		setCount(count);
+		setMessage(message);
+		setSuccess(success);		
+	}
+	
+	public ReckoningServiceList(List<Reckoning> reckoning, Long commentCount, Long count, Message message, boolean success) {
+		setReckonings(reckoning);
+		setCommentCount(commentCount);
 		setCount(count);
 		setMessage(message);
 		setSuccess(success);		
@@ -59,5 +72,14 @@ public class ReckoningServiceList extends ServiceResponse implements Serializabl
 
 	public void setCount(Long count) {
 		this.count = count;
+	}
+	
+	@XmlElement (name = "comment_count")
+	public Long getCommentCount() {
+		return commentCount;
+	}
+
+	public void setCommentCount(Long commentCount) {
+		this.commentCount = commentCount;
 	}
 }

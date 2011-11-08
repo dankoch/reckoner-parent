@@ -114,6 +114,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public ReckoningServiceList getReckoningCommentsByUser(String userId, Integer page, Integer size) {
 		List<Reckoning> commentedReckonings = null;
+		long commentCount = 0;
 		long count = 0;
 		
 		try {
@@ -123,11 +124,12 @@ public class CommentServiceImpl implements CommentService {
 			if (commentedReckonings == null) {
 				commentedReckonings = reckoningRepoCustom.getUserCommentedReckonings(userId);
 				User user = userService.getUserByUserId(userId, true).getUser();
+				count = commentedReckonings.size();
 				
 				// Remove all of the comments from the reckonings except those made by the specified user.
 				for (Reckoning commentedReckoning : commentedReckonings) {
 					List<Comment> userComments = commentedReckoning.getCommentsByUser(userId);
-					count += userComments.size();
+					commentCount += userComments.size();
 					
 					// Pull the user profile associated with the user id and attach it to each Reckoning.
 					for (Comment comment : userComments) {
@@ -140,8 +142,9 @@ public class CommentServiceImpl implements CommentService {
 				
 				reckoningCache.setCachedUserCommentedReckonings(commentedReckonings, userId);
 			} else {
+				count = commentedReckonings.size();
 				for (Reckoning commentedReckoning : commentedReckonings) {
-					count += commentedReckoning.getComments().size();
+					commentCount += commentedReckoning.getComments().size();
 				}
 			}
 			
@@ -152,7 +155,7 @@ public class CommentServiceImpl implements CommentService {
 		    return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 	    }
 		
-		return new ReckoningServiceList(commentedReckonings, count, new Message(), true);
+		return new ReckoningServiceList(commentedReckonings, commentCount, count, new Message(), true);
 	}
 
 	@Override

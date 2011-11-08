@@ -274,6 +274,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	// as a different pagination policy.
 	public ReckoningServiceList getReckoningSummariesByUser(String submitterId, Integer page, Integer size, String sessionId) {
 		List<Reckoning> reckonings = new LinkedList<Reckoning>();
+		long count = 0;
 		try {
 			reckonings = reckoningCache.getCachedUserReckoningSummaries(submitterId);
 			if (reckonings == null) {
@@ -291,6 +292,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 				reckoningCache.setCachedUserReckoningSummaries(submitterId, reckonings);
 			}
 			
+			count = reckonings.size();
 			reckonings = (List<Reckoning>) ListPagingUtility.pageList(reckonings, page, size);
 		} catch (Exception e) {
 			log.error("General exception when getting reckoning summaries by user: " + e.getMessage());
@@ -298,7 +300,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
 		
-		return new ReckoningServiceList(reckonings, Long.valueOf(reckonings.size()), new Message(), true);
+		return new ReckoningServiceList(reckonings, count, new Message(), true);
 	}
 
 	@Override
