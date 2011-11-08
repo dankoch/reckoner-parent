@@ -361,6 +361,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "submitted_by") String submittedBy,			
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
+			@RequestParam(required = false, value = "randomize") Boolean randomize,
 			@RequestParam(required = false, value = "session_id") String sessionId)
 				throws AuthenticationException {
 		
@@ -368,7 +369,7 @@ public class ReckoningController {
 		List<String> excludeTagsList = convertList(excludeTagsString);
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery(ReckoningTypeEnum.OPEN_AND_CLOSED, 
-				postedAfter, postedBefore, closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size);
+				postedAfter, postedBefore, closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size, randomize);
 	
 		if (serviceProps.isEnableServiceAuthentication() && 
 				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
@@ -384,7 +385,7 @@ public class ReckoningController {
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, postedAfter, postedBefore,
 				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
-				sortBy, ascending, page, size, sessionId);
+				sortBy, ascending, page, size, randomize, sessionId);
 	}
 	
 	/**
@@ -424,6 +425,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "submitted_by") String submittedBy,		
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
+			@RequestParam(required = false, value = "randomize") Boolean randomize,			
 			@RequestParam(required = false, value = "session_id") String sessionId) 
 				throws AuthenticationException {
 		
@@ -431,7 +433,7 @@ public class ReckoningController {
 		List<String> excludeTagsList = convertList(excludeTagsString);
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery(ReckoningTypeEnum.OPEN, 
-				postedAfter, postedBefore, closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size);
+				postedAfter, postedBefore, closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size, randomize);
 	
 		if (serviceProps.isEnableServiceAuthentication() && 
 				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
@@ -447,11 +449,11 @@ public class ReckoningController {
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN, postedAfter, postedBefore,
 				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
-				sortBy, ascending, page, size, sessionId);
+				sortBy, ascending, page, size, randomize, sessionId);
 	}
 	
 	/**
-	 * This method allows for the general retrieval of open reckoning summaries.
+	 * This method allows for the general retrieval of closed reckoning summaries.
 	 * 
 	 * @param page
 	 *           Integer
@@ -487,6 +489,7 @@ public class ReckoningController {
 			@RequestParam(required = false, value = "submitted_by") String submittedBy,		
 			@RequestParam(required = false, value = "sort_by") String sortBy,
 			@RequestParam(required = false, value = "ascending") Boolean ascending,
+			@RequestParam(required = false, value = "randomize") Boolean randomize,			
 			@RequestParam(required = false, value = "session_id") String sessionId) 
 				throws AuthenticationException {
 		
@@ -494,7 +497,7 @@ public class ReckoningController {
 		List<String> excludeTagsList = convertList(excludeTagsString);
 		
 		Message validationMessage = ReckoningValidator.validateReckoningQuery(ReckoningTypeEnum.CLOSED, 
-				postedAfter, postedBefore, closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size);
+				postedAfter, postedBefore, closedAfter, closedBefore, includeTagsList, excludeTagsList, sortBy, ascending, page, size, randomize);
 	
 		if (serviceProps.isEnableServiceAuthentication() && 
 				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
@@ -510,7 +513,157 @@ public class ReckoningController {
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.CLOSED, postedAfter, postedBefore,
 				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
-				sortBy, ascending, page, size, sessionId);
+				sortBy, ascending, page, size, randomize, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval or reckonings related to the specified reckoning
+	 * 
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer
+	 * @param postedAfter
+	 *           Date
+	 * @param postedBefore
+	 *           Date    
+	 * @param closedAfter
+	 *           Date
+	 * @param closedBefore
+	 *           Date 
+	 * @param sessionId
+	 *           String   
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/related/{id}", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getRelatedReckonings(
+			@PathVariable String id,
+			@RequestParam(required = false, value = "size") Integer size,		
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+		
+		Message validationMessage = ReckoningValidator.validateReckoningId(id);
+		
+		// Set default size for requests
+		if (size == null) { size = 4; }
+	
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view related reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();
+		}	
+	
+		if (validationMessage != null) {
+			log.info("Related reckoning query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return reckoningService.getRelatedReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, id, size);
+	}
+	
+	/**
+	 * This method allows for the retrieval or reckonings related to the specified reckoning
+	 * 
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer
+	 * @param postedAfter
+	 *           Date
+	 * @param postedBefore
+	 *           Date    
+	 * @param closedAfter
+	 *           Date
+	 * @param closedBefore
+	 *           Date 
+	 * @param sessionId
+	 *           String   
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/related/{id}/open", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getRelatedOpenReckonings(
+			@PathVariable String id,
+			@RequestParam(required = false, value = "size") Integer size,		
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+		
+		Message validationMessage = ReckoningValidator.validateReckoningId(id);
+		
+		// Set default size for requests
+		if (size == null) { size = 4; }
+	
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view related reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();
+		}	
+	
+		if (validationMessage != null) {
+			log.info("Related reckoning query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return reckoningService.getRelatedReckoningSummaries(ReckoningTypeEnum.OPEN, id, size);
+	}
+	
+	/**
+	 * This method allows for the retrieval or reckonings related to the specified reckoning
+	 * 
+	 * @param page
+	 *           Integer
+	 * @param size
+	 *           Integer
+	 * @param postedAfter
+	 *           Date
+	 * @param postedBefore
+	 *           Date    
+	 * @param closedAfter
+	 *           Date
+	 * @param closedBefore
+	 *           Date 
+	 * @param sessionId
+	 *           String   
+	 * @return reckoningServiceList
+	 *            ReckoningServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/reckoning/related/{id}/closed", method = RequestMethod.GET)	
+	public @ResponseBody
+	ReckoningServiceList getRelatedClosedReckonings(
+			@PathVariable String id,
+			@RequestParam(required = false, value = "size") Integer size,		
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+				throws AuthenticationException {
+		
+		Message validationMessage = ReckoningValidator.validateReckoningId(id);
+		
+		// Set default size for requests
+		if (size == null) { size = 4; }
+	
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_RECKONING)) {
+			log.info("User with insufficient privileges attempted to view related reckonings: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();
+		}	
+	
+		if (validationMessage != null) {
+			log.info("Related reckoning query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}
+		
+		return reckoningService.getRelatedReckoningSummaries(ReckoningTypeEnum.CLOSED, id, size);
 	}
 	
 	/**

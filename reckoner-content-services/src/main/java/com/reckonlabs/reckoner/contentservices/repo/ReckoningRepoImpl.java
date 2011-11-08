@@ -77,19 +77,23 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			Boolean highlighted,
 			String submitterId,
 			ReckoningApprovalStatusEnum approvalStatus,
-			String sortBy, Boolean ascending, Integer page, Integer size) {
+			String sortBy, Boolean ascending, Integer page, Integer size, Boolean randomize) {
 		BasicQuery query = null;
 		
 		query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
-				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus),
+				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus, randomize),
 				MongoDbQueryFactory.buildReckoningSummaryFields());
 		
-		if (page != null && size != null) {
+		if (size != null) {
+			if (page == null) { page = 0; }
 			query.limit(size.intValue());
 			query.skip(page.intValue() * size.intValue());
 		}
 		
-		if (sortBy != null && sortBy != "") {
+		if (randomize != null && randomize.booleanValue()) {
+			query.sort().on("randomSelect", Order.DESCENDING);
+		}
+		else if (sortBy != null && sortBy != "") {
 			if (ascending != null && ascending.booleanValue()) {
 				query.sort().on(sortBy, Order.ASCENDING);
 			} else {
@@ -109,7 +113,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			ReckoningApprovalStatusEnum approvalStatus) {
 		
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
-				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus),
+				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus, null),
 				MongoDbQueryFactory.buildReckoningSummaryFields());	
 		
 		return mongoTemplate.getCollection(RECKONING_COLLECTION).count(query.getQueryObject());		

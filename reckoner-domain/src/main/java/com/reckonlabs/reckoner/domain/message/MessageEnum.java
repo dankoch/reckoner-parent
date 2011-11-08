@@ -9,6 +9,7 @@ public enum MessageEnum {
 	
 	R200_GET_RECKONING ("R200"), R201_GET_RECKONING ("R201"), R202_GET_RECKONING ("R202"), R203_GET_RECKONING ("R203"),
 	R204_GET_RECKONING ("R204"), R205_GET_RECKONING ("R205"), R206_GET_RECKONING("R206"), R207_GET_RECKONING ("R207"),
+	R208_GET_RECKONING ("R207"), R209_GET_RECKONING ("R209"),
 	
 	R300_APPROVE_RECKONING("R300"),
 	
@@ -62,6 +63,8 @@ public enum MessageEnum {
 			case R205_GET_RECKONING:  return ("The 'Posted Before' date cannot be before the 'Posted After' date.");
 			case R206_GET_RECKONING:  return ("The 'Closed Before' date cannot be before the 'Closed After' date.");
 			case R207_GET_RECKONING:  return ("Invalid 'SortBy' value.");
+			case R208_GET_RECKONING:  return ("Cannot randomize and set sortBy or page values.");
+			case R209_GET_RECKONING:  return ("Cannot randomize without setting valid size limit.");
 			
 			case R300_APPROVE_RECKONING: return ("No reckoning of that ID is available to approve.");
 			

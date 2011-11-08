@@ -30,7 +30,7 @@ public interface ReckoningRepoCustom {
 			Boolean highlighted,
 			String submitterId,
 			ReckoningApprovalStatusEnum approvalStatus,
-			String sortBy, Boolean ascending, Integer page, Integer size);
+			String sortBy, Boolean ascending, Integer page, Integer size, Boolean randomize);
 	
 	public Long getReckoningCount (ReckoningTypeEnum reckoningType, 
 			Date postedBeforeDate, Date postedAfterDate,

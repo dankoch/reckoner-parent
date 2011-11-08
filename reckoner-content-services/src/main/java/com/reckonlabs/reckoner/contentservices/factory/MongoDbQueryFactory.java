@@ -3,6 +3,7 @@ package com.reckonlabs.reckoner.contentservices.factory;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
@@ -142,6 +143,14 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject ("highlighted", highlighted);
 	}
 	
+	public static DBObject buildRandomReckoningQuery(double randIndex) {
+		return new BasicDBObject("randomSelect", new BasicDBObject ("$lte", randIndex));
+	}
+	
+	public static DBObject buildOppositeRandomReckoningQuery(double randIndex) {
+		return new BasicDBObject("randomSelect", new BasicDBObject ("$gte", randIndex));
+	}
+	
 	public static DBObject buildAnswerIndexExists (Integer index) {
 		return new BasicDBObject("answers.index", index);
 	}
@@ -178,7 +187,7 @@ public final class MongoDbQueryFactory {
 	
 	public static DBObject buildReckoningQuery (ReckoningTypeEnum type, Date postedBeforeDate, Date postedAfterDate,
 			Date closedBeforeDate, Date closedAfterDate, List<String> includeTags, List<String> excludeTags,
-			Boolean highlighted, String submitterId, ReckoningApprovalStatusEnum approvalStatus) {
+			Boolean highlighted, String submitterId, ReckoningApprovalStatusEnum approvalStatus, Boolean randomize) {
 
 		DBObject mainQuery = buildApprovalStatusQuery(approvalStatus);
 				
@@ -232,16 +241,19 @@ public final class MongoDbQueryFactory {
 			mainQuery.putAll(buildPostedByQuery(submitterId));
 		}
 		
+		if (randomize != null && randomize.booleanValue()) {
+			mainQuery.putAll(buildRandomReckoningQuery(new Random().nextDouble()));
+		}
+		
 		return mainQuery;
 	}
 	
 	public static DBObject buildRandomReckoningQuery (ReckoningTypeEnum type, double randIndex, boolean direction) {
-		BasicDBObject randomQuery = new BasicDBObject("$lte", randIndex);
+		DBObject mainQuery = buildRandomReckoningQuery(randIndex);
 		if (direction) {
-			randomQuery = new BasicDBObject("$gte", randIndex);
+			mainQuery = buildOppositeRandomReckoningQuery(randIndex);
 		}
 		
-		BasicDBObject mainQuery = new BasicDBObject("randomSelect", randomQuery);
 		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
 		
 		if (type == ReckoningTypeEnum.CLOSED) {

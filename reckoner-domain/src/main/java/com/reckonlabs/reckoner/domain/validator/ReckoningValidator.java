@@ -43,7 +43,7 @@ public class ReckoningValidator {
 	public static Message validateReckoningQuery(Integer page, Integer size) {
 		
 		return validateReckoningQuery (ReckoningTypeEnum.OPEN_AND_CLOSED, null, null, null,
-										null, null, null, null, null, page, size);
+										null, null, null, null, null, page, size, null);
 	}
 	
 	public static Message validateReckoningQuery(ReckoningTypeEnum reckoningType, 
@@ -51,19 +51,28 @@ public class ReckoningValidator {
 			Date closedAfter, Date closedBefore,
 			List<String> includeTags, List<String> excludeTags,
 			String sortBy, Boolean ascending,
-			Integer page, Integer size) {
+			Integer page, Integer size, Boolean randomize) {
 		
-		if (page != null ^ size != null) {
-			return (new Message(MessageEnum.R203_GET_RECKONING));
-		}
-		if (page != null) {
-			if (page < 0) {
-				return (new Message(MessageEnum.R201_GET_RECKONING));
+		// Paging and Sorting rules.  Different if Randomized.
+		if (randomize != null && randomize.booleanValue()) {
+			if (sortBy != null || page != null) {
+				return (new Message(MessageEnum.R208_GET_RECKONING));				
+			} else if (size == null || size < 1) {
+				return (new Message(MessageEnum.R209_GET_RECKONING));				
 			}
-		}
-		if (size != null) {
-			if (size < 1) {
-				return (new Message(MessageEnum.R202_GET_RECKONING));				
+		} else {
+			if (page != null && size == null) {
+				return (new Message(MessageEnum.R203_GET_RECKONING));
+			}
+			if (page != null) {
+				if (page < 0) {
+					return (new Message(MessageEnum.R201_GET_RECKONING));
+				}
+			}
+			if (size != null) {
+				if (size < 1) {
+					return (new Message(MessageEnum.R202_GET_RECKONING));				
+				}
 			}
 		}
 		

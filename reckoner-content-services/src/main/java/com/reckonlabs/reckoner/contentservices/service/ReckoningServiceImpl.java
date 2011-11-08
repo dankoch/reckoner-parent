@@ -1,6 +1,7 @@
 package com.reckonlabs.reckoner.contentservices.service;
 
 import java.lang.Boolean;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -279,7 +280,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 				reckonings = reckoningRepoCustom.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, 
 						null, null, null, null, null, null, null, 
 						submitterId, ReckoningApprovalStatusEnum.APPROVED_AND_PENDING, 
-						"submissionDate", null, null, null);
+						"submissionDate", null, null, null, null);
 				
 				// Pull the user profile associated with the submitter Id and attach it to each Reckoning.
 				User user = userService.getUserByUserId(submitterId, true).getUser();
@@ -309,7 +310,8 @@ public class ReckoningServiceImpl implements ReckoningService {
 			String submitterId,
 			ReckoningApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending,
-			Integer page, Integer size, String sessionId) {
+			Integer page, Integer size, Boolean randomize,
+			String sessionId) {
 		List<Reckoning> reckonings = null;
 		Long count = null;
 
@@ -318,7 +320,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			excludeTags = formatTags(excludeTags);
 			
 			reckonings = reckoningRepoCustom.getReckoningSummaries(reckoningType, postedBefore, postedAfter, closedBefore, 
-					closedAfter, includeTags, excludeTags, highlighted, submitterId, approvalStatus, sortBy, ascending, page, size);
+					closedAfter, includeTags, excludeTags, highlighted, submitterId, approvalStatus, sortBy, ascending, page, size, randomize);
 			
 			for (Reckoning reckoning : reckonings) {
 				reckoning.setPostingUser(userService.getUserByUserId
@@ -358,6 +360,47 @@ public class ReckoningServiceImpl implements ReckoningService {
 		}
 		
 		return new ReckoningServiceList(null, count, new Message(), true);
+	}
+	
+	@Override
+	public ReckoningServiceList getRelatedReckoningSummaries(
+			ReckoningTypeEnum reckoningType, String reckoningId, Integer size) {
+		List<Reckoning> reckonings = new LinkedList<Reckoning>();
+		
+		try {		
+			List<Reckoning> baseReckonings = getReckoning(reckoningId, null).getReckonings();
+			if (baseReckonings != null && !baseReckonings.isEmpty()) {
+				Reckoning sourceReckoning = baseReckonings.get(0);
+				
+				// Use the tags to determine related reckonings.
+				if (sourceReckoning.getTags() != null && !sourceReckoning.getTags().isEmpty()) {
+					int cycleSize = sourceReckoning.getTags().size();
+					int reckoningsPerTag = size / cycleSize;
+					
+					if (reckoningsPerTag == 0) {
+						reckoningsPerTag = 1;
+						cycleSize = size.intValue();
+					}
+					
+					for (int i = 0; i < cycleSize; i ++) {
+						List<String> tagList = new ArrayList<String>(1);
+						tagList.add(sourceReckoning.getTags().get(i));
+						
+						reckonings.addAll(reckoningRepoCustom.getReckoningSummaries(reckoningType, null, null, null, 
+								null, tagList, null, null, null, null, null, null, null, reckoningsPerTag, true));					
+					}					
+				}
+				reckonings.addAll(reckoningRepoCustom.getReckoningSummaries(reckoningType, null, null, null, 
+						null, null, null, null, null, null, null, null, null, (size - reckonings.size()), true));		
+			}
+		}
+		catch (Exception e) {
+			log.error("General exception when getting reckoning summaries: " + e.getMessage());
+			log.debug("Stack Trace:", e);
+			return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ReckoningServiceList(reckonings, new Message(), true);
 	}
 
 	@Override

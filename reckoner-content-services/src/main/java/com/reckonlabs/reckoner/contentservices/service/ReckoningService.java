@@ -35,7 +35,7 @@ public interface ReckoningService {
 			Boolean highlighted,
 			String submitterId,
 			ReckoningApprovalStatusEnum approvalStatus,
-			String sortBy, Boolean ascending, Integer page, Integer size, 
+			String sortBy, Boolean ascending, Integer page, Integer size, Boolean randomize,
 			String sessionId);
 	
 	public ReckoningServiceList getReckoningCount (ReckoningTypeEnum reckoningType, 
@@ -45,6 +45,8 @@ public interface ReckoningService {
 			Boolean highlighted,
 			String submitterId,
 			ReckoningApprovalStatusEnum approvalStatus);
+	
+	public ReckoningServiceList getRelatedReckoningSummaries (ReckoningTypeEnum reckoningType, String reckoningId, Integer size);	
 
 	public ReckoningServiceList getRandomReckoning(ReckoningTypeEnum reckoningType);
 }
