@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import com.reckonlabs.reckoner.contentservices.cache.ReckoningCache;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
+import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
@@ -24,7 +25,6 @@ import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
@@ -280,7 +280,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			if (reckonings == null) {
 				reckonings = reckoningRepoCustom.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, 
 						null, null, null, null, null, null, null, 
-						submitterId, ReckoningApprovalStatusEnum.APPROVED_AND_PENDING, 
+						submitterId, ApprovalStatusEnum.APPROVED_AND_PENDING, 
 						"submissionDate", null, null, null, null);
 				
 				// Pull the user profile associated with the submitter Id and attach it to each Reckoning.
@@ -310,7 +310,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			List<String> includeTags, List<String> excludeTags,
 			Boolean highlighted,
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus,
+			ApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending,
 			Integer page, Integer size, Boolean randomize,
 			String sessionId) {
@@ -348,7 +348,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			List<String> includeTags, List<String> excludeTags,
 			Boolean highlighted,
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus) {
+			ApprovalStatusEnum approvalStatus) {
 		Long count = null;
 		
 		try {

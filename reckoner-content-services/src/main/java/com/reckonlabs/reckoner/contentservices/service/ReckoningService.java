@@ -4,8 +4,8 @@ import java.lang.Boolean;
 import java.util.Date;
 import java.util.List;
 
+import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
@@ -34,7 +34,7 @@ public interface ReckoningService {
 			List<String> includeTags, List<String> excludeTags,
 			Boolean highlighted,
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus,
+			ApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending, Integer page, Integer size, Boolean randomize,
 			String sessionId);
 	
@@ -44,7 +44,7 @@ public interface ReckoningService {
 			List<String> includeTags, List<String> excludeTags,
 			Boolean highlighted,
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus);
+			ApprovalStatusEnum approvalStatus);
 	
 	public ReckoningServiceList getRelatedReckoningSummaries (ReckoningTypeEnum reckoningType, String reckoningId, Integer size);	
 

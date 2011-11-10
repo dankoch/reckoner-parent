@@ -15,13 +15,13 @@ import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Order;
 
 import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
+import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
@@ -50,21 +50,21 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	// Merges the provided reckoning into the existing reckoning found with the given ID.
 	// Does nothing if no matches are found.
 	public void mergeReckoning (Reckoning reckoning) throws DBUpdateException {
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoning.getId())), 
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoning.getId())), 
 				MongoDbQueryFactory.buildReckoningUpdate(reckoning), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());
 	}	
 	
 	public void approveReckoning (String id, String approver, Date postingDate, Date closingDate) throws DBUpdateException {
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(id)), 
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(id)), 
 				MongoDbQueryFactory.buildApprovalUpdate(approver, postingDate, closingDate), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());
 	}
 	
 	public void rejectReckoning (String id, String rejecter) throws DBUpdateException {
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(id)), 
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(id)), 
 				MongoDbQueryFactory.buildRejectionUpdate(rejecter), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());
@@ -76,7 +76,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			List<String> includeTags, List<String> excludeTags, 
 			Boolean highlighted,
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus,
+			ApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending, Integer page, Integer size, Boolean randomize) {
 		BasicQuery query = null;
 		
@@ -110,7 +110,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			List<String> includeTags, List<String> excludeTags,
 			Boolean highlighted, 
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus) {
+			ApprovalStatusEnum approvalStatus) {
 		
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
 				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus, null),
@@ -164,7 +164,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	
 	@Override
 	public List<Reckoning> getFavoritedReckonings(Date favoritedAfter, Integer page, Integer size) {
-		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFavoritedReckoningQuery(favoritedAfter),
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFavoritedQuery(favoritedAfter),
 				MongoDbQueryFactory.buildExcludeVotesFields());	
 		
 		if (page != null && size != null) {
@@ -178,7 +178,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 
 	@Override
 	public List<Reckoning> getFlaggedReckonings(Date flaggedAfter, Integer page, Integer size) {
-		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFlaggedReckoningQuery(flaggedAfter),
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFlaggedQuery(flaggedAfter),
 				MongoDbQueryFactory.buildExcludeVotesFields());	
 		
 		if (page != null && size != null) {
@@ -223,8 +223,8 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			throws DBUpdateException {
 		
 		comment.setCommentId(new ObjectId().toString());
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
-				MongoDbQueryFactory.buildReckoningCommentUpdate(comment), RECKONING_COLLECTION);
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId)), 
+				MongoDbQueryFactory.buildCommentInsert(comment), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());		
 	}
@@ -233,7 +233,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	public void insertReckoningVote(String voterId, Integer answerIndex,
 			String reckoningId) throws DBUpdateException {
 		
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId)), 
 				MongoDbQueryFactory.buildReckoningVoteUpdate(voterId, answerIndex), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());		
@@ -244,7 +244,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	public void insertReckoningFavorite(Favorite favorite, String reckoningId)
 			throws DBUpdateException {
 		
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId)), 
 				MongoDbQueryFactory.buildFavoriteUpdate(favorite), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());		
@@ -254,7 +254,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	public void insertReckoningFlag(Flag flag, String reckoningId)
 			throws DBUpdateException {
 		
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId)), 
 				MongoDbQueryFactory.buildFlagUpdate(flag), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());	
@@ -286,8 +286,8 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	@Override
 	public void incrementReckoningViews(String reckoningId) throws DBUpdateException {
 		
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId)), 
-				MongoDbQueryFactory.incrementReckoningViews(), RECKONING_COLLECTION);
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId)), 
+				MongoDbQueryFactory.incrementViews(), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());	
 	}
@@ -314,8 +314,8 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	
 	@Override
 	public boolean confirmReckoningExists(String reckoningId) {
-		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId), 
-				MongoDbQueryFactory.buildReckoningIdField());
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId), 
+				MongoDbQueryFactory.buildIdField());
 		if (!mongoTemplate.find(query, Reckoning.class).isEmpty()) {
 			return true;	
 		}
@@ -325,7 +325,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	@Override
 	public boolean confirmReckoningIsVotingEligible(String reckoningId,
 			int answerIndex) {
-		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningIdQuery(reckoningId), 
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId), 
 				MongoDbQueryFactory.buildReckoningIdAndAnswerIndexFields());
 		List<Reckoning> reckoning = mongoTemplate.find(query, Reckoning.class);
 		

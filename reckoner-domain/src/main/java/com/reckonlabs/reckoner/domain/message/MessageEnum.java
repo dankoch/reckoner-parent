@@ -26,7 +26,12 @@ public enum MessageEnum {
 	R800_POST_NOTE("R800"), R801_POST_NOTE("R801"), R802_POST_NOTE("R802"), R803_POST_NOTE("R803"), R804_POST_NOTE("R804"),
 	R805_POST_NOTE("R805"),
 	
-	R900_GET_NOTE("R900");
+	R900_GET_NOTE("R900"),
+	
+	R1000_POST_CONTENT("R1000"), R1001_POST_CONTENT("R1001"), R1002_POST_CONTENT("R1002"), R1003_POST_CONTENT("R1003"),
+	
+	R1100_GET_CONTENT("R1100"), R1101_GET_CONTENT("R1101"), R1102_GET_CONTENT("R1102"), R1103_GET_CONTENT("R1103"), R1104_GET_CONTENT("R1104"),
+	R1105_GET_CONTENT("R1105"), R1106_GET_CONTENT("R1106"), R1107_GET_CONTENT("R1107");
 	
 	private final String code;
 
@@ -61,7 +66,7 @@ public enum MessageEnum {
 			case R203_GET_RECKONING:  return ("Paged reckoning queries need both a valid page and size value.");
 			case R204_GET_RECKONING:  return ("You need to request either open or closed reckonings (or both).");
 			case R205_GET_RECKONING:  return ("The 'Posted Before' date cannot be before the 'Posted After' date.");
-			case R206_GET_RECKONING:  return ("The 'Closed Before' date cannot be before the 'Closed After' date.");
+			case R206_GET_RECKONING:  return ("The 'Posted Before' date cannot be before the 'Posted After' date.");
 			case R207_GET_RECKONING:  return ("Invalid 'SortBy' value.");
 			case R208_GET_RECKONING:  return ("Cannot randomize and set sortBy or page values.");
 			case R209_GET_RECKONING:  return ("Cannot randomize without setting valid size limit.");
@@ -93,13 +98,27 @@ public enum MessageEnum {
 			case R710_AUTH_USER: return ("No user found with the specified ID.");	
 			
 			case R800_POST_NOTE: return ("No user ID specified as favoriting/flagging agent.");
-			case R801_POST_NOTE: return ("Specified reckoning does not exist.");
+			case R801_POST_NOTE: return ("Specified reckoning or content does not exist.");
 			case R802_POST_NOTE: return ("Specified comment does not exist.");
 			case R803_POST_NOTE: return ("Specified user does not exist.");		
-			case R804_POST_NOTE: return ("Specified user has already favorited / flagged this reckoning.");
-			case R805_POST_NOTE: return ("Specified user is trying to favorite their own comment/reckoning.");
+			case R804_POST_NOTE: return ("Specified user has already favorited / flagged this item.");
+			case R805_POST_NOTE: return ("Specified user is trying to favorite their own content.");
 			
 			case R900_GET_NOTE: return ("Paged flag/favorite queries need both a valid page and size value.");
+			
+			case R1000_POST_CONTENT: return ("No title specified for content.");
+			case R1001_POST_CONTENT: return ("No body specified for content.");
+			case R1002_POST_CONTENT: return ("No submitting user specified for content.");
+			case R1003_POST_CONTENT: return ("Need to specific an ID when updating content.");
+			
+			case R1100_GET_CONTENT: return ("Can't specific a page or sorting order when randomizing.");
+			case R1101_GET_CONTENT: return ("Can't randomize without setting a size limit.");
+			case R1102_GET_CONTENT: return ("Paged content queries need a size limit.");
+			case R1103_GET_CONTENT: return ("Page value can't be less than zero.");
+			case R1104_GET_CONTENT: return ("Size value can't be less than one.");
+			case R1105_GET_CONTENT: return ("The 'Posted Before' date cannot be before the 'Posted After' date.");
+			case R1106_GET_CONTENT: return ("The 'Posted Before' date cannot be before the 'Posted After' date.");
+			case R1107_GET_CONTENT: return ("Invalid sorting criteria.");
 			
 			default:  return ("Message not found.");
 		}

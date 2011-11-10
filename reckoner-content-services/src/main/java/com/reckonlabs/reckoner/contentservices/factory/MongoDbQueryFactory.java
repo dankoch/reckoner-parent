@@ -11,11 +11,13 @@ import com.mongodb.BasicDBObject;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Update;
 
+import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
+import com.reckonlabs.reckoner.domain.content.Content;
+import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
@@ -64,11 +66,11 @@ public final class MongoDbQueryFactory {
 		return mainQuery;
 	}
 	
-	public static DBObject buildReckoningIdQuery (String id) {
+	public static DBObject buildIdQuery (String id) {
 		return new BasicDBObject("id", new ObjectId(id));
 	}
 	
-	public static DBObject buildReckoningIdExistsQuery (String id) {
+	public static DBObject buildIdExistsQuery (String id) {
 		return new BasicDBObject("id", new BasicDBObject ("$exists", new ObjectId(id)));
 	}
 	
@@ -80,30 +82,30 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("comments.commentId", new BasicDBObject ("$exists", id));
 	}
 	
-	public static DBObject buildReckoningPostedAfterDateQuery (Date afterDate) {
+	public static DBObject buildPostedAfterDateQuery (Date afterDate) {
 		return new BasicDBObject("postingDate", new BasicDBObject ("$gt", afterDate));
 	}
 	
-	public static DBObject buildReckoningPostedBeforeDateQuery (Date beforeDate) {
+	public static DBObject buildPostedBeforeDateQuery (Date beforeDate) {
 		return new BasicDBObject("postingDate", new BasicDBObject ("$lt", beforeDate));
 	}
 	
-	public static DBObject buildReckoningPostedBetweenDateQuery (Date beforeDate, Date afterDate) {
+	public static DBObject buildPostedBetweenDateQuery (Date beforeDate, Date afterDate) {
 		BasicDBObject innerQuery = new BasicDBObject ("$lt", beforeDate);
 		innerQuery.append("$gt", afterDate);
 		
 		return new BasicDBObject("postingDate", innerQuery);
 	}
 	
-	public static DBObject buildReckoningClosedAfterDateQuery (Date afterDate) {
+	public static DBObject buildClosedAfterDateQuery (Date afterDate) {
 		return new BasicDBObject("closingDate", new BasicDBObject ("$gt", afterDate));
 	}
 	
-	public static DBObject buildReckoningClosedBeforeDateQuery (Date beforeDate) {
+	public static DBObject buildClosedBeforeDateQuery (Date beforeDate) {
 		return new BasicDBObject("closingDate", new BasicDBObject ("$lt", beforeDate));
 	}
 	
-	public static DBObject buildReckoningClosedBetweenDateQuery (Date beforeDate, Date afterDate) {
+	public static DBObject buildClosedBetweenDateQuery (Date beforeDate, Date afterDate) {
 		BasicDBObject innerQuery = new BasicDBObject ("$lt", beforeDate);
 		innerQuery.append("$gt", afterDate);
 		
@@ -143,7 +145,7 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject ("highlighted", highlighted);
 	}
 	
-	public static DBObject buildRandomReckoningQuery(double randIndex) {
+	public static DBObject buildRandomQuery(double randIndex) {
 		return new BasicDBObject("randomSelect", new BasicDBObject ("$lte", randIndex));
 	}
 	
@@ -171,23 +173,27 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("submitterId", submitterId);
 	}
 	
-	public static DBObject buildApprovalStatusQuery (ReckoningApprovalStatusEnum approvalStatus) {
-		if (approvalStatus == ReckoningApprovalStatusEnum.APPROVED) {
+	public static DBObject buildApprovalStatusQuery (ApprovalStatusEnum approvalStatus) {
+		if (approvalStatus == ApprovalStatusEnum.APPROVED) {
 			return buildAcceptedReckoningQuery();
-		} else if (approvalStatus == ReckoningApprovalStatusEnum.PENDING) {
+		} else if (approvalStatus == ApprovalStatusEnum.PENDING) {
 			return buildPendingReckoningQuery();
-		} else if (approvalStatus == ReckoningApprovalStatusEnum.REJECTED) {
+		} else if (approvalStatus == ApprovalStatusEnum.REJECTED) {
 			return buildRejectedReckoningQuery();
-		} else if (approvalStatus == ReckoningApprovalStatusEnum.APPROVED_AND_PENDING) {
+		} else if (approvalStatus == ApprovalStatusEnum.APPROVED_AND_PENDING) {
 			return buildAcceptedAndPendingReckoningQuery();
 		} 
 		
 		return new BasicDBObject();
 	}
 	
+	public static DBObject buildContentTypeQuery (ContentTypeEnum contentType) {
+		return new BasicDBObject ("contentType", contentType);
+	}
+	
 	public static DBObject buildReckoningQuery (ReckoningTypeEnum type, Date postedBeforeDate, Date postedAfterDate,
 			Date closedBeforeDate, Date closedAfterDate, List<String> includeTags, List<String> excludeTags,
-			Boolean highlighted, String submitterId, ReckoningApprovalStatusEnum approvalStatus, Boolean randomize) {
+			Boolean highlighted, String submitterId, ApprovalStatusEnum approvalStatus, Boolean randomize) {
 
 		DBObject mainQuery = buildApprovalStatusQuery(approvalStatus);
 				
@@ -204,23 +210,23 @@ public final class MongoDbQueryFactory {
 		} 
 		
 		if (postedBeforeDate != null && postedAfterDate != null) {
-			mainQuery.putAll(buildReckoningPostedBetweenDateQuery(postedBeforeDate, postedAfterDate));
+			mainQuery.putAll(buildPostedBetweenDateQuery(postedBeforeDate, postedAfterDate));
 		}
 		else if (postedBeforeDate != null) {
-			mainQuery.putAll(buildReckoningPostedBeforeDateQuery(postedBeforeDate));
+			mainQuery.putAll(buildPostedBeforeDateQuery(postedBeforeDate));
 		}
 		else if (postedAfterDate != null) {
-			mainQuery.putAll(buildReckoningPostedAfterDateQuery(postedAfterDate));
+			mainQuery.putAll(buildPostedAfterDateQuery(postedAfterDate));
 		}
 		
 		if (closedBeforeDate != null & closedAfterDate != null) {
-			mainQuery.putAll(buildReckoningClosedBetweenDateQuery(closedBeforeDate, closedAfterDate));
+			mainQuery.putAll(buildClosedBetweenDateQuery(closedBeforeDate, closedAfterDate));
 		}		
 		else if (closedBeforeDate != null) {
-			mainQuery.putAll(buildReckoningClosedBeforeDateQuery(closedBeforeDate));
+			mainQuery.putAll(buildClosedBeforeDateQuery(closedBeforeDate));
 		}
 		else if (closedAfterDate != null) {
-			mainQuery.putAll(buildReckoningClosedAfterDateQuery(closedAfterDate));
+			mainQuery.putAll(buildClosedAfterDateQuery(closedAfterDate));
 		}
 		
 		if (includeTags != null && excludeTags != null) {
@@ -242,19 +248,19 @@ public final class MongoDbQueryFactory {
 		}
 		
 		if (randomize != null && randomize.booleanValue()) {
-			mainQuery.putAll(buildRandomReckoningQuery(new Random().nextDouble()));
+			mainQuery.putAll(buildRandomQuery(new Random().nextDouble()));
 		}
 		
 		return mainQuery;
 	}
 	
 	public static DBObject buildRandomReckoningQuery (ReckoningTypeEnum type, double randIndex, boolean direction) {
-		DBObject mainQuery = buildRandomReckoningQuery(randIndex);
+		DBObject mainQuery = buildRandomQuery(randIndex);
 		if (direction) {
 			mainQuery = buildOppositeRandomReckoningQuery(randIndex);
 		}
 		
-		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		mainQuery.putAll(buildApprovalStatusQuery(ApprovalStatusEnum.APPROVED));
 		
 		if (type == ReckoningTypeEnum.CLOSED) {
 			mainQuery.putAll(buildClosedReckoningQuery());
@@ -265,24 +271,24 @@ public final class MongoDbQueryFactory {
 		return mainQuery;
 	}
 	
-	public static DBObject buildFavoritedReckoningQuery (Date favoritedSince) {
+	public static DBObject buildFavoritedQuery (Date favoritedSince) {
 		DBObject mainQuery = new BasicDBObject("favorites", new BasicDBObject ("$exists", true));
 		if (favoritedSince != null) {
 			mainQuery = new BasicDBObject("favorites.favoriteDate", new BasicDBObject ("$gt", favoritedSince));
 		}
 		
-		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		mainQuery.putAll(buildApprovalStatusQuery(ApprovalStatusEnum.APPROVED));
 		
 		return mainQuery;
 	}
 	
-	public static DBObject buildFlaggedReckoningQuery (Date flaggedSince) {
+	public static DBObject buildFlaggedQuery (Date flaggedSince) {
 		DBObject mainQuery = new BasicDBObject("flags", new BasicDBObject ("$exists", true));
 		if (flaggedSince != null) {
 			mainQuery = new BasicDBObject("flags.flagDate", new BasicDBObject ("$gt", flaggedSince));
 		}
 		
-		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		mainQuery.putAll(buildApprovalStatusQuery(ApprovalStatusEnum.APPROVED));
 		
 		return mainQuery;
 	}
@@ -293,7 +299,7 @@ public final class MongoDbQueryFactory {
 			mainQuery = new BasicDBObject("comments.favorites.favoriteDate", new BasicDBObject ("$gt", favoritedSince));
 		}
 		
-		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		mainQuery.putAll(buildApprovalStatusQuery(ApprovalStatusEnum.APPROVED));
 		
 		return mainQuery;
 	}
@@ -304,7 +310,7 @@ public final class MongoDbQueryFactory {
 			mainQuery = new BasicDBObject("comments.flags.flagDate", new BasicDBObject ("$gt", flaggedSince));
 		}
 		
-		mainQuery.putAll(buildApprovalStatusQuery(ReckoningApprovalStatusEnum.APPROVED));
+		mainQuery.putAll(buildApprovalStatusQuery(ApprovalStatusEnum.APPROVED));
 		
 		return mainQuery;
 	}
@@ -347,9 +353,9 @@ public final class MongoDbQueryFactory {
 		return rejectionUpdate;
 	}
 	
-	public static Update buildReckoningCommentUpdate(Comment comment) {
+	public static Update buildCommentInsert(Comment comment) {
 		Update commentInsert = new Update();
-		commentInsert.push("comments", comment);
+		commentInsert.push("comments", comment).inc("commentIndex", 1);
 		
 		return commentInsert;
 	}
@@ -399,7 +405,7 @@ public final class MongoDbQueryFactory {
 		return voteInsert;
 	}*/
 	
-	public static Update incrementReckoningViews() {
+	public static Update incrementViews() {
 		Update viewIncrement = new Update();
 		viewIncrement.inc("views", 1);
 		
@@ -408,7 +414,7 @@ public final class MongoDbQueryFactory {
 	
 	public static Update deleteByCommentId (String commentId) {		
 		Update deleteComment = new Update();
-		deleteComment.pull("comments", new BasicDBObject("commentId", commentId));
+		deleteComment.pull("comments", new BasicDBObject("commentId", commentId)).inc("commentIndex", -1);
 		
 		return deleteComment;
 	}
@@ -444,7 +450,7 @@ public final class MongoDbQueryFactory {
 		return fields;
 	}	
 	
-	public static DBObject buildReckoningIdField() {
+	public static DBObject buildIdField() {
 		BasicDBObject fields = new BasicDBObject("id", 1);
 		
 		return fields;
@@ -456,6 +462,75 @@ public final class MongoDbQueryFactory {
 		fields.append("approved", 1);
 		fields.append("rejected", 1);
 		fields.append("closingDate", 1);
+		
+		return fields;
+	}
+	
+	/////////////////////////////////////////////////////////////////////////
+	// FUNCTIONS USED FOR CONTENT (AS OPPOSED TO RECKONINGS) ARE INCLUDED BELOW
+	/////////////////////////////////////////////////////////////////////////
+	
+	public static Update buildContentUpdate(Content content) {
+		Update contentUpdate = new Update();
+		
+		Map<String, Object> contentMap = content.toHashMap();
+		for (Map.Entry<String, Object> entry: contentMap.entrySet()) {
+			if (entry.getValue() != null) {
+				contentUpdate.set(entry.getKey(), entry.getValue());
+			}
+		}
+		
+		return contentUpdate;
+	}
+	
+	public static DBObject buildContentQuery (ContentTypeEnum type, Date postedBeforeDate, Date postedAfterDate,
+			List<String> includeTags, String submitterId, ApprovalStatusEnum approvalStatus, Boolean randomize) {
+
+		DBObject mainQuery = buildApprovalStatusQuery(approvalStatus);
+		
+		if (type != null) {
+			mainQuery.putAll(buildContentTypeQuery(type));
+		}
+		
+		if (postedBeforeDate != null && postedAfterDate != null) {
+			mainQuery.putAll(buildPostedBetweenDateQuery(postedBeforeDate, postedAfterDate));
+		}
+		else if (postedBeforeDate != null) {
+			mainQuery.putAll(buildPostedBeforeDateQuery(postedBeforeDate));
+		}
+		else if (postedAfterDate != null) {
+			mainQuery.putAll(buildPostedAfterDateQuery(postedAfterDate));
+		}
+		
+		if (includeTags != null) {
+			mainQuery.putAll(buildReckoningTagsQuery(includeTags));
+		}
+		
+		if (submitterId != null) {
+			mainQuery.putAll(buildPostedByQuery(submitterId));
+		}
+		
+		if (randomize != null && randomize.booleanValue()) {
+			mainQuery.putAll(buildRandomQuery(new Random().nextDouble()));
+		}
+		
+		return mainQuery;
+	}
+	
+	public static DBObject buildContentSummaryFields() {
+		BasicDBObject fields = new BasicDBObject("comments", 0);
+		fields.append("favorites", 0);
+		fields.append("flags", 0);
+		fields.append("commentary", 0);
+		fields.append("commentary_user_id", 0);
+		
+		return fields;
+	}
+	
+	public static DBObject buildContentFlagFavoriteFields() {
+		BasicDBObject fields = new BasicDBObject("comments", 0);
+		fields.append("commentary", 0);
+		fields.append("commentary_user_id", 0);
 		
 		return fields;
 	}

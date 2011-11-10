@@ -32,6 +32,7 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostFavorite;
 import com.reckonlabs.reckoner.domain.message.PostFlag;
 import com.reckonlabs.reckoner.domain.message.CommentServiceList;
+import com.reckonlabs.reckoner.domain.message.ContentServiceList;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.notes.Comment;
@@ -223,7 +224,7 @@ public class NotesController {
 	@RequestMapping(value = "/notes/reckoning/favorite", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getFavoritedReckonings(
-			@RequestParam(required = false, value = "flagged_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "favorited_after") Date favoritedAfter,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = false, value = "session_id") String sessionId)
@@ -243,7 +244,7 @@ public class NotesController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return notesService.getFavoritedReckonings(flaggedAfter, page, size, sessionId);
+		return notesService.getFavoritedReckonings(favoritedAfter, page, size, sessionId);
 	}
 	
 	/**
@@ -295,7 +296,7 @@ public class NotesController {
 	@RequestMapping(value = "/notes/reckoning/comment/favorite", method = RequestMethod.GET)	
 	public @ResponseBody
 	ReckoningServiceList getFavoritedReckoningComments(
-			@RequestParam(required = false, value = "favorited_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "favorited_after") Date favoritedAfter,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = false, value = "session_id") String sessionId)
@@ -315,7 +316,7 @@ public class NotesController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return notesService.getFavoritedReckoningComments(flaggedAfter, page, size, sessionId);
+		return notesService.getFavoritedReckoningComments(favoritedAfter, page, size, sessionId);
 	}
 	
 	/**
@@ -423,6 +424,285 @@ public class NotesController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}
 		
-		return notesService.getFavoritedCommentsByUser(userId, page, size, sessionId);
+		return notesService.getFavoritedReckoningCommentsByUser(userId, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the posting of a favorite to a content.
+	 * 
+	 * @param id
+	 *           String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/favorite/{id}", method = RequestMethod.POST)	
+	public @ResponseBody
+	ServiceResponse postContentFavorite(@PathVariable String id,
+			@RequestBody PostFavorite postFavorite)
+			throws AuthenticationException, Exception {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFavorite.getSessionId(), PermissionEnum.FAVORITE)) {
+			log.info("User with insufficient privileges attempted to favorite a content: ");
+			log.info("Session ID: " + postFavorite.getSessionId());
+			throw new AuthenticationException();			
+		} else {
+			Message validationMessage = NotesValidator.validateFavoritePost(postFavorite.getFavorite(), id);
+			
+			if (validationMessage != null) {
+				log.info("Posted content favorite failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				return new ServiceResponse(validationMessage, false);
+			}
+		}
+
+		return notesService.postContentFavorite(postFavorite.getFavorite(), id, postFavorite.getSessionId());
+	}
+	
+	/**
+	 * This method allows for the posting of a flag to a content.
+	 * 
+	 * @param id
+	 *           String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/flag/{id}", method = RequestMethod.POST)	
+	public @ResponseBody
+	ServiceResponse postContentFlag(@PathVariable String id,
+			@RequestBody PostFlag postFlag)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFlag.getSessionId(), PermissionEnum.FLAG)) {
+			log.info("User with insufficient privileges attempted to flag a content: ");
+			log.info("Session ID: " + postFlag.getSessionId());
+			throw new AuthenticationException();			
+		} else {
+			Message validationMessage = NotesValidator.validateFlagPost(postFlag.getFlag(), id);
+			
+			if (validationMessage != null) {
+				log.info("Posted content flag failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+				return new ServiceResponse(validationMessage, false);
+			}
+		}
+
+		return notesService.postContentFlag(postFlag.getFlag(), id, postFlag.getSessionId());
+	}
+	
+	/**
+	 * This method allows for the posting of a favorite to a content comment.
+	 * 
+	 * @param id
+	 *           String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/comment/favorite/{id}", method = RequestMethod.POST)	
+	public @ResponseBody
+	ServiceResponse postContentCommentFavorite(@PathVariable String id,
+			@RequestBody PostFavorite postFavorite)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFavorite.getSessionId(), PermissionEnum.FAVORITE)) {
+			log.info("User with insufficient privileges attempted to favorite a content comment: ");
+			log.info("Session ID: " + postFavorite.getSessionId());
+			throw new AuthenticationException();			
+		} else {
+			Message validationMessage = NotesValidator.validateFavoritePost(postFavorite.getFavorite(), id);
+			
+			if (validationMessage != null) {
+				log.info("Posted content comment favorite failed validation: " + validationMessage.getCode() 
+						+ ": " + validationMessage.getMessageText());
+				return new ServiceResponse(validationMessage, false);
+			}
+		}
+
+		return notesService.postContentCommentFavorite(postFavorite.getFavorite(), id, postFavorite.getSessionId());
+	}
+
+	
+	/**
+	 * This method allows for the posting of a flag to a content comment.
+	 * 
+	 * @param id
+	 *           String
+	 * @return serviceResponse
+	 *            ServiceResponse
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/comment/flag/{id}", method = RequestMethod.POST)	
+	public @ResponseBody
+	ServiceResponse postContentCommentFlag(@PathVariable String id,
+			@RequestBody PostFlag postFlag)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(postFlag.getSessionId(), PermissionEnum.FLAG)) {
+			log.info("User with insufficient privileges attempted to flag a content comment: ");
+			log.info("Session ID: " + postFlag.getSessionId());
+			throw new AuthenticationException();			
+		} else {
+			Message validationMessage = NotesValidator.validateFlagPost(postFlag.getFlag(), id);
+			
+			if (validationMessage != null) {
+				log.info("Posted content comment flag failed validation: " + validationMessage.getCode() 
+						+ ": " + validationMessage.getMessageText());
+				return new ServiceResponse(validationMessage, false);
+			}
+		}
+
+		return notesService.postContentCommentFlag(postFlag.getFlag(), id, postFlag.getSessionId());
+	}
+
+	/**
+	 * This method allows for the retrieval of all favorited contents according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/favorite", method = RequestMethod.GET)	
+	public @ResponseBody
+	ContentServiceList getFavoritedContents(
+			@RequestParam(required = false, value = "favorited_after") Date favoritedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged contents: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged content request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ContentServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFavoritedContents(favoritedAfter, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of all flagged contents according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/flag", method = RequestMethod.GET)	
+	public @ResponseBody
+	ContentServiceList getFlaggedContents(
+			@RequestParam(required = false, value = "flagged_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged contents: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged content request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ContentServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFlaggedContents(flaggedAfter, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of all favorited content comments according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/comment/favorite", method = RequestMethod.GET)	
+	public @ResponseBody
+	ContentServiceList getFavoritedContentComments(
+			@RequestParam(required = false, value = "favorited_after") Date favoritedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged content comments: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged content comment request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ContentServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFavoritedContentComments(favoritedAfter, page, size, sessionId);
+	}
+	
+	/**
+	 * This method allows for the retrieval of all flagged content comments according to the parameters specified.
+	 * 
+	 * @param userId
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/notes/content/comment/flag", method = RequestMethod.GET)	
+	public @ResponseBody
+	ContentServiceList getFlaggedContentComments(
+			@RequestParam(required = false, value = "flagged_after") Date flaggedAfter,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
+
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to retrieve flagged content comments: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = NotesValidator.validateUserFavoriteQuery (page, size);
+		
+		if (validationMessage != null) {
+			log.info("Flagged content request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ContentServiceList(null, validationMessage, false);
+		}
+		
+		return notesService.getFlaggedContentComments(flaggedAfter, page, size, sessionId);
 	}
 }

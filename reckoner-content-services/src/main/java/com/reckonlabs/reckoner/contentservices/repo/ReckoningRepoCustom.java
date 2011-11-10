@@ -2,13 +2,14 @@ package com.reckonlabs.reckoner.contentservices.repo;
 
 import java.util.Date;
 import java.util.List;
+
+import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 
 public interface ReckoningRepoCustom {
@@ -29,7 +30,7 @@ public interface ReckoningRepoCustom {
 			List<String> includeTag, List<String> excludeTag, 
 			Boolean highlighted,
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus,
+			ApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending, Integer page, Integer size, Boolean randomize);
 	
 	public Long getReckoningCount (ReckoningTypeEnum reckoningType, 
@@ -38,7 +39,7 @@ public interface ReckoningRepoCustom {
 			List<String> includeTag, List<String> excludeTag,
 			Boolean highlighted,
 			String submitterId,
-			ReckoningApprovalStatusEnum approvalStatus);
+			ApprovalStatusEnum approvalStatus);
 	
 	public List<Reckoning> getRandomReckoningSummary (ReckoningTypeEnum type);
 	

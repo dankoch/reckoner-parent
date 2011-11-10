@@ -12,14 +12,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.reckonlabs.reckoner.contentservices.cache.CommentCache;
+import com.reckonlabs.reckoner.contentservices.cache.ContentCache;
 import com.reckonlabs.reckoner.contentservices.cache.ReckoningCache;
+import com.reckonlabs.reckoner.contentservices.repo.ContentRepo;
+import com.reckonlabs.reckoner.contentservices.repo.ContentRepoCustom;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
+import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.message.CommentServiceList;
+import com.reckonlabs.reckoner.domain.message.ContentServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.user.User;
@@ -32,15 +37,20 @@ public class CommentServiceImpl implements CommentService {
 	
 	@Autowired
 	ReckoningRepo reckoningRepo;
-	
 	@Autowired
 	ReckoningRepoCustom reckoningRepoCustom;
 	
 	@Autowired
-	CommentCache commentCache;
+	ContentRepo contentRepo;
+	@Autowired
+	ContentRepoCustom contentRepoCustom;
 	
 	@Autowired
+	CommentCache commentCache;
+	@Autowired
 	ReckoningCache reckoningCache;
+	@Autowired
+	ContentCache contentCache;
 	
 	@Autowired
 	UserService userService;
@@ -48,6 +58,8 @@ public class CommentServiceImpl implements CommentService {
 	private static final Logger log = LoggerFactory
 			.getLogger(CommentServiceImpl.class);
 
+	// RECKONING
+	
 	@Override
 	public ServiceResponse postReckoningComment(Comment comment, String reckoningId) {
 		
@@ -200,6 +212,113 @@ public class CommentServiceImpl implements CommentService {
 		    log.error("General exception when deleting comment " + commentId + " : " + e.getMessage());
 		    log.debug("Stack Trace:", e);			
 		    return new ReckoningServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ServiceResponse();
+	}
+	
+	// CONTENT //
+	
+	@Override
+	public ServiceResponse postContentComment(Comment comment, String contentId) {
+		
+		try {
+			if (!contentRepoCustom.confirmContentExists(contentId)) {
+				log.warn("Attempted to write comment to non-existent content: " + contentId);
+				return (new ServiceResponse(new Message(MessageEnum.R402_POST_COMMENT), false));
+			}
+			comment.setPostingDate(DateUtility.now());
+			contentRepoCustom.insertContentComment(comment, contentId);
+			
+			// Cache management. Check to see if the content is already in cache.  If so, update it.  Otherwise, forget it.
+			List<Content> cacheContent = contentCache.getCachedContent(contentId);
+			if (cacheContent != null && !cacheContent.isEmpty()) {
+				if (cacheContent.get(0) != null) {
+					if (cacheContent.get(0).getComments() == null) {
+						cacheContent.get(0).setComments(new LinkedList<Comment> ());
+					} 
+					comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
+					cacheContent.get(0).addComment(comment);
+				}
+				
+				contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
+			}
+		} catch (DBUpdateException dbE) {
+			log.error("Database exception when inserting a new content comment: " + dbE.getMessage());
+			log.debug("Stack Trace:", dbE);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));				
+		} catch (Exception e) {
+			log.error("General exception when inserting a new content comment: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new ServiceResponse();
+	}
+
+	@Override
+	public ContentServiceList getContentComment(String commentId) {
+		List<Content> commentedContents = new LinkedList<Content>();
+		
+		try {
+		   commentedContents = contentRepo.getContentCommentById(commentId);
+		   if (!commentedContents.isEmpty()) {
+			   commentedContents.get(0).setComments(commentedContents.get(0).getCommentById(commentId));
+		   }
+		} catch (Exception e) {
+		   log.error("General exception when getting comments by user: " + e.getMessage());
+		   log.debug("Stack Trace:", e);			
+		   return new ContentServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+	    }
+		
+		if (commentedContents.isEmpty()) {
+			return new ContentServiceList(null, new Message(MessageEnum.R501_GET_COMMENT), false);
+		}
+		return new ContentServiceList(commentedContents, new Message(MessageEnum.R00_DEFAULT), true);
+	}
+
+	@Override
+	public ServiceResponse updateContentComment(Comment comment) {
+		try {
+			List<Content> commentedContent = getContentComment(comment.getCommentId()).getContents();
+			if (commentedContent == null || commentedContent.isEmpty()) {
+				return (new ServiceResponse(new Message(MessageEnum.R501_GET_COMMENT), false));				
+			}
+			
+			Comment updateComment = commentedContent.get(0).getComments().get(0);
+			updateComment.mergeComment(comment);
+			contentRepoCustom.updateComment(updateComment);
+			
+			// Cache management. 
+			// Delete the individual content cache (these should be rare, so we're not doing an in-place update).
+			// Ignoring the user caches -- those will clear soon enough.
+			contentCache.removeCachedContent(commentedContent.get(0).getId());
+		} catch (Exception e) {
+		    log.error("General exception when deleting comment " + comment.getCommentId() + " : " + e.getMessage());
+		    log.debug("Stack Trace:", e);			
+		    return new ContentServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
+		}
+		
+		return new ServiceResponse();
+	}
+	
+	@Override
+	public ServiceResponse deleteContentComment(String commentId) {
+		try {
+			List<Content> commentedContent = getContentComment(commentId).getContents();
+			if (commentedContent == null || commentedContent.isEmpty()) {
+				return (new ServiceResponse(new Message(MessageEnum.R501_GET_COMMENT), false));				
+			}
+			contentRepoCustom.deleteComment(commentId);
+			
+			// Cache management. 
+			// Delete the individual content cache (these should be rare, so we're not doing an in-place update).
+			// Ignoring the user caches -- those will clear soon enough.
+			contentCache.removeCachedContent(commentedContent.get(0).getId());
+		} catch (Exception e) {
+		    log.error("General exception when deleting comment " + commentId + " : " + e.getMessage());
+		    log.debug("Stack Trace:", e);			
+		    return new ContentServiceList(null, new Message(MessageEnum.R01_DEFAULT), false);
 		}
 		
 		return new ServiceResponse();

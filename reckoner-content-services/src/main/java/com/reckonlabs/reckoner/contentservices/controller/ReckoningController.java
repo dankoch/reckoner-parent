@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.reckonlabs.reckoner.contentservices.service.ReckoningService;
 import com.reckonlabs.reckoner.contentservices.service.UserService;
 import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
+import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.PostReckoning;
@@ -39,7 +40,6 @@ import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.reckoning.Answer;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.ReckoningApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.reckoning.ReckoningTypeEnum;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
@@ -384,7 +384,7 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ApprovalStatusEnum.APPROVED,
 				sortBy, ascending, page, size, randomize, sessionId);
 	}
 	
@@ -448,7 +448,7 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.OPEN, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ApprovalStatusEnum.APPROVED,
 				sortBy, ascending, page, size, randomize, sessionId);
 	}
 	
@@ -512,7 +512,7 @@ public class ReckoningController {
 		}
 		
 		return reckoningService.getReckoningSummaries(ReckoningTypeEnum.CLOSED, postedAfter, postedBefore,
-				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ReckoningApprovalStatusEnum.APPROVED,
+				closedAfter, closedBefore, includeTagsList, excludeTagsList, highlighted, submittedBy, ApprovalStatusEnum.APPROVED,
 				sortBy, ascending, page, size, randomize, sessionId);
 	}
 	

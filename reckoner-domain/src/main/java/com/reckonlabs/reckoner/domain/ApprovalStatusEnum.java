@@ -1,6 +1,6 @@
-package com.reckonlabs.reckoner.domain.reckoning;
+package com.reckonlabs.reckoner.domain;
 
-public enum ReckoningApprovalStatusEnum {
+public enum ApprovalStatusEnum {
 
 	// Various statuses for which reckoning can be queried.
 	APPROVED("APPROVED"), REJECTED("REJECTED"), PENDING("PENDING"), 
@@ -15,11 +15,11 @@ public enum ReckoningApprovalStatusEnum {
 		return code;
 	}
 
-	ReckoningApprovalStatusEnum(String code) {
+	ApprovalStatusEnum(String code) {
 		this.code = code;
 	}
 	
-	public static ReckoningApprovalStatusEnum getStatusCode(boolean approved, boolean rejected) {
+	public static ApprovalStatusEnum getStatusCode(boolean approved, boolean rejected) {
 		if (!approved && !rejected) {
 			return PENDING;
 		} else if (rejected) {
