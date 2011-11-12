@@ -9,4 +9,6 @@ public interface ListService {
 	public DataServiceList<String> getValidPermissions();
 	
 	public DataServiceList<String> getValidProviders();
+	
+	public DataServiceList<String> getContentTypes();
 }

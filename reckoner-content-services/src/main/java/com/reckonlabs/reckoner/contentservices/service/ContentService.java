@@ -33,4 +33,5 @@ public interface ContentService {
 			String submitterId,
 			ApprovalStatusEnum approvalStatus);
 
+	public ServiceResponse rejectContent (String id, String sessionId);
 }

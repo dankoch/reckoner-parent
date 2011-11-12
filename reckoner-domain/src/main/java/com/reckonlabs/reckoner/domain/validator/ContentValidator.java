@@ -22,6 +22,8 @@ public class ContentValidator {
 			return (new Message(MessageEnum.R1001_POST_CONTENT));			
 		} else if (posting.getSubmitterId() == null) {
 			return (new Message(MessageEnum.R1002_POST_CONTENT));
+		} else if (posting.getContentType() == null) {
+			return (new Message(MessageEnum.R1004_POST_CONTENT));			
 		}
 		
 		return null;
@@ -87,7 +89,7 @@ public class ContentValidator {
 		return null;
 	}
 	
-	public static Message validateReckoningId(String id) {
+	public static Message validateContentId(String id) {
 		
 		if (id == null) {
 			return (new Message(MessageEnum.R02_DEFAULT));

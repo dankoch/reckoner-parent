@@ -22,6 +22,8 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.notes.Comment;
+import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
+import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
 
 @Component
@@ -54,6 +56,7 @@ public class ContentServiceImpl implements ContentService {
 			content.setFavorites(null);
 			content.setComments(null);
 			content.setCommentIndex(0);
+			content.setViews(0);
 			
 			// Format the tags and add the random selector.
 			content.setRandomSelect(new Random().nextDouble());
@@ -222,6 +225,33 @@ public class ContentServiceImpl implements ContentService {
 		}
 		
 		return new ContentServiceList(null, count, new Message(), true);
+	}
+	
+	@Override
+	public ServiceResponse rejectContent(String id, String sessionId) {
+		try {
+			List<Content> rejectedContent = contentRepo.findById(id);
+			
+			if (rejectedContent != null && rejectedContent.size() > 0) {
+				contentRepoCustom.rejectContent(id, userService.getUserBySessionId(sessionId).getUser().getId());
+				contentCache.removeCachedContent(id);
+			} else {
+				log.info("Request to reject non-existent content: " + id);
+				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
+			}
+			
+		} catch (DBUpdateException dbE) {
+			log.error("Database exception when rejecting a content: " + dbE.getMessage());
+			log.debug("Stack Trace:", dbE);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));				
+		}
+		  catch (Exception e) {
+			log.error("General exception when rejecting a content: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new ServiceResponse(new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new ServiceResponse();
 	}
 	
 	private static List<String> formatTags(List<String> tags) {

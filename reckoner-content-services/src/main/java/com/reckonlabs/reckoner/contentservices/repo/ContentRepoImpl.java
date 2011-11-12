@@ -51,6 +51,13 @@ public class ContentRepoImpl implements ContentRepoCustom {
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());
 	}
+	
+	public void rejectContent (String id, String rejecter) throws DBUpdateException {
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(id)), 
+				MongoDbQueryFactory.buildRejectionUpdate(rejecter), CONTENT_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());
+	}
 
 	@Override
 	public List<Content> getContentItems(ContentTypeEnum contentType,

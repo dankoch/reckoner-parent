@@ -29,6 +29,7 @@ public enum MessageEnum {
 	R900_GET_NOTE("R900"),
 	
 	R1000_POST_CONTENT("R1000"), R1001_POST_CONTENT("R1001"), R1002_POST_CONTENT("R1002"), R1003_POST_CONTENT("R1003"),
+	R1004_POST_CONTENT("R1004"),
 	
 	R1100_GET_CONTENT("R1100"), R1101_GET_CONTENT("R1101"), R1102_GET_CONTENT("R1102"), R1103_GET_CONTENT("R1103"), R1104_GET_CONTENT("R1104"),
 	R1105_GET_CONTENT("R1105"), R1106_GET_CONTENT("R1106"), R1107_GET_CONTENT("R1107");
@@ -110,6 +111,7 @@ public enum MessageEnum {
 			case R1001_POST_CONTENT: return ("No body specified for content.");
 			case R1002_POST_CONTENT: return ("No submitting user specified for content.");
 			case R1003_POST_CONTENT: return ("Need to specific an ID when updating content.");
+			case R1004_POST_CONTENT: return ("Invalid or null content type specified.");
 			
 			case R1100_GET_CONTENT: return ("Can't specific a page or sorting order when randomizing.");
 			case R1101_GET_CONTENT: return ("Can't randomize without setting a size limit.");

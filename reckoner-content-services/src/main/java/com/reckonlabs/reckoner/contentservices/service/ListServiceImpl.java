@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
 import com.reckonlabs.reckoner.domain.message.DataServiceList;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
@@ -61,5 +62,19 @@ public class ListServiceImpl implements ListService {
 		}
 		
 		return (new DataServiceList<String>(providers, new Message(), true));
+	}
+
+	@Override
+	public DataServiceList<String> getContentTypes() {
+		List<String> contentTypes = null;
+		
+		try {
+			contentTypes = ContentTypeEnum.getContentTypes();
+		} catch (Exception e) {
+			log.error("General exception when fetching content type list ", e);			
+			return (new DataServiceList<String>(null, new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return (new DataServiceList<String>(contentTypes, new Message(), true));
 	}
 }

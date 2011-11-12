@@ -297,6 +297,10 @@ public class Content extends Notable implements Serializable  {
 	}
 	
 	public void incrementViews() {
+		if (this.views == null) {
+			this.views = 0;
+		}
+
 		this.views ++;
 	}
 

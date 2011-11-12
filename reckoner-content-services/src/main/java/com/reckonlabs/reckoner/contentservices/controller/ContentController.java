@@ -35,9 +35,11 @@ import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
 import com.reckonlabs.reckoner.domain.message.ContentServiceList;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostContent;
+import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ContentValidator;
+import com.reckonlabs.reckoner.domain.validator.ReckoningValidator;
 import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 
@@ -223,6 +225,40 @@ public class ContentController {
 		
 		return contentService.getContentSummaries(contentType, postedAfter, postedBefore, includeTags, 
 				submittedBy, ApprovalStatusEnum.APPROVED, sortBy, ascending, page, size, randomize);
+	}
+	
+	/**
+	 * This method allows for rejecting an unaccepted piece of content.
+	 * 
+	 * @param postContent
+	 *            PostContent
+	 * @return postContentResponse
+	 *            PostContentResponse
+	 * @throws AuthenticationException, Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/content/reject/{id}", method = RequestMethod.GET)
+	public @ResponseBody
+	ServiceResponse rejectContentById(
+			@PathVariable String id,		
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.APPROVAL)) {
+			log.info("User with insufficient privileges attempted to reject a content: ");
+			log.info("Session ID: " + sessionId + " Content " + id);
+			throw new AuthenticationException();			
+		}
+		
+		Message validationMessage = ContentValidator.validateContentId(id);
+		
+		if (validationMessage != null) {
+			log.info("Rejection request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ContentServiceList(null, validationMessage, false);
+		}	
+
+		return contentService.rejectContent(id, sessionId);
 	}
 	
 	private static List<String> convertList(String source) {

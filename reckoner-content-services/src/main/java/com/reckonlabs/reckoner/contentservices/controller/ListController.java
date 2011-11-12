@@ -116,4 +116,22 @@ public class ListController {
 		} 
 		return listService.getValidProviders();
 	}
+	
+	/**
+	 * This method retrieves the permissions a user can have.
+	 */
+	@RequestMapping(value = "/list/user/contenttypes", method = RequestMethod.GET)
+	public @ResponseBody
+	DataServiceList<String> getContentTypes(
+			@RequestParam(required = false, value = "session_id") String sessionId)
+					throws AuthenticationException {	
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_LIST)) {
+			log.info("User with insufficient privileges attempted to view the content type list: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		return listService.getContentTypes();
+	}
 }

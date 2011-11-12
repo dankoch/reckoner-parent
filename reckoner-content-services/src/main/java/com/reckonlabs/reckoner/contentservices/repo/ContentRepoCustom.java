@@ -20,6 +20,8 @@ public interface ContentRepoCustom {
 	
 	public void mergeContent(Content content) throws DBUpdateException;
 	
+	public void rejectContent (String id, String rejecter) throws DBUpdateException;
+	
 	public List<Content> getContentItems (ContentTypeEnum contentType, 
 			Date postedBeforeDate, Date postedAfterDate,
 			List<String> includeTags, String submitterId,
