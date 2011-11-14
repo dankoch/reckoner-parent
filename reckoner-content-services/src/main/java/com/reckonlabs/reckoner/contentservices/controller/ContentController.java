@@ -36,6 +36,7 @@ import com.reckonlabs.reckoner.domain.message.ContentServiceList;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostContent;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
+import com.reckonlabs.reckoner.domain.message.TagServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.ContentValidator;
@@ -259,6 +260,31 @@ public class ContentController {
 		}	
 
 		return contentService.rejectContent(id, sessionId);
+	}
+	
+	/**
+	 * This method allows for receiving the list of tags currently deployed on pieces of content.
+	 * 
+	 * @param postContent
+	 *            PostContent
+	 * @return postContentResponse
+	 *            PostContentResponse
+	 * @throws AuthenticationException, Exception
+	 *            exception
+	 */
+	@RequestMapping(value = "/content/tags", method = RequestMethod.GET)
+	public @ResponseBody
+	TagServiceList getContentTags(		
+			@RequestParam(required = false, value = "session_id") String sessionId) 
+					throws AuthenticationException {
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_CONTENT)) {
+			log.info("User with insufficient privileges attempted to pull the content tags: ");
+			throw new AuthenticationException();			
+		}
+
+		return contentService.getTagList();
 	}
 	
 	private static List<String> convertList(String source) {

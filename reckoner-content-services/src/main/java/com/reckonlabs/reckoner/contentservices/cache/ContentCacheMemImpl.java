@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
+import com.reckonlabs.reckoner.domain.notes.Tag;
 
 @Component
 public class ContentCacheMemImpl implements ContentCache {
@@ -20,10 +21,12 @@ public class ContentCacheMemImpl implements ContentCache {
 	public static final int CONTENT_CACHE_LIFESPAN = 604800;
 	public static final int CONTENT_SUMMARY_CACHE_LIFESPAN = 1200;
 	public static final int CONTENT_COUNT_CACHE_LIFESPAN = 1200;
+	public static final int CONTENT_TAG_LIST_LIFESPAN = 604800;
 	
 	public static final String CONTENT_CACHE_PREFIX = "content_";
 	public static final String CONTENT_SUMMARY_CACHE_PREFIX = "content_summary_";
 	public static final String CONTENT_COUNT_CACHE_PREFIX = "content_count_";
+	public static final String CONTENT_TAG_LIST_PREFIX = "content_taglist_";
 	
 	@Autowired
 	MemcachedClient memcachedClient;
@@ -50,12 +53,13 @@ public class ContentCacheMemImpl implements ContentCache {
 	public void setCachedContentSummaries(ContentTypeEnum contentType,
 			Date postedAfter, Date postedBefore, List<String> includeTags,
 			String submitterId, ApprovalStatusEnum approvalStatus,
-			String sortBy, Boolean ascending, List<Content> content) {
+			String sortBy, Boolean ascending, List<Content> content,
+			Integer page, Integer size) {
 		
 		setCacheElement(buildSummaryKeyString(contentType,
 				postedAfter, postedBefore, includeTags,
 				submitterId, approvalStatus,
-				sortBy, ascending), 
+				sortBy, ascending, page, size), 
 				CONTENT_SUMMARY_CACHE_LIFESPAN, content);
 	}
 
@@ -63,24 +67,26 @@ public class ContentCacheMemImpl implements ContentCache {
 	public List<Content> getCachedContentSummaries(ContentTypeEnum contentType,
 			Date postedAfter, Date postedBefore, List<String> includeTags,
 			String submitterId, ApprovalStatusEnum approvalStatus,
-			String sortBy, Boolean ascending) {
+			String sortBy, Boolean ascending,
+			Integer page, Integer size) {
 		
 		return getCacheElement(buildSummaryKeyString(contentType,
 				postedAfter, postedBefore, includeTags,
 				submitterId, approvalStatus,
-				sortBy, ascending));
+				sortBy, ascending, page, size));
 	}
 
 	@Override
 	public void removeCachedContentSummaries(ContentTypeEnum contentType,
 			Date postedAfter, Date postedBefore, List<String> includeTags,
 			String submitterId, ApprovalStatusEnum approvalStatus,
-			String sortBy, Boolean ascending) {
+			String sortBy, Boolean ascending,
+			Integer page, Integer size) {
 		
 		removeCacheElement(buildSummaryKeyString(contentType,
 				postedAfter, postedBefore, includeTags,
 				submitterId, approvalStatus,
-				sortBy, ascending));
+				sortBy, ascending, page, size));
 	}
 
 	@Override
@@ -88,7 +94,7 @@ public class ContentCacheMemImpl implements ContentCache {
 			Date postedAfter, Date postedBefore, List<String> includeTags,
 			String submitterId, ApprovalStatusEnum approvalStatus, Long count) {
 		
-		setCountCacheElement(buildCountKeyString(contentType,
+		setCacheElement(buildCountKeyString(contentType,
 				postedAfter, postedBefore, includeTags,
 				submitterId, approvalStatus,
 				null, null), 
@@ -117,7 +123,22 @@ public class ContentCacheMemImpl implements ContentCache {
 				null, null));
 	}
 	
-	private void setCacheElement(String key, int lifespan, List<Content> value) {
+	@Override
+	public void setCachedTagList(List<Tag> tagList) {
+		setCacheElement(CONTENT_TAG_LIST_PREFIX, CONTENT_TAG_LIST_LIFESPAN, tagList);
+	}
+
+	@Override
+	public List<Tag> getCachedTagList() {
+		return getTagCacheElement(CONTENT_TAG_LIST_PREFIX);
+	}
+
+	@Override
+	public void removeCachedTagList() {
+		removeCacheElement(CONTENT_TAG_LIST_PREFIX);
+	}
+	
+	private void setCacheElement(String key, int lifespan, Object value) {
 		try {
 			memcachedClient.set(key, lifespan, value);
 		} catch (Exception e) {
@@ -138,15 +159,6 @@ public class ContentCacheMemImpl implements ContentCache {
 		
 		return returnContent;
 	}
-	
-	private void setCountCacheElement(String key, int lifespan, Long count) {
-		try {
-			memcachedClient.set(key, lifespan, count);
-		} catch (Exception e) {
-			log.warn("Error when caching content count list: " + e.getMessage());
-			log.debug("Stack Trace:", e);	
-		}
-	}
 
 	private Long getCountCacheElement(String key) {
 		Long returnContent = null;
@@ -155,6 +167,19 @@ public class ContentCacheMemImpl implements ContentCache {
 			returnContent = (Long) memcachedClient.get(key);
 		} catch (Exception e) {
 			log.warn("Error when retrieving content count list: " + e.getMessage());
+			log.debug("Stack Trace:", e);	
+		}
+		
+		return returnContent;
+	}
+	
+	private List<Tag> getTagCacheElement(String key) {
+		List<Tag> returnContent = null;
+		
+		try {
+			returnContent = (List<Tag>) memcachedClient.get(key);
+		} catch (Exception e) {
+			log.warn("Error when retrieving content tag list: " + e.getMessage());
 			log.debug("Stack Trace:", e);	
 		}
 		
@@ -173,7 +198,7 @@ public class ContentCacheMemImpl implements ContentCache {
 	private static String buildSummaryKeyString (ContentTypeEnum contentType,
 			Date postedAfter, Date postedBefore, List<String> includeTags,
 			String submitterId, ApprovalStatusEnum approvalStatus,
-			String sortBy, Boolean ascending) {
+			String sortBy, Boolean ascending, Integer page, Integer size) {
 		
 			String keyString = CONTENT_SUMMARY_CACHE_PREFIX;
 			
@@ -187,6 +212,8 @@ public class ContentCacheMemImpl implements ContentCache {
 			if (approvalStatus != null) { keyString += approvalStatus.getCode(); }
 			if (sortBy != null) { keyString += sortBy; }
 			if (ascending != null) { keyString += ascending.toString(); }
+			if (page != null) { keyString += "page" + page.toString(); }
+			if (size != null) { keyString += "size" + size.toString(); }
 			
 			return keyString;
 	}

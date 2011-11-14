@@ -8,6 +8,7 @@ import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
 import com.reckonlabs.reckoner.domain.message.ContentServiceList;
+import com.reckonlabs.reckoner.domain.message.TagServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 
 public interface ContentService {
@@ -34,4 +35,6 @@ public interface ContentService {
 			ApprovalStatusEnum approvalStatus);
 
 	public ServiceResponse rejectContent (String id, String sessionId);
+	
+	public TagServiceList getTagList();
 }

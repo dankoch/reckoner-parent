@@ -2,8 +2,10 @@ package com.reckonlabs.reckoner.contentservices.service;
 
 import java.lang.Boolean;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -21,7 +23,9 @@ import com.reckonlabs.reckoner.domain.message.ContentServiceList;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
+import com.reckonlabs.reckoner.domain.message.TagServiceList;
 import com.reckonlabs.reckoner.domain.notes.Comment;
+import com.reckonlabs.reckoner.domain.notes.Tag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 import com.reckonlabs.reckoner.domain.utility.DateUtility;
@@ -63,6 +67,7 @@ public class ContentServiceImpl implements ContentService {
 			content.setTags(formatTags(content.getTags()));
 			
 			contentRepoCustom.insertNewContent(content);
+			contentCache.removeCachedTagList();
 		} catch (Exception e) {
 			log.error("General exception when inserting new content: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -90,6 +95,7 @@ public class ContentServiceImpl implements ContentService {
 			}
 			
 			contentCache.removeCachedContent(content.getId());
+			contentCache.removeCachedTagList();
 		} catch (Exception e) {
 			log.error("General exception when updating content: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -174,7 +180,7 @@ public class ContentServiceImpl implements ContentService {
 			
 			// First, try fetching out of the cache according to the specified criteria.
 			contents = contentCache.getCachedContentSummaries(contentType, postedAfter, postedBefore, includeTags, 
-					submitterId, approvalStatus, sortBy, ascending);
+					submitterId, approvalStatus, sortBy, ascending, page, size);
 			
 			// Nothing in the cache.  Poll the DB and stow it.
 			if (contents == null) {
@@ -187,7 +193,7 @@ public class ContentServiceImpl implements ContentService {
 				}
 				
 				contentCache.setCachedContentSummaries(contentType, postedAfter, postedBefore, includeTags, 
-						submitterId, approvalStatus, sortBy, ascending, contents);
+						submitterId, approvalStatus, sortBy, ascending, contents, page, size);
 			}
 			
 			count = getContentCount(contentType, postedAfter, postedBefore, includeTags, submitterId, approvalStatus).getCount();
@@ -235,6 +241,7 @@ public class ContentServiceImpl implements ContentService {
 			if (rejectedContent != null && rejectedContent.size() > 0) {
 				contentRepoCustom.rejectContent(id, userService.getUserBySessionId(sessionId).getUser().getId());
 				contentCache.removeCachedContent(id);
+				contentCache.removeCachedTagList();
 			} else {
 				log.info("Request to reject non-existent content: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -252,6 +259,54 @@ public class ContentServiceImpl implements ContentService {
 		}
 		
 		return new ServiceResponse();
+	}
+	
+	@Override
+	public TagServiceList getTagList() {
+		List<Tag> tagList = null;
+		
+		try {
+			// This should ultimately be a Mongo Map-Reduce call, but its performance is poor and the data set isn't
+			// huge, so we're doing it through Java.
+			
+			tagList = contentCache.getCachedTagList();
+			
+			if (tagList == null) {
+				tagList = new LinkedList<Tag>();
+				
+				List<Content> allContent = this.getContentSummaries(null, null, null, null, null, 
+						null, null, null, null, null, null).getContents();
+				
+				if (allContent != null) {
+					HashMap<String, Integer> tagHash = new HashMap<String, Integer>();
+					
+					for (Content content : allContent) {
+						if (content.getTags() != null) {
+							for (String tag : content.getTags()) {
+								if (!tagHash.containsKey(tag)) {
+									tagHash.put(tag, 1);
+								} else {
+									tagHash.put(tag, tagHash.get(tag) + 1);
+								}
+							}
+						}
+					}
+					
+					for (Map.Entry<String, Integer> entry : tagHash.entrySet()) {
+					    tagList.add(new Tag(entry.getKey(), entry.getValue()));
+					}
+				}
+				
+				contentCache.setCachedTagList(tagList);
+			}
+			
+		} catch (Exception e) {
+			log.error("General exception when getting the content tag list: " + e.getMessage());
+			log.debug("Stack Trace:", e);			
+			return (new TagServiceList(null, new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return new TagServiceList(tagList, null, new Message(), true);
 	}
 	
 	private static List<String> formatTags(List<String> tags) {

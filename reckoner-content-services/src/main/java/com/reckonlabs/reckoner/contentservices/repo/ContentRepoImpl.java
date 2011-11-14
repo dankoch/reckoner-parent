@@ -21,6 +21,7 @@ import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
+import com.reckonlabs.reckoner.domain.notes.Tag;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 

@@ -33,6 +33,7 @@ public enum GroupEnum {
 				permissions.add(PermissionEnum.VIEW_LIST);
 				permissions.add(PermissionEnum.VIEW_RECKONING);
 				permissions.add(PermissionEnum.VIEW_PROFILE);
+				permissions.add(PermissionEnum.VIEW_CONTENT);
 				permissions.add(PermissionEnum.VOTE);
 				break;
 			case USER:

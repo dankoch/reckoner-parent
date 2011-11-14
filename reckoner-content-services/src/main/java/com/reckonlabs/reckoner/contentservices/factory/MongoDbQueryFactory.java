@@ -174,7 +174,7 @@ public final class MongoDbQueryFactory {
 	}
 	
 	public static DBObject buildApprovalStatusQuery (ApprovalStatusEnum approvalStatus) {
-		if (approvalStatus == ApprovalStatusEnum.APPROVED) {
+		if (approvalStatus == ApprovalStatusEnum.APPROVED || approvalStatus == null) {
 			return buildAcceptedReckoningQuery();
 		} else if (approvalStatus == ApprovalStatusEnum.PENDING) {
 			return buildPendingReckoningQuery();

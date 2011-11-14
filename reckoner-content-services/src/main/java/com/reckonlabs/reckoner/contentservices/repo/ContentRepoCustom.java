@@ -11,6 +11,7 @@ import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
+import com.reckonlabs.reckoner.domain.notes.Tag;
 
 public interface ContentRepoCustom {
 	
