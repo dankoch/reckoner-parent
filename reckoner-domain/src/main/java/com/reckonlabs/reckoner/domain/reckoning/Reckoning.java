@@ -334,7 +334,11 @@ public class Reckoning extends Notable implements Serializable  {
 	}
 	
 	public void incrementViews() {
-		this.views ++;
+		if (this.views == null) {
+			this.views = 1;
+		} else {
+			this.views ++;
+		}
 	}
 
 	@XmlElement(name = "random_select")
