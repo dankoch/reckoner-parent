@@ -23,7 +23,9 @@ public enum PermissionEnum {
 	BLOG_POST("blog_post"), 
 	HIGHLIGHT("highlight"), 
 	UPDATE_PERMS("update_perms"),
-	UPDATE_PROFILE_INFO("update_info");
+	UPDATE_PROFILE_INFO("update_info"),
+	CONTACT_US("contact_us"),
+	SITEMAP("sitemap");
 	
 	private final String code;
 	

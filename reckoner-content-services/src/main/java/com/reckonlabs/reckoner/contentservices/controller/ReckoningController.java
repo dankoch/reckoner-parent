@@ -322,7 +322,7 @@ public class ReckoningController {
 	}
 	
 	/**
-	 * This method allows for the general retrieval of open reckoning summaries.
+	 * This method allows for the general retrieval of reckoning summaries.
 	 * 
 	 * @param page
 	 *           Integer

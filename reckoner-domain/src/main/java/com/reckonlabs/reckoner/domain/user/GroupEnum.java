@@ -34,6 +34,7 @@ public enum GroupEnum {
 				permissions.add(PermissionEnum.VIEW_RECKONING);
 				permissions.add(PermissionEnum.VIEW_PROFILE);
 				permissions.add(PermissionEnum.VIEW_CONTENT);
+				permissions.add(PermissionEnum.CONTACT_US);
 				permissions.add(PermissionEnum.VOTE);
 				break;
 			case USER:
@@ -54,6 +55,7 @@ public enum GroupEnum {
 				permissions.add(PermissionEnum.UPDATE_ALL_COMMENTS);
 				permissions.add(PermissionEnum.UPDATE_ALL_RECKONINGS);
 				permissions.add(PermissionEnum.UPDATE_PROFILE_INFO);
+				permissions.add(PermissionEnum.SITEMAP);
 				break;
 			case SUPER_ADMIN:
 				permissions.addAll(getPermissions(GroupEnum.ADMIN));

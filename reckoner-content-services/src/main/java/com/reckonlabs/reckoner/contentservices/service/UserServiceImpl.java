@@ -147,6 +147,22 @@ public class UserServiceImpl implements UserService {
 		
 		return new UserServiceResponse(null, null, new Message(), true);	
 	}
+	
+	@Override
+	public UserServiceResponse getUserSummaries(Boolean active, String sortBy,
+			Boolean ascending, Integer page, Integer size) {
+		List<User> userSummaries = new LinkedList<User>();
+		
+		try {
+			userSummaries = userRepoCustom.getUserSummaries(active, sortBy, ascending, page, size);
+		} catch (Exception e) {
+			log.error("General exception when fetching user summaries: " + 
+					": " + e.getMessage(), e);			
+			return (new UserServiceResponse(null, null, new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return (new UserServiceResponse(userSummaries, new Message(), true));	
+	}
 
 	@Override
 	public UserServiceResponse getUserBySessionId(String sessionId) {

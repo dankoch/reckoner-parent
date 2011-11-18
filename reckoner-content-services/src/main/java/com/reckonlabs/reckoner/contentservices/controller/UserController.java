@@ -3,6 +3,7 @@ package com.reckonlabs.reckoner.contentservices.controller;
 import java.lang.Boolean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Resource;
 
@@ -31,13 +32,11 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostOAuthUser;
 import com.reckonlabs.reckoner.domain.message.PostPermission;
 import com.reckonlabs.reckoner.domain.message.PostUser;
-import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 import com.reckonlabs.reckoner.domain.message.UserServiceResponse;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.validator.UserValidator;
 import com.reckonlabs.reckoner.domain.user.PermissionEnum;
 import com.reckonlabs.reckoner.domain.user.ProviderEnum;
-import com.reckonlabs.reckoner.domain.user.User;
 import com.reckonlabs.reckoner.domain.utility.DateFormatAdapter;
 
 /**
@@ -141,6 +140,41 @@ public class UserController {
 			@RequestParam(required = true, value = "session_id") String sessionId) {	
 		
 		return userService.getUserBySessionId(sessionId);
+	}
+	
+	/**
+	 * This method allows for the general retrieval of user summaries.
+	 * @return userServiceList
+	 *            UserServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/user", method = RequestMethod.GET)	
+	public @ResponseBody
+	UserServiceResponse getReckonings(
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "active") Boolean active,
+			@RequestParam(required = false, value = "sort_by") String sortBy,
+			@RequestParam(required = false, value = "ascending") Boolean ascending,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+				throws AuthenticationException {
+
+		Message validationMessage = UserValidator.validateUserSummaryQuery(sortBy, ascending, page, size);
+	
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to view a list of user summaries: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();
+		}	
+	
+		if (validationMessage != null) {
+			log.info("User summary query failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new UserServiceResponse(null, validationMessage, false);
+		}
+		
+		return userService.getUserSummaries(active, sortBy, ascending, page, size);
 	}
 		
 	/**

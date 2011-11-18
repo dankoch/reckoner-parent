@@ -21,7 +21,7 @@ public enum MessageEnum {
 	
 	R700_AUTH_USER("R700"), R701_AUTH_USER("R701"), R702_AUTH_USER("R702"), R703_AUTH_USER("R703"), R704_AUTH_USER("R704"),
 	R705_AUTH_USER("R705"), R706_AUTH_USER("R706"), R707_AUTH_USER("R707"), R708_AUTH_USER("R708"), R709_AUTH_USER("R709"),
-	R710_AUTH_USER("R710"),
+	R710_AUTH_USER("R710"), R711_AUTH_USER("R711"), R712_AUTH_USER("R712"), R713_AUTH_USER("R713"), R714_AUTH_USER("R714"),
 	
 	R800_POST_NOTE("R800"), R801_POST_NOTE("R801"), R802_POST_NOTE("R802"), R803_POST_NOTE("R803"), R804_POST_NOTE("R804"),
 	R805_POST_NOTE("R805"),
@@ -97,6 +97,10 @@ public enum MessageEnum {
 			case R708_AUTH_USER: return ("Action needs to be specified when changing the permissions for this user account.");
 			case R709_AUTH_USER: return ("User ID needs to be specified when changing this user account.");
 			case R710_AUTH_USER: return ("No user found with the specified ID.");	
+			case R711_AUTH_USER: return ("Paged user summary queries need both a valid page and size value.");
+			case R712_AUTH_USER: return ("Page value for user summary queries cannot be negative.");
+			case R713_AUTH_USER: return ("Size value for user summary queries cannot be less than one.");
+			case R714_AUTH_USER: return ("Invalid 'SortBy' value.");
 			
 			case R800_POST_NOTE: return ("No user ID specified as favoriting/flagging agent.");
 			case R801_POST_NOTE: return ("Specified reckoning or content does not exist.");

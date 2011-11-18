@@ -20,6 +20,10 @@ public interface UserService {
 	
 	public UserServiceResponse logoutUser(String sessionId);
 	
+	public UserServiceResponse getUserSummaries(Boolean active, 
+												String sortBy, Boolean ascending, 
+												Integer page, Integer size);
+	
 	public UserServiceResponse getUserBySessionId(String sessionId);
 	
 	public UserServiceResponse getUserByUserId(String userId);

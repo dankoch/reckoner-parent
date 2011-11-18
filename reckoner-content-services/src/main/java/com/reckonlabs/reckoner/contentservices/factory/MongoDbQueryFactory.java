@@ -173,6 +173,10 @@ public final class MongoDbQueryFactory {
 		return new BasicDBObject("submitterId", submitterId);
 	}
 	
+	public static DBObject buildIsActiveQuery (boolean active) {
+		return new BasicDBObject("active", active);
+	}
+	
 	public static DBObject buildApprovalStatusQuery (ApprovalStatusEnum approvalStatus) {
 		if (approvalStatus == ApprovalStatusEnum.APPROVED || approvalStatus == null) {
 			return buildAcceptedReckoningQuery();
@@ -522,7 +526,7 @@ public final class MongoDbQueryFactory {
 		fields.append("favorites", 0);
 		fields.append("flags", 0);
 		fields.append("commentary", 0);
-		fields.append("commentary_user_id", 0);
+		fields.append("commentaryUserId", 0);
 		
 		return fields;
 	}
@@ -530,7 +534,31 @@ public final class MongoDbQueryFactory {
 	public static DBObject buildContentFlagFavoriteFields() {
 		BasicDBObject fields = new BasicDBObject("comments", 0);
 		fields.append("commentary", 0);
-		fields.append("commentary_user_id", 0);
+		fields.append("commentaryUserId", 0);
+		
+		return fields;
+	}
+	
+	/////////////////////////////////////////////////////////////////////////
+	// FUNCTIONS USED FOR USERS (AS OPPOSED TO RECKONINGS) ARE INCLUDED BELOW
+	/////////////////////////////////////////////////////////////////////////
+	
+	public static DBObject buildUserQuery(Boolean active) {
+
+		DBObject mainQuery = new BasicDBObject();
+		
+		if (active != null) {
+			mainQuery.putAll(buildIsActiveQuery(active.booleanValue()));
+		}
+		
+		return mainQuery;
+	}
+	
+	public static DBObject buildUserSummaryFields() {
+		BasicDBObject fields = new BasicDBObject("active", 1);
+		fields.append("id", 1);
+		fields.append("firstName", 1);
+		fields.append("lastName", 1);
 		
 		return fields;
 	}

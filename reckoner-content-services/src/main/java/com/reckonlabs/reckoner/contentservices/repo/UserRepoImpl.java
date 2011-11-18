@@ -11,15 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.data.mongodb.core.query.Order;
 
 import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
-import com.reckonlabs.reckoner.domain.message.Message;
-import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
-import com.reckonlabs.reckoner.domain.notes.Comment;
-import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
-import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.user.User;
-import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
 public class UserRepoImpl implements UserRepoCustom {
 	
@@ -41,4 +36,27 @@ public class UserRepoImpl implements UserRepoCustom {
 		mongoTemplate.save(user, USER_COLLECTION);
 	}
 
+	@Override
+	public List<User> getUserSummaries(Boolean active, String sortBy,
+			Boolean ascending, Integer page, Integer size) {
+		
+		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildUserQuery(active),
+				MongoDbQueryFactory.buildUserSummaryFields());
+		
+		if (size != null) {
+			if (page == null) { page = 0; }
+			query.limit(size.intValue());
+			query.skip(page.intValue() * size.intValue());
+		}
+		
+		else if (sortBy != null && sortBy != "") {
+			if (ascending != null && ascending.booleanValue()) {
+				query.sort().on(sortBy, Order.ASCENDING);
+			} else {
+				query.sort().on(sortBy, Order.DESCENDING);				
+			}
+		}
+
+		return mongoTemplate.find(query, User.class);		
+	}
 }
