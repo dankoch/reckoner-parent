@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Order;
 
@@ -80,6 +81,13 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			String sortBy, Boolean ascending, Integer page, Integer size, Boolean randomize) {
 		BasicQuery query = null;
 		
+		this.ensureClosingDateIndex();
+		this.ensurePostingDateIndex();
+		this.ensureHighlightedReckoningsIndex();
+		this.ensureRandomReckoningsIndex();
+		this.ensureTaggedReckoningsIndex();
+		this.ensureUserReckoningsIndex();
+		
 		query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
 				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus, randomize),
 				MongoDbQueryFactory.buildReckoningSummaryFields());
@@ -112,6 +120,13 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			String submitterId,
 			ApprovalStatusEnum approvalStatus) {
 		
+		this.ensureClosingDateIndex();
+		this.ensurePostingDateIndex();
+		this.ensureHighlightedReckoningsIndex();
+		this.ensureRandomReckoningsIndex();
+		this.ensureTaggedReckoningsIndex();
+		this.ensureUserReckoningsIndex();
+		
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildReckoningQuery(reckoningType, postedBeforeDate, postedAfterDate,
 				closedBeforeDate, closedAfterDate, includeTags, excludeTags, highlighted, submitterId, approvalStatus, null),
 				MongoDbQueryFactory.buildReckoningSummaryFields());	
@@ -123,6 +138,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 		List<Reckoning> returnList = null;
 		double randIndex = new Random().nextDouble();
 		
+		this.ensureRandomReckoningsIndex();
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildRandomReckoningQuery(type, 
 				randIndex, false), MongoDbQueryFactory.buildReckoningSummaryFields());
 		query.sort().on("randomSelect", Order.DESCENDING);
@@ -148,7 +164,7 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	public List<Reckoning> getUserVotedReckonings(String userId) {
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildVotedOnByUser(userId),
 				MongoDbQueryFactory.buildReckoningVotedFields());	
-		
+		ensureVotesIndex();
 		query.sort().on("closingDate", Order.DESCENDING);
 		return mongoTemplate.find(query, Reckoning.class);	
 	}
@@ -157,13 +173,13 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	public List<Reckoning> getUserCommentedReckonings(String userId) {
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildCommentedOnByUser(userId),
 				MongoDbQueryFactory.buildReckoningSummaryFieldsPlusComments());	
-		
 		query.sort().on("closingDate", Order.DESCENDING);
 		return mongoTemplate.find(query, Reckoning.class);	
 	}
 	
 	@Override
 	public List<Reckoning> getFavoritedReckonings(Date favoritedAfter, Integer page, Integer size) {
+		ensureFavoritesIndex();
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFavoritedQuery(favoritedAfter),
 				MongoDbQueryFactory.buildExcludeVotesFields());	
 		
@@ -337,5 +353,53 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 			return false;
 			
 		return true;
+	}
+	
+	private void ensureTaggedReckoningsIndex() {
+		mongoTemplate.ensureIndex(new Index().on("tags", Order.DESCENDING)
+				 .named("Tagged Reckonings Index"),
+				 RECKONING_COLLECTION);				
+	}	
+	
+	private void ensureUserReckoningsIndex() {
+		mongoTemplate.ensureIndex(new Index().on("submitterId", Order.DESCENDING)
+				 .named("Submitter Reckonings Index"),
+				 RECKONING_COLLECTION);				
+	}	
+	
+	private void ensureHighlightedReckoningsIndex() {
+		mongoTemplate.ensureIndex(new Index().on("highlighted", Order.DESCENDING)
+				 .named("Highlighted Reckonings Index"),
+				 RECKONING_COLLECTION);				
+	}
+	
+	private void ensureRandomReckoningsIndex() {
+		mongoTemplate.ensureIndex(new Index().on("randomSelect", Order.ASCENDING)				 
+				 .named("Random Reckonings Index"),
+				 RECKONING_COLLECTION);				
+	}
+	
+	private void ensureClosingDateIndex() {
+		mongoTemplate.ensureIndex(new Index().on("closingDate", Order.DESCENDING)				 
+				 .named("Closing Date Index"),
+				 RECKONING_COLLECTION);				
+	}
+	
+	private void ensurePostingDateIndex() {
+		mongoTemplate.ensureIndex(new Index().on("postingDate", Order.DESCENDING)				 
+				 .named("Posting Date Index"),
+				 RECKONING_COLLECTION);				
+	}
+	
+	private void ensureVotesIndex() {
+		mongoTemplate.ensureIndex(new Index().on("answers.votes", Order.ASCENDING)
+				 .named("Reckoning Votes Index"),
+				 RECKONING_COLLECTION);
+	}
+	
+	private void ensureFavoritesIndex() {
+		mongoTemplate.ensureIndex(new Index().on("favorites", Order.ASCENDING)
+				 .named("Reckoning Favorite Index"),
+				 RECKONING_COLLECTION);
 	}
 }

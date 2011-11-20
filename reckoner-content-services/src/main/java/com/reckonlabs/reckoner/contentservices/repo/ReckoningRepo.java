@@ -24,16 +24,6 @@ public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 	List<Reckoning> findByApprovedAndRejected(boolean approved, boolean rejected);
 	Page<Reckoning> findByApprovedAndRejected(boolean approved, boolean rejected, Pageable page);	
 	
-	@Query(value = "{'submitterId' : ?0}", fields="{'comments' : 0, 'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")
-	List<Reckoning> findBySubmitterIdSummary(String submitterId);
-	
-	List<Reckoning> findByHighlighted (boolean highlighted);
-	List<Reckoning> findByHighlightedAndClosingDateGreaterThan (boolean highlighted, Date currentDate);
-	List<Reckoning> findByHighlightedAndClosingDateLessThan (boolean highlighted, Date currentDate);
-	
-	@Query(value = "{'comments.posterId' : ?0}", fields="{'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")
-	List<Reckoning> getReckoningSummariesCommentedOnByUser (String userId);
-	
 	@Query(value = "{'comments.commentId' : ?0}", fields="{'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")
 	List<Reckoning> getReckoningCommentById (String commentId);
 	
@@ -42,8 +32,6 @@ public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 	@Query(value = "{'comments.favorites.userId' : ?0}", fields="{'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")
 	List<Reckoning> getReckoningCommentsFavoritedByUser (String userId);	
 	
-	@Query(value = "{ 'answers.votes.voterId' : ?0 }", fields="{'comments' : 0, 'flags' : 0, 'favorites' : 0}")
-	List<Reckoning> getVotesByUser (String userId);	
 	@Query(value = "{ 'id' : ?0 }", fields="{'answers' : 1}")
 	List<Reckoning> getReckoningVotesByReckoningId (String reckoningId);
 }

@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Order;
 
@@ -67,9 +68,10 @@ public class ContentRepoImpl implements ContentRepoCustom {
 			ApprovalStatusEnum approvalStatus,
 			String sortBy, Boolean ascending, Integer page, Integer size,
 			Boolean randomize) {
-		
 		BasicQuery query = null;
 		
+		ensureTagIndex();
+		ensurePostingDateIndex();
 		query = new BasicQuery(MongoDbQueryFactory.buildContentQuery(contentType, postedBeforeDate, postedAfterDate, 
 				includeTags, submitterId, approvalStatus, randomize),
 				MongoDbQueryFactory.buildContentSummaryFields());
@@ -99,7 +101,9 @@ public class ContentRepoImpl implements ContentRepoCustom {
 			Date postedBeforeDate, Date postedAfterDate,
 			List<String> includeTags, String submitterId, 
 			ApprovalStatusEnum approvalStatus) {
-		
+
+		ensureTagIndex();
+		ensurePostingDateIndex();
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildContentQuery(contentType, postedBeforeDate, postedAfterDate, 
 				includeTags, submitterId, approvalStatus, null),
 				MongoDbQueryFactory.buildContentSummaryFields());
@@ -224,5 +228,17 @@ public class ContentRepoImpl implements ContentRepoCustom {
 			return true;	
 		}
 		return false;
+	}
+	
+	private void ensureTagIndex() {
+		mongoTemplate.ensureIndex(new Index().on("tags", Order.ASCENDING)
+				 .named("Content Tag Index"),
+				 CONTENT_COLLECTION);		
+	}
+	
+	private void ensurePostingDateIndex() {
+		mongoTemplate.ensureIndex(new Index().on("postingDate", Order.ASCENDING)
+				 .named("Posting Date Index"),
+				 CONTENT_COLLECTION);		
 	}
 }

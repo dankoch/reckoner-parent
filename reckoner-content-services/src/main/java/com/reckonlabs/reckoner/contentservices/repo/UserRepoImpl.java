@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.Order;
 
@@ -39,7 +40,7 @@ public class UserRepoImpl implements UserRepoCustom {
 	@Override
 	public List<User> getUserSummaries(Boolean active, String sortBy,
 			Boolean ascending, Integer page, Integer size) {
-		
+		ensureGeneralQueryIndex();
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildUserQuery(active),
 				MongoDbQueryFactory.buildUserSummaryFields());
 		
@@ -58,5 +59,12 @@ public class UserRepoImpl implements UserRepoCustom {
 		}
 
 		return mongoTemplate.find(query, User.class);		
+	}
+	
+	private void ensureGeneralQueryIndex() {
+		mongoTemplate.ensureIndex(new Index().on("active", Order.ASCENDING)
+				 .on("firstLogin", Order.DESCENDING)
+				 .named("User General Index"),
+				 USER_COLLECTION);		
 	}
 }
