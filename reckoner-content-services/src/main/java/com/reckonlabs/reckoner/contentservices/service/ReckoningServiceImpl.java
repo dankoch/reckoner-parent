@@ -388,12 +388,23 @@ public class ReckoningServiceImpl implements ReckoningService {
 						List<String> tagList = new ArrayList<String>(1);
 						tagList.add(sourceReckoning.getTags().get(i));
 						
-						reckonings.addAll(reckoningRepoCustom.getReckoningSummaries(reckoningType, null, null, null, 
-								null, tagList, null, null, null, null, null, null, null, reckoningsPerTag, true));					
+						List<Reckoning> suggestedReckonings = reckoningRepoCustom.getReckoningSummaries(reckoningType, null, null, null, 
+								null, tagList, null, null, null, null, null, null, null, reckoningsPerTag, true);
+						
+						// Add all suggestions that are NOT the Reckoning we started with.
+						for (Reckoning suggested : suggestedReckonings) {
+							if (!suggested.getId().equals(reckoningId)) {
+								reckonings.add(suggested);
+							}
+						}			
 					}					
 				}
-				reckonings.addAll(reckoningRepoCustom.getReckoningSummaries(reckoningType, null, null, null, 
-						null, null, null, null, null, null, null, null, null, (size - reckonings.size()), true));		
+				
+				// If we haven't gotten four related reckonings, use random reckonings to fill out the rest.
+				if (size - reckonings.size() > 0) {
+					reckonings.addAll(reckoningRepoCustom.getReckoningSummaries(reckoningType, null, null, null, 
+						null, null, null, null, null, null, null, null, null, (size - reckonings.size()), true));
+				}
 			}
 		}
 		catch (Exception e) {
