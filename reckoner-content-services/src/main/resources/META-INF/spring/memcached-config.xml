@@ -9,7 +9,7 @@
         http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
   <bean id="memcachedClient" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
-    <property name="servers" value="${reckoner.contentservices.cache.host}"/>
+    <property name="servers" value="${reckoner.contentservices.cache.${reckoner.contentservices.environment}.host}"/>
     <property name="protocol" value="BINARY"/>
     <property name="transcoder">
       <bean class="net.spy.memcached.transcoders.SerializingTranscoder">

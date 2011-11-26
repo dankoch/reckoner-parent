@@ -10,7 +10,7 @@
            http://www.springframework.org/schema/data/mongo/spring-mongo-1.0.xsd">
 
     <!-- Default bean name is 'mongo' -->
-	<mongo:mongo id="mongoDb" host="${reckoner.contentservices.db.host}" port="${reckoner.contentservices.db.port}">
+	<mongo:mongo id="mongoDb" host="${reckoner.contentservices.db.${reckoner.contentservices.environment}.host}" port="${reckoner.contentservices.db.${reckoner.contentservices.environment}.port}">
 	   <mongo:options connections-per-host="20"
 	                  threads-allowed-to-block-for-connection-multiplier="4"
 	                  connect-timeout="10000"

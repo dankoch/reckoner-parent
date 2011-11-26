@@ -4,11 +4,11 @@
   <parent>
     <groupId>com.reckonlabs.reckoner</groupId>
     <artifactId>reckoner-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.9.9-SNAPSHOT</version>
   </parent>
   <groupId>com.reckonlabs.reckoner</groupId>
   <artifactId>reckoner-content-services</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.9.9-SNAPSHOT</version>
   <packaging>war</packaging>
   <name>The Reckoner Content Services</name>
   <description>
@@ -21,7 +21,7 @@
     <dependency>
       <groupId>com.reckonlabs.reckoner</groupId>
       <artifactId>reckoner-domain</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.9.9-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

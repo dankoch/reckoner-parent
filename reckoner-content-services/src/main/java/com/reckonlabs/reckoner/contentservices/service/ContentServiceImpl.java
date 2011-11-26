@@ -274,8 +274,8 @@ public class ContentServiceImpl implements ContentService {
 			if (tagList == null) {
 				tagList = new LinkedList<Tag>();
 				
-				List<Content> allContent = this.getContentSummaries(null, null, null, null, null, 
-						null, null, null, null, null, null).getContents();
+				List<Content> allContent = contentRepoCustom.getContentItems(null, null, null, null, null, 
+						ApprovalStatusEnum.APPROVED, null, null, null, null, null);
 				
 				if (allContent != null) {
 					HashMap<String, Integer> tagHash = new HashMap<String, Integer>();
