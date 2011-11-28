@@ -81,8 +81,8 @@
     <bean id="googleAuthClient" class="com.reckonlabs.reckoner.contentservices.client.GoogleAuthClient">
         <property name="userTokenUrl" value="${reckoner.contentservices.google.usertokenurl}" />
         <property name="userSelfProfileUrl" value="${reckoner.contentservices.google.userselfprofileurl}" />        
-        <property name="clientId" value="${reckoner.contentservices.google.clientid}" />
-        <property name="clientSecret" value="${reckoner.contentservices.google.clientsecret}" />
+        <property name="clientId" value="${reckoner.contentservices.google.${reckoner.contentservices.environment}.clientid}" />
+        <property name="clientSecret" value="${reckoner.contentservices.google.${reckoner.contentservices.environment}.clientsecret}" />
     </bean>
     
     <bean id="serviceProps" class="com.reckonlabs.reckoner.contentservices.utility.ServiceProps">
