@@ -184,7 +184,7 @@ public class DateUtility {
 	 */
 	public static GregorianCalendar getInstance() {
 		TimeZone.setDefault(TimeZone
-				.getTimeZone("America/New_York"));
+				.getTimeZone("SystemV/EST5EDT"));
 		GregorianCalendar calendar = new GregorianCalendar(TimeZone.getDefault());
 		return calendar;
 	}
