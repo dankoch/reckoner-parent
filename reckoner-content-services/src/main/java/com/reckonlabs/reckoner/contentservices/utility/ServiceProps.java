@@ -4,6 +4,8 @@ public class ServiceProps {
 	
 	boolean enableServiceAuthentication;
 	int votePersistenceSize;
+	int votePersistenceBytes;
+
 	String defaultBio;
 
 	String googleAppId;
@@ -31,5 +33,29 @@ public class ServiceProps {
 
 	public void setDefaultBio(String defaultBio) {
 		this.defaultBio = defaultBio;
+	}
+
+	public int getVotePersistenceBytes() {
+		return votePersistenceBytes;
+	}
+
+	public void setVotePersistenceBytes(int votePersistenceBytes) {
+		this.votePersistenceBytes = votePersistenceBytes;
+	}
+
+	public String getGoogleAppId() {
+		return googleAppId;
+	}
+
+	public void setGoogleAppId(String googleAppId) {
+		this.googleAppId = googleAppId;
+	}
+
+	public String getGoogleAppSecret() {
+		return googleAppSecret;
+	}
+
+	public void setGoogleAppSecret(String googleAppSecret) {
+		this.googleAppSecret = googleAppSecret;
 	}
 }

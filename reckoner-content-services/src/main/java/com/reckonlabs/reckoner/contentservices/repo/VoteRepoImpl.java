@@ -36,7 +36,7 @@ public class VoteRepoImpl implements VoteRepoCustom {
 	public void insertVote(Vote vote) {
 		if (!mongoTemplate.collectionExists(VOTE_COLLECTION)) {
 			mongoTemplate.createCollection(VOTE_COLLECTION, 
-					new CollectionOptions(null, serviceProps.getVotePersistenceSize(), true));
+					new CollectionOptions(serviceProps.getVotePersistenceBytes(), serviceProps.getVotePersistenceSize(), true));
 		}
 		
 		mongoTemplate.insert(vote, VOTE_COLLECTION);
