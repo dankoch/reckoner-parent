@@ -90,5 +90,6 @@
         <property name="votePersistenceSize" value="${reckoner.contentservices.db.votecollectionsize}" />
         <property name="votePersistenceBytes" value="${reckoner.contentservices.db.votecollectionbytes}" />
         <property name="defaultBio" value="${reckoner.contentservices.user.bio}" />
+        <property name="anonymousUser" value="${reckoner.contentservices.user.${reckoner.contentservices.environment}.anonymoususerid}" />
     </bean>
 </beans>

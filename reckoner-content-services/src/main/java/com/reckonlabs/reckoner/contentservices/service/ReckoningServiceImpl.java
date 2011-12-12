@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 import com.reckonlabs.reckoner.contentservices.cache.ReckoningCache;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
@@ -46,6 +49,9 @@ public class ReckoningServiceImpl implements ReckoningService {
 	@Autowired
 	UserService userService;
 	
+	@Resource
+	ServiceProps serviceProps;
+	
 	private static final Logger log = LoggerFactory
 			.getLogger(ReckoningServiceImpl.class);
 	
@@ -58,6 +64,13 @@ public class ReckoningServiceImpl implements ReckoningService {
 			for (Answer answer : reckoning.getAnswers()) {
 				answer.setIndex(answerIndex);
 				answerIndex ++;
+			}
+			
+			// Verify that a valid user has submitted the Reckoning
+			if (userService.getUserByUserId(reckoning.getSubmitterId(), true).getUser() == null) {
+				log.warn("Invalid user specified for posted Reckoning: " + reckoning.getSubmitterId() + " Reckoning: " 
+							+ reckoning.getQuestion());	
+				return (new ServiceResponse(new Message(MessageEnum.R107_POST_RECKONING), false));				
 			}
 			
 			// Clean up the reckoning for fields that can't be set for a new posting.
@@ -75,15 +88,24 @@ public class ReckoningServiceImpl implements ReckoningService {
 				reckoning.setInterval(10080);
 			}
 			
+			// Check if this was requested as an anonymous submission.  If so, scrub the submitter ID and
+			// insert the anonymous user ID.
+			if (reckoning.isAnonymousRequested()) {
+				reckoning.setAnonymous(true);
+				reckoning.setSubmitterId(serviceProps.getAnonymousUser());
+			}
+			
 			// Set the random select number to be a double between 0 and 1.  This is used to
 			// enable random Reckoning selection.
+			reckoning.setRandomSelect(new Random().nextDouble());
 			
 			// Clean up the tags.
 			reckoning.setTags(formatTags(reckoning.getTags()));
 			
-			reckoning.setRandomSelect(new Random().nextDouble());
+			// Do the insertion.
 			reckoningRepoCustom.insertNewReckoning(reckoning);
 			
+			// Clean the cache for Reckonings associated with this user.
 			reckoningCache.removeCachedUserReckoningSummaries(reckoning.getSubmitterId());
 		} catch (Exception e) {
 			log.error("General exception when inserting a new reckoning: " + e.getMessage());

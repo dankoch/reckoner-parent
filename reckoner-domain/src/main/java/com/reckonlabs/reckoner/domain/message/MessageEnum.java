@@ -5,7 +5,7 @@ public enum MessageEnum {
 	R00_DEFAULT("R00"), R01_DEFAULT("R01"), R02_DEFAULT("R02"),
 	
 	R100_POST_RECKONING ("R100"), R101_POST_RECKONING ("R101"), R102_POST_RECKONING ("R102"), R103_POST_RECKONING ("R103"),
-    R104_POST_RECKONING ("R104"), R105_POST_RECKONING ("R105"), R106_POST_RECKONING ("R106"),
+    R104_POST_RECKONING ("R104"), R105_POST_RECKONING ("R105"), R106_POST_RECKONING ("R106"), R107_POST_RECKONING ("R107"),
 	
 	R200_GET_RECKONING ("R200"), R201_GET_RECKONING ("R201"), R202_GET_RECKONING ("R202"), R203_GET_RECKONING ("R203"),
 	R204_GET_RECKONING ("R204"), R205_GET_RECKONING ("R205"), R206_GET_RECKONING("R206"), R207_GET_RECKONING ("R207"),
@@ -60,6 +60,7 @@ public enum MessageEnum {
 			case R104_POST_RECKONING:  return ("Database write failure for posted reckoning.");
 			case R105_POST_RECKONING:  return ("Need to specify IDs for updated reckonings.");
 			case R106_POST_RECKONING:  return ("ID not found for merged reckoning.");
+			case R107_POST_RECKONING:  return ("Invalid user specified for posted reckoning.");
 			
 			case R200_GET_RECKONING:  return ("Error retrieving reckonings from database.");			
 			case R201_GET_RECKONING:  return ("Page value for reckoning queries cannot be negative.");

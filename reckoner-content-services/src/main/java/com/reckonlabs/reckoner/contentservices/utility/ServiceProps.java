@@ -7,6 +7,7 @@ public class ServiceProps {
 	int votePersistenceBytes;
 
 	String defaultBio;
+	String anonymousUser;
 
 	String googleAppId;
 	String googleAppSecret;
@@ -57,5 +58,13 @@ public class ServiceProps {
 
 	public void setGoogleAppSecret(String googleAppSecret) {
 		this.googleAppSecret = googleAppSecret;
+	}
+
+	public String getAnonymousUser() {
+		return anonymousUser;
+	}
+
+	public void setAnonymousUser(String anonymousUser) {
+		this.anonymousUser = anonymousUser;
 	}
 }
