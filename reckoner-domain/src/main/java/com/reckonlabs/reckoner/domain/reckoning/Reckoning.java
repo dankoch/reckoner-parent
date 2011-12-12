@@ -267,6 +267,7 @@ public class Reckoning extends Notable implements Serializable  {
 		this.commentIndex = commentIndex;
 	}
 	
+	@XmlElement(name = "comment_index")
 	public Integer getCommentIndex() {
 		return this.commentIndex;
 	}
