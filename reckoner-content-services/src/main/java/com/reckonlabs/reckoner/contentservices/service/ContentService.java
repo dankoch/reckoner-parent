@@ -36,5 +36,5 @@ public interface ContentService {
 
 	public ServiceResponse rejectContent (String id, String sessionId);
 	
-	public TagServiceList getTagList();
+	public TagServiceList getTagList(ContentTypeEnum contentType);
 }

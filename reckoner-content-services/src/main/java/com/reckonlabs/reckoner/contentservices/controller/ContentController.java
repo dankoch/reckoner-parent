@@ -186,7 +186,7 @@ public class ContentController {
 	@RequestMapping(value = "/content", method = RequestMethod.GET)	
 	public @ResponseBody
 	ContentServiceList getContents(
-			@RequestParam(required = false, value = "type") ContentTypeEnum contentType,
+			@RequestParam(required = false, value = "type") String type,
 			@RequestParam(required = false, value = "page") Integer page,
 			@RequestParam(required = false, value = "size") Integer size,
 			@RequestParam(required = false, value = "posted_after") Date postedAfter,
@@ -201,6 +201,11 @@ public class ContentController {
 				throws AuthenticationException {
 		
 		if (countOnly == null) { countOnly = false; }
+		
+		ContentTypeEnum contentType = null;
+		if ((type != null) && (ContentTypeEnum.isContentType(type.toUpperCase()))) {
+			contentType = ContentTypeEnum.valueOf(type.toUpperCase());
+		}
 		
 		List<String> includeTags = convertList(includeTagsString);
 		
@@ -274,17 +279,23 @@ public class ContentController {
 	 */
 	@RequestMapping(value = "/content/tags", method = RequestMethod.GET)
 	public @ResponseBody
-	TagServiceList getContentTags(		
+	TagServiceList getContentTags(
+			@RequestParam(required = false, value = "type") String type,
 			@RequestParam(required = false, value = "session_id") String sessionId) 
 					throws AuthenticationException {
+		
+		ContentTypeEnum contentType = null;
+		if ((type != null) && (ContentTypeEnum.isContentType(type.toUpperCase()))) {
+			contentType = ContentTypeEnum.valueOf(type.toUpperCase());
+		}
 		
 		if (serviceProps.isEnableServiceAuthentication() && 
 				!userService.hasPermission(sessionId, PermissionEnum.VIEW_CONTENT)) {
 			log.info("User with insufficient privileges attempted to pull the content tags: ");
 			throw new AuthenticationException();			
 		}
-
-		return contentService.getTagList();
+		
+		return contentService.getTagList(contentType);
 	}
 	
 	private static List<String> convertList(String source) {

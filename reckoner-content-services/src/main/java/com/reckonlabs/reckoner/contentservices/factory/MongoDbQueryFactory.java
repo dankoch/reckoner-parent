@@ -192,7 +192,7 @@ public final class MongoDbQueryFactory {
 	}
 	
 	public static DBObject buildContentTypeQuery (ContentTypeEnum contentType) {
-		return new BasicDBObject ("contentType", contentType);
+		return new BasicDBObject ("contentType", contentType.toString());
 	}
 	
 	public static DBObject buildReckoningQuery (ReckoningTypeEnum type, Date postedBeforeDate, Date postedAfterDate,

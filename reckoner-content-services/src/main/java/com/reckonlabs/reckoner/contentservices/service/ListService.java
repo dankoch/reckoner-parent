@@ -11,4 +11,6 @@ public interface ListService {
 	public DataServiceList<String> getValidProviders();
 	
 	public DataServiceList<String> getContentTypes();
+	
+	public DataServiceList<String> getMediaTypes();
 }

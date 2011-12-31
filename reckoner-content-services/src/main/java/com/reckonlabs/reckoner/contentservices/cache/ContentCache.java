@@ -60,9 +60,9 @@ public interface ContentCache {
 			String submitterId,
 			ApprovalStatusEnum approvalStatus);
 	
-	public void setCachedTagList(List<Tag> tagList);
+	public void setCachedTagList(List<Tag> tagList, ContentTypeEnum contentType);
 	
-	public List<Tag> getCachedTagList();
+	public List<Tag> getCachedTagList(ContentTypeEnum contentType);
 	
-	public void removeCachedTagList();
+	public void removeCachedTagList(ContentTypeEnum contentType);
 }

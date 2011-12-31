@@ -19,6 +19,7 @@ import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
+import com.reckonlabs.reckoner.domain.media.Media;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
@@ -38,16 +39,19 @@ public class ContentRepoImpl implements ContentRepoCustom {
 
 	@Override
 	public void insertNewContent(Content content) {
+		content = attachMediaIds(content);		
 		mongoTemplate.insert(content, CONTENT_COLLECTION);
 	}
 
 	@Override
 	public void updateContent(Content content) {
+		content = attachMediaIds(content);
 		mongoTemplate.save(content, CONTENT_COLLECTION);
 	}
 
 	@Override
 	public void mergeContent(Content content) throws DBUpdateException {
+		content = attachMediaIds(content);
 		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(content.getId())), 
 				MongoDbQueryFactory.buildContentUpdate(content), CONTENT_COLLECTION);
 		
@@ -240,5 +244,16 @@ public class ContentRepoImpl implements ContentRepoCustom {
 		mongoTemplate.ensureIndex(new Index().on("postingDate", Order.ASCENDING)
 				 .named("Posting Date Index"),
 				 CONTENT_COLLECTION);		
+	}
+	
+	// Used to attach IDs to all modified media
+	private static Content attachMediaIds(Content content) {
+		if (content.getMedia() != null) {
+			for (Media media : content.getMedia()) {
+				media.setMediaId(new ObjectId().toString());
+			}
+		}
+		
+		return content;
 	}
 }

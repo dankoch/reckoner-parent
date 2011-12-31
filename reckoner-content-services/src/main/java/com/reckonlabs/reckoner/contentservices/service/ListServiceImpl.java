@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
+import com.reckonlabs.reckoner.domain.media.MediaTypeEnum;
 import com.reckonlabs.reckoner.domain.message.DataServiceList;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
@@ -76,5 +77,19 @@ public class ListServiceImpl implements ListService {
 		}
 		
 		return (new DataServiceList<String>(contentTypes, new Message(), true));
+	}
+	
+	@Override
+	public DataServiceList<String> getMediaTypes() {
+		List<String> mediaTypes = null;
+		
+		try {
+			mediaTypes = MediaTypeEnum.getMediaTypes();
+		} catch (Exception e) {
+			log.error("General exception when fetching media type list ", e);			
+			return (new DataServiceList<String>(null, new Message(MessageEnum.R01_DEFAULT), false));	
+		}
+		
+		return (new DataServiceList<String>(mediaTypes, new Message(), true));
 	}
 }

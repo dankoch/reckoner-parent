@@ -1,12 +1,13 @@
 package com.reckonlabs.reckoner.domain.content;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public enum ContentTypeEnum {
+public enum ContentTypeEnum implements Serializable {
 
 	// Various statuses for which reckoning can be queried.
-	BLOG("BLOG"), VIDEO("VIDEO"), PODCAST("PODCAST");
+	BLOG("BLOG"), VIDEO("VIDEO"), PODCAST("PODCAST"), ALL("ALL");
 	
 	private final String code;
 	

@@ -21,7 +21,7 @@ public class ContentCacheMemImpl implements ContentCache {
 	public static final int CONTENT_CACHE_LIFESPAN = 604800;
 	public static final int CONTENT_SUMMARY_CACHE_LIFESPAN = 1200;
 	public static final int CONTENT_COUNT_CACHE_LIFESPAN = 1200;
-	public static final int CONTENT_TAG_LIST_LIFESPAN = 604800;
+	public static final int CONTENT_TAG_LIST_LIFESPAN = 1200;
 	
 	public static final String CONTENT_CACHE_PREFIX = "content_";
 	public static final String CONTENT_SUMMARY_CACHE_PREFIX = "content_summary_";
@@ -124,18 +124,18 @@ public class ContentCacheMemImpl implements ContentCache {
 	}
 	
 	@Override
-	public void setCachedTagList(List<Tag> tagList) {
+	public void setCachedTagList(List<Tag> tagList, ContentTypeEnum contentType) {
 		setCacheElement(CONTENT_TAG_LIST_PREFIX, CONTENT_TAG_LIST_LIFESPAN, tagList);
 	}
 
 	@Override
-	public List<Tag> getCachedTagList() {
-		return getTagCacheElement(CONTENT_TAG_LIST_PREFIX);
+	public List<Tag> getCachedTagList(ContentTypeEnum contentType) {
+		return getTagCacheElement(CONTENT_TAG_LIST_PREFIX + contentType.toString());
 	}
 
 	@Override
-	public void removeCachedTagList() {
-		removeCacheElement(CONTENT_TAG_LIST_PREFIX);
+	public void removeCachedTagList(ContentTypeEnum contentType) {
+		removeCacheElement(CONTENT_TAG_LIST_PREFIX + contentType.toString());
 	}
 	
 	private void setCacheElement(String key, int lifespan, Object value) {

@@ -118,9 +118,9 @@ public class ListController {
 	}
 	
 	/**
-	 * This method retrieves the permissions a user can have.
+	 * This method retrieves the types of content the Reckon Blog can have.
 	 */
-	@RequestMapping(value = "/list/user/contenttypes", method = RequestMethod.GET)
+	@RequestMapping(value = "/list/contenttypes", method = RequestMethod.GET)
 	public @ResponseBody
 	DataServiceList<String> getContentTypes(
 			@RequestParam(required = false, value = "session_id") String sessionId)
@@ -133,5 +133,23 @@ public class ListController {
 			throw new AuthenticationException();			
 		} 
 		return listService.getContentTypes();
+	}
+	
+	/**
+	 * This method retrieves the types of media that can be attached to a Reckoning or Content item.
+	 */
+	@RequestMapping(value = "/list/mediatypes", method = RequestMethod.GET)
+	public @ResponseBody
+	DataServiceList<String> getMediaTypes(
+			@RequestParam(required = false, value = "session_id") String sessionId)
+					throws AuthenticationException {	
+		
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_LIST)) {
+			log.info("User with insufficient privileges attempted to view the media type list: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		return listService.getMediaTypes();
 	}
 }

@@ -67,7 +67,7 @@ public class ContentServiceImpl implements ContentService {
 			content.setTags(formatTags(content.getTags()));
 			
 			contentRepoCustom.insertNewContent(content);
-			contentCache.removeCachedTagList();
+			contentCache.removeCachedTagList(content.getContentType());
 		} catch (Exception e) {
 			log.error("General exception when inserting new content: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -95,7 +95,6 @@ public class ContentServiceImpl implements ContentService {
 			}
 			
 			contentCache.removeCachedContent(content.getId());
-			contentCache.removeCachedTagList();
 		} catch (Exception e) {
 			log.error("General exception when updating content: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -241,7 +240,6 @@ public class ContentServiceImpl implements ContentService {
 			if (rejectedContent != null && rejectedContent.size() > 0) {
 				contentRepoCustom.rejectContent(id, userService.getUserBySessionId(sessionId).getUser().getId());
 				contentCache.removeCachedContent(id);
-				contentCache.removeCachedTagList();
 			} else {
 				log.info("Request to reject non-existent content: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -262,19 +260,19 @@ public class ContentServiceImpl implements ContentService {
 	}
 	
 	@Override
-	public TagServiceList getTagList() {
+	public TagServiceList getTagList(ContentTypeEnum contentType) {
 		List<Tag> tagList = null;
 		
 		try {
 			// This should ultimately be a Mongo Map-Reduce call, but its performance is poor and the data set isn't
 			// huge, so we're doing it through Java.
 			
-			tagList = contentCache.getCachedTagList();
+			tagList = contentCache.getCachedTagList(contentType);
 			
 			if (tagList == null) {
 				tagList = new LinkedList<Tag>();
 				
-				List<Content> allContent = contentRepoCustom.getContentItems(null, null, null, null, null, 
+				List<Content> allContent = contentRepoCustom.getContentItems(contentType, null, null, null, null, 
 						ApprovalStatusEnum.APPROVED, null, null, null, null, null);
 				
 				if (allContent != null) {
@@ -297,7 +295,7 @@ public class ContentServiceImpl implements ContentService {
 					}
 				}
 				
-				contentCache.setCachedTagList(tagList);
+				contentCache.setCachedTagList(tagList, contentType);
 			}
 			
 		} catch (Exception e) {

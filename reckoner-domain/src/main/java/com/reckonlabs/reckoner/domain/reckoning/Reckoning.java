@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.reckonlabs.reckoner.domain.Notable;
+import com.reckonlabs.reckoner.domain.media.Media;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.user.User;
@@ -76,6 +77,9 @@ public class Reckoning extends Notable implements Serializable  {
 	private List<Comment> comments;
 	@Column(name="comment_index")
 	private Integer commentIndex;
+	
+	@Column(name="media")
+	private List<Media> media;
 	
 	@Column(name="commentary")
 	private String commentary;
@@ -270,6 +274,15 @@ public class Reckoning extends Notable implements Serializable  {
 	@XmlElement(name = "comment_index")
 	public Integer getCommentIndex() {
 		return this.commentIndex;
+	}
+	
+	@XmlElement(name = "media")
+	public List<Media> getMedia() {
+		return media;
+	}
+
+	public void setMedia(List<Media> media) {
+		this.media = media;
 	}
 
 	@XmlElement(name = "highlighted")
