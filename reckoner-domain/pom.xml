@@ -4,11 +4,11 @@
   <parent>
     <groupId>com.reckonlabs.reckoner</groupId>
     <artifactId>reckoner-parent</artifactId>
-    <version>0.9.14-SNAPSHOT</version>
+    <version>0.9.14</version>
   </parent>
   <groupId>com.reckonlabs.reckoner</groupId>
   <artifactId>reckoner-domain</artifactId>
-  <version>0.9.14-SNAPSHOT</version>
+  <version>0.9.14</version>
   <packaging>jar</packaging>
   <name>The Reckoner Domain</name>
   <description>
