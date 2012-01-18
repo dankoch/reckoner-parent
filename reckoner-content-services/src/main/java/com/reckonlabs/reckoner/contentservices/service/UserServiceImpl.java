@@ -341,7 +341,12 @@ public class UserServiceImpl implements UserService {
 	// when an update call is made.  This only updates information that isn't bound to an OAuth account.
 	// SEE mergeOAuthUser for OAuth bound fields.
 	private static User mergeUpdatedUser(User existingUser, User newUser) {
-		existingUser.setBio(newUser.getBio());
+		if (newUser.getBio() != null) 
+			{existingUser.setBio(newUser.getBio());}
+		if (newUser.isHideProfile() != null) 
+			{existingUser.setHideProfile(newUser.isHideProfile());}
+		if (newUser.isHideVotes() != null) 		
+			{existingUser.setHideVotes(newUser.isHideVotes());}
 		
 		return existingUser;
 	}

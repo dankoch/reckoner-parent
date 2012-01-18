@@ -246,14 +246,22 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	}
 	
 	@Override
-	public void insertReckoningVote(String voterId, Integer answerIndex,
-			String reckoningId) throws DBUpdateException {
+	public void insertReckoningVote(Vote vote) throws DBUpdateException {
 		
-		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId)), 
-				MongoDbQueryFactory.buildReckoningVoteUpdate(voterId, answerIndex), RECKONING_COLLECTION);
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(vote.getReckoningId())), 
+				MongoDbQueryFactory.buildReckoningVoteInsert(vote), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());		
 		
+	}
+	
+	@Override
+	public void updateReckoningVote(Vote updateVote) throws DBUpdateException {
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(updateVote.getReckoningId())), 
+				MongoDbQueryFactory.buildReckoningVoteUpdate(updateVote), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());				
 	}
 	
 	@Override
@@ -356,50 +364,42 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 	}
 	
 	private void ensureTaggedReckoningsIndex() {
-		mongoTemplate.ensureIndex(new Index().on("tags", Order.DESCENDING)
-				 .named("Tagged Reckonings Index"),
-				 RECKONING_COLLECTION);				
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("tags", Order.DESCENDING)
+				 .named("Tagged Reckonings Index"));				
 	}	
 	
 	private void ensureUserReckoningsIndex() {
-		mongoTemplate.ensureIndex(new Index().on("submitterId", Order.DESCENDING)
-				 .named("Submitter Reckonings Index"),
-				 RECKONING_COLLECTION);				
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("submitterId", Order.DESCENDING)
+				 .named("Submitter Reckonings Index"));			
 	}	
 	
 	private void ensureHighlightedReckoningsIndex() {
-		mongoTemplate.ensureIndex(new Index().on("highlighted", Order.DESCENDING)
-				 .named("Highlighted Reckonings Index"),
-				 RECKONING_COLLECTION);				
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("highlighted", Order.DESCENDING)
+				 .named("Highlighted Reckonings Index"));						
 	}
 	
 	private void ensureRandomReckoningsIndex() {
-		mongoTemplate.ensureIndex(new Index().on("randomSelect", Order.ASCENDING)				 
-				 .named("Random Reckonings Index"),
-				 RECKONING_COLLECTION);				
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("randomSelect", Order.ASCENDING)				 
+				 .named("Random Reckonings Index"));				
 	}
 	
 	private void ensureClosingDateIndex() {
-		mongoTemplate.ensureIndex(new Index().on("closingDate", Order.DESCENDING)				 
-				 .named("Closing Date Index"),
-				 RECKONING_COLLECTION);				
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("closingDate", Order.DESCENDING)				 
+				 .named("Closing Date Index"));			
 	}
 	
 	private void ensurePostingDateIndex() {
-		mongoTemplate.ensureIndex(new Index().on("postingDate", Order.DESCENDING)				 
-				 .named("Posting Date Index"),
-				 RECKONING_COLLECTION);				
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("postingDate", Order.DESCENDING)				 
+				 .named("Posting Date Index"));			
 	}
 	
 	private void ensureVotesIndex() {
-		mongoTemplate.ensureIndex(new Index().on("answers.votes", Order.ASCENDING)
-				 .named("Reckoning Votes Index"),
-				 RECKONING_COLLECTION);
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("answers.votes", Order.ASCENDING)
+				 .named("Reckoning Votes Index"));	
 	}
 	
 	private void ensureFavoritesIndex() {
-		mongoTemplate.ensureIndex(new Index().on("favorites", Order.ASCENDING)
-				 .named("Reckoning Favorite Index"),
-				 RECKONING_COLLECTION);
+		mongoTemplate.indexOps(RECKONING_COLLECTION).ensureIndex(new Index().on("favorites", Order.ASCENDING)
+				 .named("Reckoning Favorite Index"));	
 	}
 }

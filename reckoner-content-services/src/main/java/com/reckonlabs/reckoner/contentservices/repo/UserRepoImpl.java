@@ -62,9 +62,8 @@ public class UserRepoImpl implements UserRepoCustom {
 	}
 	
 	private void ensureGeneralQueryIndex() {
-		mongoTemplate.ensureIndex(new Index().on("active", Order.ASCENDING)
+		mongoTemplate.indexOps(USER_COLLECTION).ensureIndex(new Index().on("active", Order.ASCENDING)
 				 .on("firstLogin", Order.DESCENDING)
-				 .named("User General Index"),
-				 USER_COLLECTION);		
+				 .named("User General Index"));		
 	}
 }

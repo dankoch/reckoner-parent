@@ -54,7 +54,7 @@ public class VoteServiceImplTest {
 		expect(mockReckoningRepoCustom.confirmReckoningIsVotingEligible(BAD_RECKONING, BAD_ANSWER)).andReturn(false);
 		replay(mockReckoningRepoCustom);
 		
-		ServiceResponse response = voteService.postReckoningVote(new Vote(), BAD_RECKONING, BAD_ANSWER);
+		ServiceResponse response = voteService.postReckoningVote(new Vote(), BAD_RECKONING, BAD_ANSWER, null);
 		Assert.assertFalse(response.isSuccess());
 	}
 	
@@ -65,7 +65,7 @@ public class VoteServiceImplTest {
 		replay(mockReckoningRepoCustom);
 		replay(mockVoteCache);
 		
-		ServiceResponse response = voteService.postReckoningVote(buildVote(USER_ID, VALID_ANSWER, false, null, null), VALID_RECKONING, VALID_ANSWER);
+		ServiceResponse response = voteService.postReckoningVote(buildVote(USER_ID, VALID_ANSWER, false, null, null), VALID_RECKONING, VALID_ANSWER, null);
 		Assert.assertFalse(response.isSuccess());
 	}
 	

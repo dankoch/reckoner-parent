@@ -4,8 +4,11 @@ import java.util.Date;
 
 import java.io.Serializable;
 import javax.persistence.Column;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import com.reckonlabs.reckoner.domain.user.User;
 
 @XmlRootElement(name = "vote")
 public class Vote implements Serializable {
@@ -29,6 +32,11 @@ public class Vote implements Serializable {
 	@Column (name = "user_agent")
 	private String userAgent;
 	
+	// Used to store complete commentary and posting user information for display purposes.
+	// Do NOT store in the database;
+	@Transient
+	private User votingUser;
+	
 	public Vote() {
 		
 	}
@@ -37,6 +45,13 @@ public class Vote implements Serializable {
 		setReckoningId(reckoningId);
 		setAnswerIndex(index);
 		setVoterId(voterId);
+	}
+	
+	public Vote (String voterId, String reckoningId, int index, boolean anonymous) {
+		setReckoningId(reckoningId);
+		setAnswerIndex(index);
+		setVoterId(voterId);
+		setAnonymous(anonymous);
 	}
 	
 	@XmlElement(name = "id")
@@ -106,5 +121,13 @@ public class Vote implements Serializable {
 
 	public void setUserAgent(String userAgent) {
 		this.userAgent = userAgent;
+	}
+
+	@XmlElement(name = "voting_user")
+	public User getVotingUser() {
+		return votingUser;
+	}
+	public void setVotingUser(User votingUser) {
+		this.votingUser = votingUser;
 	}
 }

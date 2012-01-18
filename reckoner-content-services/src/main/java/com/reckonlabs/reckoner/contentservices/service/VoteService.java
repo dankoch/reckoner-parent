@@ -10,9 +10,13 @@ import com.reckonlabs.reckoner.domain.message.ServiceResponse;
 
 public interface VoteService {
 	
-	public ServiceResponse postReckoningVote (Vote vote, String reckonId, Integer answerIndex);
+	public ServiceResponse postReckoningVote (Vote vote, String reckonId, Integer answerIndex, String sessionId);
 	
-	public ReckoningServiceList getUserVotedReckonings (String userId, Integer page, Integer size);
+	public ServiceResponse updateReckoningVote (Vote updateVote, String sessionId);
 	
-	public VoteServiceList getUserReckoningVote (String userId, String reckonId);
+	public ReckoningServiceList getUserVotedReckonings (String userId, Integer page, Integer size, String sessionId);
+	
+	public VoteServiceList getUserReckoningVote (String userId, String reckonId, String sessionId);
+	
+	public VoteServiceList getReckoningAnswerVotes (String id, Integer answer, Integer page, Integer size);
 }

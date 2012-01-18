@@ -420,7 +420,13 @@ public class Reckoning extends Notable implements Serializable  {
 		for (Answer answer : getAnswers()) {
 			if (answer.getVotes() != null) {
 				if (answer.getVotes().containsKey(userId)) {
-					userReckoningVote.add(new Vote(userId, this.id, answer.getIndex()));
+					Vote vote = answer.getVotes().get(userId);
+					
+					if (vote != null) {
+						userReckoningVote.add(new Vote(userId, this.id, answer.getIndex(), vote.isAnonymous()));
+					} else {
+						userReckoningVote.add(new Vote(userId, this.id, answer.getIndex()));
+					}
 				}
 			}
 		}	

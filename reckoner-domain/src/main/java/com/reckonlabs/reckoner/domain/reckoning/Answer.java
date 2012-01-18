@@ -1,11 +1,13 @@
 package com.reckonlabs.reckoner.domain.reckoning;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
 import java.io.Serializable;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -18,7 +20,7 @@ public class Answer implements Serializable {
 	private String text;
 	private String subtitle;
 	private int voteTotal;
-	private Map<String, String> votes;
+	private HashMap<String, Vote> votes;
 	
 	public Answer() {
 		
@@ -65,20 +67,20 @@ public class Answer implements Serializable {
 		this.voteTotal = voteTotal;
 	}
 
-	@XmlTransient
-	public Map<String, String> getVotes() {
+	@XmlElementWrapper(name = "votes")
+	public HashMap<String, Vote> getVotes() {
 		return votes;
 	}
 
-	public void setVotes(Map<String, String> votes) {
+	public void setVotes(HashMap<String, Vote> votes) {
 		this.votes = votes;
 	}
 	
 	public void addVote(String voterId) {
 		if (this.votes == null) {
-			this.votes = new HashMap<String, String> ();
+			this.votes = new HashMap<String, Vote> ();
 		}
-		this.votes.put(voterId, "1");
+		this.votes.put(voterId, new Vote(voterId, null, this.index));
 
 		incrementVoteTotal();
 	}

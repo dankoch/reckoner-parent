@@ -158,7 +158,9 @@ public final class MongoDbQueryFactory {
 	}
 	
 	public static DBObject buildVotedOnByUser (String userId) {
-		return new BasicDBObject("answers.votes." + userId, true);
+		DBObject existsQuery = new BasicDBObject("$exists", true);
+		
+		return new BasicDBObject("answers.votes." + userId, existsQuery);
 	}
 	
 	public static DBObject buildCommentedOnByUser (String userId) {
@@ -378,9 +380,20 @@ public final class MongoDbQueryFactory {
 		return flagInsert;
 	}
 	
-	public static Update buildReckoningVoteUpdate(String voterId, Integer answerIndex) {
+	public static Update buildReckoningVoteInsert(Vote vote) {
 		Update voteInsert = new Update();
-		voteInsert.push("answers." + answerIndex + ".votes." + voterId, true).inc("answers." + answerIndex + ".voteTotal", 1);
+		
+		voteInsert.set("answers." + vote.getAnswerIndex() + ".votes." + vote.getVoterId(), 
+				buildReckoningVoteRecord(vote)).inc("answers." + vote.getAnswerIndex() + ".voteTotal", 1);
+		
+		return voteInsert;
+	}
+	
+	public static Update buildReckoningVoteUpdate(Vote vote) {
+		Update voteInsert = new Update();
+		
+		voteInsert.set("answers." + vote.getAnswerIndex() + ".votes." + vote.getVoterId(), 
+				buildReckoningVoteRecord(vote));
 		
 		return voteInsert;
 	}
@@ -468,6 +481,16 @@ public final class MongoDbQueryFactory {
 		fields.append("closingDate", 1);
 		
 		return fields;
+	}
+	
+	public static Vote buildReckoningVoteRecord(Vote vote) {
+		Vote insertVote = new Vote();
+		
+		insertVote.setAnswerIndex(vote.getAnswerIndex());
+		insertVote.setAnonymous(vote.isAnonymous());
+		insertVote.setVotingDate(vote.getVotingDate());
+		
+		return insertVote;
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -559,6 +582,8 @@ public final class MongoDbQueryFactory {
 		fields.append("id", 1);
 		fields.append("firstName", 1);
 		fields.append("lastName", 1);
+		fields.append("hideProfile", 1);
+		fields.append("hideVotes", 1);
 		
 		return fields;
 	}

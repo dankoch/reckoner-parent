@@ -17,7 +17,7 @@ public enum MessageEnum {
 	
 	R500_GET_COMMENT("R500"), R501_GET_COMMENT("R501"),
 	
-	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602"),
+	R600_POST_VOTE("R600"), R601_POST_VOTE("R601"), R602_POST_VOTE("R602"), R603_POST_VOTE("R603"), R604_POST_VOTE("R604"),
 	
 	R700_AUTH_USER("R700"), R701_AUTH_USER("R701"), R702_AUTH_USER("R702"), R703_AUTH_USER("R703"), R704_AUTH_USER("R704"),
 	R705_AUTH_USER("R705"), R706_AUTH_USER("R706"), R707_AUTH_USER("R707"), R708_AUTH_USER("R708"), R709_AUTH_USER("R709"),
@@ -86,6 +86,8 @@ public enum MessageEnum {
 			case R600_POST_VOTE: return ("Attempted to vote for a non-existent or closed reckoning/answer pairing.");	
 			case R601_POST_VOTE: return ("This user has already voted for this reckoning.");
 			case R602_POST_VOTE: return ("An anonymous user with the same IP and user agent voted for this reckoning recently.  Vote is in escrow.");
+			case R603_POST_VOTE: return ("Attempted to update a vote that doesn't exist.");
+			case R604_POST_VOTE: return ("Attempted to change which option a user voted for via an update. Do a delete + insert instead.");
 			
 			case R700_AUTH_USER: return ("No provider specified for OAuth user.");
 			case R701_AUTH_USER: return ("Invalid provider specified for OAuth user.");

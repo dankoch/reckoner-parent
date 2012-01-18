@@ -31,6 +31,7 @@ import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.PostVote;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
 import com.reckonlabs.reckoner.domain.message.ServiceResponse;
+import com.reckonlabs.reckoner.domain.message.UserServiceResponse;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 import com.reckonlabs.reckoner.domain.security.AuthenticationException;
 import com.reckonlabs.reckoner.domain.user.PermissionEnum;
@@ -103,7 +104,7 @@ public class VoteController {
 		}
 
 		postVote.getVote().setAnswerIndex(answer);
-		return voteService.postReckoningVote(postVote.getVote(), id, answer);
+		return voteService.postReckoningVote(postVote.getVote(), id, answer, postVote.getSessionId());
 	}
 	
 	/**
@@ -139,7 +140,7 @@ public class VoteController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}	
 
-		return voteService.getUserReckoningVote(id, reckoningId);
+		return voteService.getUserReckoningVote(id, reckoningId, sessionId);
 	}
 	
 	/**
@@ -174,7 +175,80 @@ public class VoteController {
 			return new ReckoningServiceList(null, validationMessage, false);
 		}	
 		
-		return voteService.getUserVotedReckonings(id, page, size);
+		return voteService.getUserVotedReckonings(id, page, size, sessionId);
 	}
+	
+	/**
+	 * This method allows for retrieving the votes associated with a Reckoning
+	 * 
+	 * @param id
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/vote/reckoning/{id}/answer/{answer}", method = RequestMethod.GET)	
+	public @ResponseBody
+	ServiceResponse getUserVotingRecord(@PathVariable String id,
+			@PathVariable Integer answer,
+			@RequestParam(required = false, value = "page") Integer page,
+			@RequestParam(required = false, value = "size") Integer size,
+			@RequestParam(required = false, value = "session_id") String sessionId)
+			throws AuthenticationException, Exception {
 
+		if (serviceProps.isEnableServiceAuthentication() && 
+				!userService.hasPermission(sessionId, PermissionEnum.VIEW_PROFILE)) {
+			log.info("User with insufficient privileges attempted to get a Reckoning's vote list: ");
+			log.info("Session ID: " + sessionId);
+			throw new AuthenticationException();			
+		} 
+		
+		Message validationMessage = ReckoningValidator.validateReckoningQuery(page, size);
+		
+		if (validationMessage != null) {
+			log.info("Reckoning vote list request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}	
+		
+		return voteService.getReckoningAnswerVotes(id, answer, page, size);
+	}
+	
+	/**
+	 * This method allows for updating an existing vote.
+	 * 
+	 * @param id
+	 *           String
+	 * @return commentServiceList
+	 *            CommentServiceList
+	 * @throws Exception
+	 *            exception
+	 */	
+	@RequestMapping(value = "/vote/update", method = RequestMethod.POST)	
+	public @ResponseBody
+	ServiceResponse getUserVotingRecord(@RequestBody PostVote postVote)
+			throws AuthenticationException, Exception {
+
+		// Validate the input and necessary permissions.
+		if (serviceProps.isEnableServiceAuthentication()) {
+			UserServiceResponse user = userService.getUserBySessionId(postVote.getSessionId());
+			
+			if ((user.getUser() == null) || !(user.getUser().getId().equals(postVote.getVote().getVoterId()))) {
+				if (!userService.hasPermission(postVote.getSessionId(), PermissionEnum.UPDATE_PROFILE_INFO)) {
+					log.info("User with insufficient privileges attempted to change permmissions: ");
+					log.info("Session ID: " + postVote.getSessionId() + " User ID: " + postVote.getVote().getVoterId());
+					throw new AuthenticationException();
+				}	
+			}
+		}
+		
+		Message validationMessage = VoteValidator.validateVotePost(postVote.getVote(), postVote.getVote().getReckoningId(), postVote.getVote().getAnswerIndex());
+		
+		if (validationMessage != null) {
+			log.info("Reckoning vote update request failed validation: " + validationMessage.getCode() + ": " + validationMessage.getMessageText());
+			return new ReckoningServiceList(null, validationMessage, false);
+		}	
+		
+		return voteService.updateReckoningVote(postVote.getVote(), postVote.getSessionId());
+	}	
 }

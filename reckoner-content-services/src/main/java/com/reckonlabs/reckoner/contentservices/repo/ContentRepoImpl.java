@@ -235,15 +235,13 @@ public class ContentRepoImpl implements ContentRepoCustom {
 	}
 	
 	private void ensureTagIndex() {
-		mongoTemplate.ensureIndex(new Index().on("tags", Order.ASCENDING)
-				 .named("Content Tag Index"),
-				 CONTENT_COLLECTION);		
+		mongoTemplate.indexOps(CONTENT_COLLECTION).ensureIndex(new Index().on("tags", Order.ASCENDING)
+				 .named("Content Tag Index"));	
 	}
 	
 	private void ensurePostingDateIndex() {
-		mongoTemplate.ensureIndex(new Index().on("postingDate", Order.ASCENDING)
-				 .named("Posting Date Index"),
-				 CONTENT_COLLECTION);		
+		mongoTemplate.indexOps(CONTENT_COLLECTION).ensureIndex(new Index().on("postingDate", Order.ASCENDING)
+				 .named("Posting Date Index"));	
 	}
 	
 	// Used to attach IDs to all modified media
