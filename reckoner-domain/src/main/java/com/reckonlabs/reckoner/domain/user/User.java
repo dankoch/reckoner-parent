@@ -59,6 +59,8 @@ public class User implements Serializable {
 	private Boolean hideProfile;
 	@Column (name = "hide_votes")
 	private Boolean hideVotes;
+	@Column (name = "use_username")
+	private Boolean useUsername;
 	
 	public User() {
 	}
@@ -247,5 +249,18 @@ public class User implements Serializable {
 
 	public void setHideVotes(Boolean hideVotes) {
 		this.hideVotes = hideVotes;
+	}
+	
+	@XmlElement(name = "use_username")
+	public Boolean isUseUsername() {
+		if (useUsername != null) {
+			return useUsername;
+		}
+		
+		return false;
+	}
+
+	public void setUseUsername(Boolean useUsername) {
+		this.useUsername = useUsername;
 	}
 }

@@ -17,8 +17,8 @@ import com.reckonlabs.reckoner.domain.reckoning.Vote;
 @Component
 public class ReckoningCacheMemImpl implements ReckoningCache {
 
-	public static final int RECKONING_CACHE_LIFESPAN = 604800;
-	public static final int RECKONING_SUMMARY_CACHE_LIFESPAN = 604800;
+	public static final int RECKONING_CACHE_LIFESPAN = 1800;
+	public static final int RECKONING_SUMMARY_CACHE_LIFESPAN = 1800;
 	public static final int USER_RECKONING_SUMMARY_CACHE_LIFESPAN = 1800;
 	public static final int USER_COMMENTED_RECKONING_CACHE_LIFESPAN = 1800;
 	public static final int USER_VOTED_RECKONING_CACHE_LIFESPAN = 1800;

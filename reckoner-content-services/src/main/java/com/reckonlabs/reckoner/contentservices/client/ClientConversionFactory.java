@@ -17,7 +17,6 @@ public final class ClientConversionFactory {
 		reckonerUser.setEmail(facebookUser.getEmail());
 		reckonerUser.setFirstName(facebookUser.getFirstName());
 		reckonerUser.setLastName(facebookUser.getLastName());
-		reckonerUser.setUsername(facebookUser.getUsername());
 		
 		reckonerUser.setProfileUrl(facebookUser.getLink());
 		reckonerUser.setProfilePictureUrl(graphApiUrl + facebookUser.getId() + "/picture");
@@ -38,7 +37,6 @@ public final class ClientConversionFactory {
 				}
 			}
 		}
-		reckonerUser.setUsername(googleUser.getDisplayName());
 		
 		// The Google Buzz API Currently Sets the 'DisplayName' field as <First> <Last>
 		if (reckonerUser.getUsername() != null) {

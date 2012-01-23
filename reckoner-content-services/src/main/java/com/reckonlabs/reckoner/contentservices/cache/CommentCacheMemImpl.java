@@ -14,7 +14,7 @@ import com.reckonlabs.reckoner.domain.notes.Comment;
 @Component
 public class CommentCacheMemImpl implements CommentCache {
 	
-	public static final int USER_COMMENT_CACHE_LIFESPAN = 604800;
+	public static final int USER_COMMENT_CACHE_LIFESPAN = 1800;
 	
 	public static final String USER_COMMENT_CACHE_PREFIX = "user_comments_";
 	

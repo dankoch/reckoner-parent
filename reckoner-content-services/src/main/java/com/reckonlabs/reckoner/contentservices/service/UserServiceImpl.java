@@ -298,6 +298,13 @@ public class UserServiceImpl implements UserService {
 			List<User> currentUser = userRepo.findById(user.getId());
 			if (!currentUser.isEmpty()) {
 				User changeUser = mergeUpdatedUser(currentUser.get(0), user);
+				if (user.getUsername() != null) {
+					List<User> existingUsernameUser = userRepo.findByUsername(user.getUsername());
+					if (existingUsernameUser != null && !existingUsernameUser.isEmpty()) {
+						return (new UserServiceResponse(null, null, new Message(MessageEnum.R715_AUTH_USER), false));						
+					}
+				}
+				
 				userRepoCustom.updateUser(changeUser);
 			} else {
 				return (new UserServiceResponse(null, null, new Message(MessageEnum.R710_AUTH_USER), false));					
@@ -327,7 +334,6 @@ public class UserServiceImpl implements UserService {
 	// This method is responsible for controlling how an existing user gets updated
 	// when a user re-authenticates.
 	private static User mergeOAuthUser(User existingUser, User newUser) {
-		existingUser.setUsername(newUser.getUsername());
 		existingUser.setFirstName(newUser.getFirstName());
 		existingUser.setLastName(newUser.getLastName());
 		existingUser.setEmail(newUser.getEmail());
@@ -347,6 +353,10 @@ public class UserServiceImpl implements UserService {
 			{existingUser.setHideProfile(newUser.isHideProfile());}
 		if (newUser.isHideVotes() != null) 		
 			{existingUser.setHideVotes(newUser.isHideVotes());}
+		if (newUser.isUseUsername() != null) 
+			{existingUser.setUseUsername(newUser.isUseUsername());}
+		if (newUser.getUsername() != null) 
+			{existingUser.setUsername(newUser.getUsername());}
 		
 		return existingUser;
 	}

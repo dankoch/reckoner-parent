@@ -582,8 +582,10 @@ public final class MongoDbQueryFactory {
 		fields.append("id", 1);
 		fields.append("firstName", 1);
 		fields.append("lastName", 1);
+		fields.append("username", 1);
 		fields.append("hideProfile", 1);
 		fields.append("hideVotes", 1);
+		fields.append("useUsername", 1);
 		
 		return fields;
 	}

@@ -18,7 +18,7 @@ import com.reckonlabs.reckoner.domain.notes.Tag;
 @Component
 public class ContentCacheMemImpl implements ContentCache {
 	
-	public static final int CONTENT_CACHE_LIFESPAN = 604800;
+	public static final int CONTENT_CACHE_LIFESPAN = 1800;
 	public static final int CONTENT_SUMMARY_CACHE_LIFESPAN = 1200;
 	public static final int CONTENT_COUNT_CACHE_LIFESPAN = 1200;
 	public static final int CONTENT_TAG_LIST_LIFESPAN = 1200;
