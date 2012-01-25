@@ -23,17 +23,17 @@
     
     <!-- Application Loggers -->
     <logger name="com.reckonlabs">
-        <level value="DEBUG" />
+        <level value="INFO" />
     </logger>
     
     <logger name="org.springframework">
-        <level value="DEBUG" />
+        <level value="WARN" />
     </logger>
 
     <!-- Root Logger -->
     <root>
-        <priority value="DEBUG" />
-        <appender-ref ref="console" />
+        <priority value="WARN" />
+        <appender-ref ref="rolling" />
     </root>
     
 </log4j:configuration>
