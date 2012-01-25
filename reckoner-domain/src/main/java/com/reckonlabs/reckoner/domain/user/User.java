@@ -41,8 +41,13 @@ public class User implements Serializable {
 	@Column (name = "last_login")	
 	private Date lastLogin;
 	
+	// This is the Facebook / Google profile picture
 	@Column (name = "profile_picture_url")	
 	private String profilePictureUrl;
+	
+	// This is an uploaded profile picture
+	@Column (name = "custom_picture_url")	
+	private String customProfilePictureUrl;
 	@Column (name = "profile_url")	
 	private String profileUrl;
 	
@@ -61,6 +66,8 @@ public class User implements Serializable {
 	private Boolean hideVotes;
 	@Column (name = "use_username")
 	private Boolean useUsername;
+	@Column (name = "use_custom_profile_picture")
+	private Boolean useCustomProfilePicture;	
 	
 	public User() {
 	}
@@ -153,6 +160,15 @@ public class User implements Serializable {
 
 	public void setProfilePictureUrl(String profilePictureUrl) {
 		this.profilePictureUrl = profilePictureUrl;
+	}
+	
+	@XmlElement(name = "custom_profile_picture_url")
+	public String getCustomProfilePictureUrl() {
+		return customProfilePictureUrl;
+	}
+
+	public void setCustomProfilePictureUrl(String customProfilePictureUrl) {
+		this.customProfilePictureUrl = customProfilePictureUrl;
 	}
 
 	@XmlElement(name = "profile_url")
@@ -262,5 +278,18 @@ public class User implements Serializable {
 
 	public void setUseUsername(Boolean useUsername) {
 		this.useUsername = useUsername;
+	}
+	
+	@XmlElement(name = "use_custom_profile_picture")
+	public Boolean isUseCustomProfilePicture() {
+		if (useCustomProfilePicture != null) {
+			return useCustomProfilePicture;
+		}
+		
+		return false;
+	}
+
+	public void setUseCustomProfilePicture(Boolean useCustomProfilePicture) {
+		this.useCustomProfilePicture = useCustomProfilePicture;
 	}
 }

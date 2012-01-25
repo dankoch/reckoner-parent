@@ -357,6 +357,10 @@ public class UserServiceImpl implements UserService {
 			{existingUser.setUseUsername(newUser.isUseUsername());}
 		if (newUser.getUsername() != null) 
 			{existingUser.setUsername(newUser.getUsername());}
+		if (newUser.getCustomProfilePictureUrl() != null)
+			{existingUser.setCustomProfilePictureUrl(newUser.getCustomProfilePictureUrl());}
+		if (newUser.isUseCustomProfilePicture() != null)
+			{existingUser.setUseCustomProfilePicture(newUser.isUseCustomProfilePicture());}
 		
 		return existingUser;
 	}

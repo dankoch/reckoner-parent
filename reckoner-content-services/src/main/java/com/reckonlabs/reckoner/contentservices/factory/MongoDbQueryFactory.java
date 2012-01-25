@@ -586,6 +586,7 @@ public final class MongoDbQueryFactory {
 		fields.append("hideProfile", 1);
 		fields.append("hideVotes", 1);
 		fields.append("useUsername", 1);
+		fields.append("useCustomProfilePicture", 1);
 		
 		return fields;
 	}

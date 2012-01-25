@@ -14,8 +14,12 @@ public interface UserRepo extends MongoRepository<User, String> {
 
 	@Query(value = "{'id' : ?0}")
 	List<User> findById(String id);
-	@Query(value = "{'id' : ?0}", fields="{'id' : 1, 'active' : 1, 'firstName' : 1, 'lastName' : 1, 'username' : 1, 'profilePictureUrl' : 1, 'hideProfile' : 1, 'hideVotes' : 1, 'useUsername' : 1}")	
+	
+	@Query(value = "{'id' : ?0}", fields="{'id' : 1, 'active' : 1, 'firstName' : 1, 'lastName' : 1, 'username' : 1, " +
+			"'profilePictureUrl' : 1, 'customProfilePictureUrl' : 1, " +
+			"'hideProfile' : 1, 'hideVotes' : 1, 'useUsername' : 1, 'useCustomProfilePicture' : 1}")	
 	List<User> findByIdSummary(String id);
+	
 	@Query(value = "{'username' : ?0}")
 	List<User> findByUsername(String username);
 	
