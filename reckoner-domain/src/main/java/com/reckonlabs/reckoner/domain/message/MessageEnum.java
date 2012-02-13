@@ -33,7 +33,9 @@ public enum MessageEnum {
 	R1004_POST_CONTENT("R1004"),
 	
 	R1100_GET_CONTENT("R1100"), R1101_GET_CONTENT("R1101"), R1102_GET_CONTENT("R1102"), R1103_GET_CONTENT("R1103"), R1104_GET_CONTENT("R1104"),
-	R1105_GET_CONTENT("R1105"), R1106_GET_CONTENT("R1106"), R1107_GET_CONTENT("R1107");
+	R1105_GET_CONTENT("R1105"), R1106_GET_CONTENT("R1106"), R1107_GET_CONTENT("R1107"),
+	
+	R1200_MEDIA("R1200"), R1201_MEDIA("R1201"), R1202_MEDIA("R1202");
 	
 	private final String code;
 
@@ -130,6 +132,10 @@ public enum MessageEnum {
 			case R1105_GET_CONTENT: return ("The 'Posted Before' date cannot be before the 'Posted After' date.");
 			case R1106_GET_CONTENT: return ("The 'Posted Before' date cannot be before the 'Posted After' date.");
 			case R1107_GET_CONTENT: return ("Invalid sorting criteria.");
+			
+			case R1200_MEDIA: return ("Media Type, Name, and URL all need to specified for attached media.");			
+			case R1201_MEDIA: return ("Reckoning does not exists.");	
+			case R1202_MEDIA: return ("No media found with the specified ID.");
 			
 			default:  return ("Message not found.");
 		}

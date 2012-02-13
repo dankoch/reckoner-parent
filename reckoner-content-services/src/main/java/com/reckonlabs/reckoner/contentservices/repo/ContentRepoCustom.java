@@ -8,6 +8,7 @@ import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
+import com.reckonlabs.reckoner.domain.media.Media;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
@@ -49,6 +50,10 @@ public interface ContentRepoCustom {
 	public List<Content> getFlaggedContentComments (Date flaggedAfter, Integer page, Integer size);
 	
 	public void incrementContentViews (String contentId) throws DBUpdateException;
+	
+	public void insertContentMedia (Media media, String contentId) throws DBUpdateException;
+	
+	public void deleteContentMedia (String mediaId) throws DBUpdateException; 
 	
 	public void updateComment(Comment comment) throws DBUpdateException;
 	

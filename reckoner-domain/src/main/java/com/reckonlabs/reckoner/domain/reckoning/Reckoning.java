@@ -276,6 +276,7 @@ public class Reckoning extends Notable implements Serializable  {
 		return this.commentIndex;
 	}
 	
+	@XmlElementWrapper(name = "media_items")
 	@XmlElement(name = "media")
 	public List<Media> getMedia() {
 		return media;
@@ -405,6 +406,21 @@ public class Reckoning extends Notable implements Serializable  {
 				if (comment.getCommentId().equals(commentId)) {
 					List<Comment> returnList = new LinkedList<Comment> ();
 					returnList.add(comment);
+					return returnList;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	// Gets the comments in this Reckoning with a particular commentId.
+	public List<Media> getMediaById (String mediaId) {
+		if (getMedia() != null) {
+			for (Media media : getMedia()) {
+				if (media.getMediaId().equals(mediaId)) {
+					List<Media> returnList = new LinkedList<Media> ();
+					returnList.add(media);
 					return returnList;
 				}
 			}

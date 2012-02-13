@@ -39,11 +39,24 @@ public class Media extends Notable implements Serializable  {
 	
 	@Column(name="name")
 	private String name;
+	@Column(name="small_name")
+	private String smallName;
+	@Column(name="thumbnail_name")
+	private String thumbnailName;
+	@Column(name="full_name")
+	private String fullName;
+	
 	@Column(name="url")
 	private String url;
+	@Column(name="small_url")
+	private String smallUrl;
+	@Column(name="thumbnail_url")
+	private String thumbnailUrl;
+	@Column(name="full_url")
+	private String fullUrl;
+	
 	@Column(name="file_type")
 	private String fileType;
-	
 	@Column(name="duration")
 	private String duration;
 	@Column(name="size")
@@ -75,14 +88,61 @@ public class Media extends Notable implements Serializable  {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	@XmlElement(name = "small_name")
+	public String getSmallName() {
+		return smallName;
+	}
+	public void setSmallName(String smallName) {
+		this.smallName = smallName;
+	}
+	
+	@XmlElement(name = "thumbnail_name")
+	public String getThumbnailName() {
+		return thumbnailName;
+	}
+	public void setThumbnailName(String thumbnailName) {
+		this.thumbnailName = thumbnailName;
+	}
+	
+	@XmlElement(name = "full_name")
+	public String getFullName() {
+		return fullName;
+	}
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
 
 	@XmlElement(name = "url")
 	public String getUrl() {
 		return url;
 	}
-
 	public void setUrl(String url) {
 		this.url = url;
+	}
+	
+	@XmlElement(name = "small_url")
+	public String getSmallUrl() {
+		return smallUrl;
+	}
+	public void setSmallUrl(String smallUrl) {
+		this.smallUrl = smallUrl;
+	}
+	
+	@XmlElement(name = "thumbnail_url")
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+	public void setThumbnailUrl(String thumbnailUrl) {
+		this.thumbnailUrl = thumbnailUrl;
+	}
+	
+	@XmlElement(name = "full_url")
+	public String getFullUrl() {
+		return fullUrl;
+	}
+	public void setFullUrl(String fullUrl) {
+		this.fullUrl = fullUrl;
 	}
 
 	@XmlElement(name = "file_type")

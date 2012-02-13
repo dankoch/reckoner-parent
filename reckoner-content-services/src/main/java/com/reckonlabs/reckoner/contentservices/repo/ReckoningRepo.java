@@ -27,6 +27,9 @@ public interface ReckoningRepo extends MongoRepository<Reckoning, String> {
 	@Query(value = "{'comments.commentId' : ?0}", fields="{'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")
 	List<Reckoning> getReckoningCommentById (String commentId);
 	
+	@Query(value = "{'media.mediaId' : ?0}", fields="{'comments' : 0, 'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")
+	List<Reckoning> getReckoningMediaById (String commentId);
+	
 	@Query(value = "{'favorites.userId' : ?0}", fields="{'comments' : 0, 'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")
 	List<Reckoning> getReckoningSummariesFavoritedByUser (String userId);	
 	@Query(value = "{'comments.favorites.userId' : ?0}", fields="{'answers.votes' : 0, 'flags' : 0, 'favorites' : 0}")

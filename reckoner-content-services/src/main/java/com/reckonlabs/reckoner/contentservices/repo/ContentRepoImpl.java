@@ -144,6 +144,26 @@ public class ContentRepoImpl implements ContentRepoCustom {
 	}
 	
 	@Override
+	public void insertContentMedia(Media media, String contentId)
+			throws DBUpdateException {
+		if (media.getMediaId() == null) {media.setMediaId(new ObjectId().toString());}
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(contentId)), 
+				MongoDbQueryFactory.buildMediaUpdate(media), CONTENT_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());	
+	}
+	
+	@Override
+	public void deleteContentMedia(String mediaId) 
+			throws DBUpdateException {
+
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildMediaIdQuery(mediaId)), 
+				MongoDbQueryFactory.deleteByMediaId(mediaId), CONTENT_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());			
+	}
+	
+	@Override
 	public List<Content> getFavoritedContents(Date favoritedAfter, Integer page, Integer size) {
 		BasicQuery query = new BasicQuery(MongoDbQueryFactory.buildFavoritedQuery(favoritedAfter),
 				MongoDbQueryFactory.buildContentFlagFavoriteFields());	

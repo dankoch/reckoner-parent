@@ -14,6 +14,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
+import com.reckonlabs.reckoner.domain.media.Media;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
@@ -72,6 +73,10 @@ public final class MongoDbQueryFactory {
 	
 	public static DBObject buildIdExistsQuery (String id) {
 		return new BasicDBObject("id", new BasicDBObject ("$exists", new ObjectId(id)));
+	}
+	
+	public static DBObject buildMediaIdQuery (String id) {
+		return new BasicDBObject("media.mediaId", id);
 	}
 	
 	public static DBObject buildCommentIdQuery (String id) {
@@ -380,6 +385,13 @@ public final class MongoDbQueryFactory {
 		return flagInsert;
 	}
 	
+	public static Update buildMediaUpdate(Media media) {
+		Update mediaInsert = new Update();
+		mediaInsert.push("media", media);
+		
+		return mediaInsert;
+	}
+	
 	public static Update buildReckoningVoteInsert(Vote vote) {
 		Update voteInsert = new Update();
 		
@@ -434,6 +446,13 @@ public final class MongoDbQueryFactory {
 		deleteComment.pull("comments", new BasicDBObject("commentId", commentId)).inc("commentIndex", -1);
 		
 		return deleteComment;
+	}
+	
+	public static Update deleteByMediaId (String mediaId) {		
+		Update deleteMedia = new Update();
+		deleteMedia.pull("media", new BasicDBObject("mediaId", mediaId));
+		
+		return deleteMedia;
 	}
 	
 	public static DBObject buildExcludeVotesFields() {

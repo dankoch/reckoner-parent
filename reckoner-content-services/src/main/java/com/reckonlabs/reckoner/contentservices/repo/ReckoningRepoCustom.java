@@ -6,6 +6,7 @@ import java.util.List;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.utility.DBUpdateException;
 
+import com.reckonlabs.reckoner.domain.media.Media;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
@@ -71,6 +72,10 @@ public interface ReckoningRepoCustom {
 	public void insertReckoningFlag (Flag flag, String reckoningId) throws DBUpdateException;
 	
 	public void incrementReckoningViews (String reckoningId) throws DBUpdateException;
+	
+	public void insertReckoningMedia (Media media, String reckoningId) throws DBUpdateException;
+	
+	public void deleteReckoningMedia (String mediaId) throws DBUpdateException;	
 	
 	// Waiting for Mongo DB to fix SERVER-831.
 	// public void insertCommentFavorite (Favorite favorite, String commentId) throws DBUpdateException;

@@ -19,6 +19,7 @@ import com.reckonlabs.reckoner.contentservices.factory.MongoDbQueryFactory;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.ReckoningServiceList;
+import com.reckonlabs.reckoner.domain.media.Media;
 import com.reckonlabs.reckoner.domain.notes.Comment;
 import com.reckonlabs.reckoner.domain.notes.Favorite;
 import com.reckonlabs.reckoner.domain.notes.Flag;
@@ -282,6 +283,27 @@ public class ReckoningRepoImpl implements ReckoningRepoCustom {
 				MongoDbQueryFactory.buildFlagUpdate(flag), RECKONING_COLLECTION);
 		
 		if (result.getError() != null) throw new DBUpdateException(result.getError());	
+	}
+	
+	@Override
+	public void insertReckoningMedia(Media media, String reckoningId)
+			throws DBUpdateException {
+		if (media.getMediaId() == null) {media.setMediaId(new ObjectId().toString());}
+		
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildIdQuery(reckoningId)), 
+				MongoDbQueryFactory.buildMediaUpdate(media), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());	
+	}
+	
+	@Override
+	public void deleteReckoningMedia(String mediaId) 
+			throws DBUpdateException {
+
+		WriteResult result = mongoTemplate.updateFirst(new BasicQuery(MongoDbQueryFactory.buildMediaIdQuery(mediaId)), 
+				MongoDbQueryFactory.deleteByMediaId(mediaId), RECKONING_COLLECTION);
+		
+		if (result.getError() != null) throw new DBUpdateException(result.getError());			
 	}
 
 	/* Awaiting fix for SERVER-831 in MongoDB 2.1.

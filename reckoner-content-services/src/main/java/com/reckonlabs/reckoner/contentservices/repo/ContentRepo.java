@@ -17,4 +17,7 @@ public interface ContentRepo extends MongoRepository<Content, String> {
 	
 	@Query(value = "{'comments.commentId' : ?0}", fields="{'flags' : 0, 'favorites' : 0}")
 	List<Content> getContentCommentById (String commentId);
+	
+	@Query(value = "{'media.mediaId' : ?0}", fields="{'comments' : 0, 'flags' : 0, 'favorites' : 0}")
+	List<Content> getContentMediaById (String commentId);
 }
