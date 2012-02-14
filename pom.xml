@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.reckonlabs.reckoner</groupId>
   <artifactId>reckoner-parent</artifactId>
-  <version>0.9.17-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>pom</packaging>
   <name>Parent Project for the Reckoner API</name>
   <description>
