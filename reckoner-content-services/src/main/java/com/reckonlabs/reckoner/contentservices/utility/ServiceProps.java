@@ -3,6 +3,7 @@ package com.reckonlabs.reckoner.contentservices.utility;
 public class ServiceProps {
 	
 	boolean enableServiceAuthentication;
+	boolean enableCaching;
 	int votePersistenceSize;
 	int votePersistenceBytes;
 
@@ -18,6 +19,14 @@ public class ServiceProps {
 
 	public void setEnableServiceAuthentication(boolean enableServiceAuthentication) {
 		this.enableServiceAuthentication = enableServiceAuthentication;
+	}
+	
+	public boolean isEnableCaching() {
+		return enableCaching;
+	}
+
+	public void setEnableCaching(boolean enableCaching) {
+		this.enableCaching = enableCaching;
 	}
 
 	public int getVotePersistenceSize() {

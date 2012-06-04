@@ -43,7 +43,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 	@Autowired
 	ReckoningRepoCustom reckoningRepoCustom;
 	
-	@Autowired
+	@Resource
 	ReckoningCache reckoningCache;
 	
 	@Autowired
@@ -106,7 +106,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 			reckoningRepoCustom.insertNewReckoning(reckoning);
 			
 			// Clean the cache for Reckonings associated with this user.
-			reckoningCache.removeCachedUserReckoningSummaries(reckoning.getSubmitterId());
+			if (serviceProps.isEnableCaching()) {reckoningCache.removeCachedUserReckoningSummaries(reckoning.getSubmitterId());}
 		} catch (Exception e) {
 			log.error("General exception when inserting a new reckoning: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -153,8 +153,11 @@ public class ReckoningServiceImpl implements ReckoningService {
 			if (approvedReckoning != null && approvedReckoning.size() > 0) {
 				reckoningRepoCustom.approveReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId(), DateUtility.now(), 
 						new Date(DateUtility.now().getTime() + approvedReckoning.get(0).getInterval() * 60000));
-				reckoningCache.removeCachedReckoning(id);
-				reckoningCache.removeCachedUserReckoningSummaries(approvedReckoning.get(0).getSubmitterId());
+				
+				if (serviceProps.isEnableCaching()) {
+					reckoningCache.removeCachedReckoning(id);
+					reckoningCache.removeCachedUserReckoningSummaries(approvedReckoning.get(0).getSubmitterId());
+				}
 			} else {
 				log.info("Request to approve non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -182,8 +185,11 @@ public class ReckoningServiceImpl implements ReckoningService {
 			
 			if (rejectedReckoning != null && rejectedReckoning.size() > 0) {
 				reckoningRepoCustom.rejectReckoning(id, userService.getUserBySessionId(sessionId).getUser().getId());
-				reckoningCache.removeCachedReckoning(id);
-				reckoningCache.removeCachedUserReckoningSummaries(rejectedReckoning.get(0).getSubmitterId());
+				
+				if (serviceProps.isEnableCaching()) {
+					reckoningCache.removeCachedReckoning(id);
+					reckoningCache.removeCachedUserReckoningSummaries(rejectedReckoning.get(0).getSubmitterId());
+				}
 			} else {
 				log.info("Request to reject non-existent reckoning: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -213,15 +219,18 @@ public class ReckoningServiceImpl implements ReckoningService {
 		List<Reckoning> reckoningList = null;
 		try {
 			// Check the caches to see if the Reckoning has already been pulled.  If so, there you go.
-			reckoningList = reckoningCache.getCachedReckoning(id);
+			if (serviceProps.isEnableCaching()) {reckoningList = reckoningCache.getCachedReckoning(id);}
 			
 			// If this is a 'page visit', (i.e. a unique display of this Reckoning on an end client), increment
 			// the views value for this Reckoning in the DB.  Also, update the value returned from the cache.
 			if (pageVisit) {
 				reckoningRepoCustom.incrementReckoningViews(id);
-				if (reckoningList != null && !reckoningList.isEmpty()) {
-					reckoningList.get(0).incrementViews();
-					reckoningCache.setCachedReckoning(reckoningList, id);
+				
+				if (serviceProps.isEnableCaching()) {
+					if (reckoningList != null && !reckoningList.isEmpty()) {
+						reckoningList.get(0).incrementViews();
+						reckoningCache.setCachedReckoning(reckoningList, id);
+					}
 				}
 			}
 			
@@ -251,7 +260,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 								(reckoningList.get(0).getSubmitterId(), true).getUser());
 					}					
 					
-					reckoningCache.setCachedReckoning(reckoningList, id);
+					if (serviceProps.isEnableCaching()) {reckoningCache.setCachedReckoning(reckoningList, id);}
 				}
 			}
 		} catch (Exception e) {
@@ -298,8 +307,8 @@ public class ReckoningServiceImpl implements ReckoningService {
 		List<Reckoning> reckonings = new LinkedList<Reckoning>();
 		long count = 0;
 		try {
-			reckonings = reckoningCache.getCachedUserReckoningSummaries(submitterId);
-			if (reckonings == null) {
+			if (serviceProps.isEnableCaching()) {reckonings = reckoningCache.getCachedUserReckoningSummaries(submitterId);}
+			if (reckonings == null || reckonings.isEmpty()) {
 				reckonings = reckoningRepoCustom.getReckoningSummaries(ReckoningTypeEnum.OPEN_AND_CLOSED, 
 						null, null, null, null, null, null, null, 
 						submitterId, ApprovalStatusEnum.APPROVED_AND_PENDING, 
@@ -311,7 +320,7 @@ public class ReckoningServiceImpl implements ReckoningService {
 					reckoning.setPostingUser(user);
 				}
 				
-				reckoningCache.setCachedUserReckoningSummaries(submitterId, reckonings);
+				if (serviceProps.isEnableCaching()) {reckoningCache.setCachedUserReckoningSummaries(submitterId, reckonings);}
 			}
 			
 			count = reckonings.size();

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.reckonlabs.reckoner.domain.notes.Comment;
 
-@Component
 public class CommentCacheMemImpl implements CommentCache {
 	
 	public static final int USER_COMMENT_CACHE_LIFESPAN = 1800;

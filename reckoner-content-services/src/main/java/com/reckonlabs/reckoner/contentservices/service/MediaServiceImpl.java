@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import com.reckonlabs.reckoner.contentservices.repo.ContentRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ContentRepoCustom;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.media.Media;
 import com.reckonlabs.reckoner.domain.message.Message;
@@ -38,13 +41,16 @@ public class MediaServiceImpl implements MediaService {
 	@Autowired
 	ContentRepoCustom contentRepoCustom;
 	
-	@Autowired
+	@Resource
 	ReckoningCache reckoningCache;
-	@Autowired
+	@Resource
 	ContentCache contentCache;
 	
 	@Autowired
 	UserService userService;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(MediaServiceImpl.class);
@@ -61,7 +67,7 @@ public class MediaServiceImpl implements MediaService {
 			reckoningRepoCustom.insertReckoningMedia(media, reckoningId);
 			
 			// Cache management. Clear out the Reckoning if cached.
-			reckoningCache.removeCachedReckoning(reckoningId);
+			if (serviceProps.isEnableCaching()) {reckoningCache.removeCachedReckoning(reckoningId);}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when inserting a new reckoning comment: " + dbE.getMessage());
 			log.debug("Stack Trace:", dbE);			
@@ -105,7 +111,7 @@ public class MediaServiceImpl implements MediaService {
 			// Cache management. 
 			// Delete the individual reckoning cache (these should be rare, so we're not doing an in-place update).
 			// Ignoring the user caches -- those will clear soon enough.
-			reckoningCache.removeCachedReckoning(mediaReckoning.get(0).getId());
+			if (serviceProps.isEnableCaching()) {reckoningCache.removeCachedReckoning(mediaReckoning.get(0).getId());}
 		} catch (Exception e) {
 		    log.error("General exception when deleting media " + mediaId + " : " + e.getMessage());
 		    log.debug("Stack Trace:", e);			
@@ -126,7 +132,7 @@ public class MediaServiceImpl implements MediaService {
 			reckoningRepoCustom.insertReckoningMedia(media, contentId);
 			
 			// Cache management. Clear out the Reckoning if cached.
-			contentCache.removeCachedContent(contentId);
+			if (serviceProps.isEnableCaching()) {contentCache.removeCachedContent(contentId);}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when inserting a new reckoning comment: " + dbE.getMessage());
 			log.debug("Stack Trace:", dbE);			
@@ -152,7 +158,7 @@ public class MediaServiceImpl implements MediaService {
 			// Cache management. 
 			// Delete the individual reckoning cache (these should be rare, so we're not doing an in-place update).
 			// Ignoring the user caches -- those will clear soon enough.
-			contentCache.removeCachedContent(mediaContent.get(0).getId());
+			if (serviceProps.isEnableCaching()) {contentCache.removeCachedContent(mediaContent.get(0).getId());}
 		} catch (Exception e) {
 		    log.error("General exception when deleting media " + mediaId + " : " + e.getMessage());
 		    log.debug("Stack Trace:", e);			

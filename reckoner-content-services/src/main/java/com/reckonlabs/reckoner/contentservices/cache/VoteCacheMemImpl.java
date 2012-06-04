@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 
-@Component
 public class VoteCacheMemImpl implements VoteCache {
 
 	public static final int USER_RECKONING_VOTE_CACHE = 604800;

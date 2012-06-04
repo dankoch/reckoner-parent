@@ -8,6 +8,14 @@
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
         http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
+  <!-- NULL Caching Setup.  Use this if not connecting to a caching server. -->
+  <bean id="commentCache" class="com.reckonlabs.reckoner.contentservices.cache.CommentCacheNullImpl"/>
+  <bean id="contentCache" class="com.reckonlabs.reckoner.contentservices.cache.ContentCacheNullImpl"/>
+  <bean id="reckoningCache" class="com.reckonlabs.reckoner.contentservices.cache.ReckoningCacheNullImpl"/>
+  <bean id="voteCache" class="com.reckonlabs.reckoner.contentservices.cache.VoteCacheNullImpl"/>
+
+  <!-- Memcached caching Setup.  Use this if connecting to a Memcached caching server. -->
+  <!-- 
   <bean id="memcachedClient" class="net.spy.memcached.spring.MemcachedClientFactoryBean">
     <property name="servers" value="${reckoner.contentservices.cache.${reckoner.contentservices.environment}.host}"/>
     <property name="protocol" value="BINARY"/>
@@ -24,4 +32,11 @@
     <property name="useNagleAlgorithm" value="false"/>
   </bean>
   
+  <bean id="commentCache" class="com.reckonlabs.reckoner.contentservices.cache.CommentCacheMemImpl"/>
+  <bean id="contentCache" class="com.reckonlabs.reckoner.contentservices.cache.ContentCacheMemImpl"/>
+  <bean id="reckoningCache" class="com.reckonlabs.reckoner.contentservices.cache.ReckoningCacheMemImpl"/>
+  <bean id="voteCache" class="com.reckonlabs.reckoner.contentservices.cache.VoteCacheMemImpl"/>
+ -->
+
+
 </beans>

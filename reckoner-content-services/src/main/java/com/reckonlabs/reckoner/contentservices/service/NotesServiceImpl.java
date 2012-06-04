@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import com.reckonlabs.reckoner.contentservices.repo.ContentRepoCustom;
 import com.reckonlabs.reckoner.contentservices.cache.ReckoningCache;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 
 import com.reckonlabs.reckoner.domain.Notable;
 
@@ -51,10 +54,10 @@ public class NotesServiceImpl implements NotesService {
 	ContentRepo contentRepo;
 	@Autowired
 	ContentRepoCustom contentRepoCustom;
-	@Autowired
+	@Resource
 	ContentCache contentCache;
 	
-	@Autowired
+	@Resource
 	CommentCache commentCache;
 	
 	@Autowired
@@ -65,6 +68,9 @@ public class NotesServiceImpl implements NotesService {
 	CommentService commentService;
 	@Autowired
 	ContentService contentService;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(NotesServiceImpl.class);
@@ -100,17 +106,19 @@ public class NotesServiceImpl implements NotesService {
 			favorite.setFavoriteDate(DateUtility.now());
 			reckoningRepoCustom.insertReckoningFavorite(favorite, reckoningId);
 			
-			// Cache management. Remove this user's favorited reckonings cache entry because of the update.  
-			reckoningCache.removeCachedUserFavoritedReckonings(favorite.getUserId());
-			
-			// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
-			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
-			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
-				if (cacheReckoning.get(0) != null) {
-					cacheReckoning.get(0).addFavorite(favorite);
-				}
+			if (serviceProps.isEnableCaching()) {
+				// Cache management. Remove this user's favorited reckonings cache entry because of the update.  
+				reckoningCache.removeCachedUserFavoritedReckonings(favorite.getUserId());
 				
-				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+				// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
+				List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
+				if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
+					if (cacheReckoning.get(0) != null) {
+						cacheReckoning.get(0).addFavorite(favorite);
+					}
+					
+					reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+				}
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when favoriting a reckoning: " + dbE.getMessage());
@@ -155,13 +163,15 @@ public class NotesServiceImpl implements NotesService {
 			reckoningRepoCustom.insertReckoningFlag(flag, reckoningId);
 			
 			// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
-			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
-			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
-				if (cacheReckoning.get(0) != null) {
-					cacheReckoning.get(0).addFlag(flag);
+			if (serviceProps.isEnableCaching()) {
+				List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
+				if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
+					if (cacheReckoning.get(0) != null) {
+						cacheReckoning.get(0).addFlag(flag);
+					}
+					
+					reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 				}
-				
-				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when flagging a reckoning: " + dbE.getMessage());
@@ -220,19 +230,21 @@ public class NotesServiceImpl implements NotesService {
 			favoritedComment.get(0).addFavorite(favorite);
 			reckoningRepoCustom.updateComment(favoritedComment.get(0));
 			
-			// Cache management. Remove this user's favorited comments cache entry because of the update.  
-			reckoningCache.removeCachedUserFavoritedReckoningComments(favorite.getUserId());
-			
-			// Cache management.  If the Reckoning is in the cache, pull it, add the favorite to the comment yourself, and roll it back in.
-			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(commentedReckoning.get(0).getId());
-			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
-				for (Comment comment : cacheReckoning.get(0).getComments()) {
-					if (comment.getCommentId().equals(commentId)) {
-						comment.addFavorite(favorite);
-					}
-				}
+			if (serviceProps.isEnableCaching()) {			
+				// Cache management. Remove this user's favorited comments cache entry because of the update.  
+				reckoningCache.removeCachedUserFavoritedReckoningComments(favorite.getUserId());
 				
-				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+				// Cache management.  If the Reckoning is in the cache, pull it, add the favorite to the comment yourself, and roll it back in.
+				List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(commentedReckoning.get(0).getId());
+				if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
+					for (Comment comment : cacheReckoning.get(0).getComments()) {
+						if (comment.getCommentId().equals(commentId)) {
+							comment.addFavorite(favorite);
+						}
+					}
+					
+					reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+				}
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when favoriting a reckoning comment: " + dbE.getMessage());
@@ -286,15 +298,17 @@ public class NotesServiceImpl implements NotesService {
 			reckoningRepoCustom.updateComment(flaggedComment.get(0));
 			
 			// Cache management.  If the Reckoning is in the cache, pull it, add the flag to the comment yourself, and roll it back in.
-			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(commentedReckoning.get(0).getId());
-			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
-				for (Comment comment : cacheReckoning.get(0).getComments()) {
-					if (comment.getCommentId().equals(commentId)) {
-						comment.addFlag(flag);
+			if (serviceProps.isEnableCaching()) {
+				List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(commentedReckoning.get(0).getId());
+				if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
+					for (Comment comment : cacheReckoning.get(0).getComments()) {
+						if (comment.getCommentId().equals(commentId)) {
+							comment.addFlag(flag);
+						}
 					}
+					
+					reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 				}
-				
-				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when flagging a reckoning comment: " + dbE.getMessage());
@@ -418,7 +432,7 @@ public class NotesServiceImpl implements NotesService {
 		long count = 0;
 		
 		try {
-			favoritedReckonings = reckoningCache.getCachedUserFavoritedReckonings(userId);
+			if (serviceProps.isEnableCaching()) {favoritedReckonings = reckoningCache.getCachedUserFavoritedReckonings(userId);}
 			if (favoritedReckonings == null) {
 				favoritedReckonings = reckoningRepo.getReckoningSummariesFavoritedByUser(userId);
 				for (Reckoning reckoning : favoritedReckonings) {
@@ -426,7 +440,7 @@ public class NotesServiceImpl implements NotesService {
 									(reckoning.getSubmitterId(), true).getUser());
 				}
 				
-				reckoningCache.setCachedUserFavoritedReckonings(favoritedReckonings, userId);
+				if (serviceProps.isEnableCaching()) {reckoningCache.setCachedUserFavoritedReckonings(favoritedReckonings, userId);}
 			}
 			count = Long.valueOf(favoritedReckonings.size());
 			favoritedReckonings = (List<Reckoning>) ListPagingUtility.pageList(favoritedReckonings, page, size);
@@ -446,7 +460,7 @@ public class NotesServiceImpl implements NotesService {
 		long count = 0;
 		
 		try {
-			commentedReckonings = reckoningCache.getCachedUserFavoritedReckoningComments(userId);
+			if (serviceProps.isEnableCaching()) {commentedReckonings = reckoningCache.getCachedUserFavoritedReckoningComments(userId);}
 			if (commentedReckonings == null) {
 				commentedReckonings = reckoningRepo.getReckoningCommentsFavoritedByUser(userId);
 				
@@ -457,7 +471,7 @@ public class NotesServiceImpl implements NotesService {
 					}
 				}
 			
-				reckoningCache.setCachedUserFavoritedReckoningComments(commentedReckonings, userId);
+				if (serviceProps.isEnableCaching()) {reckoningCache.setCachedUserFavoritedReckoningComments(commentedReckonings, userId);}
 			} else {
 				for (Reckoning commentedReckoning : commentedReckonings) {
 					count += commentedReckoning.getComments().size();
@@ -506,13 +520,15 @@ public class NotesServiceImpl implements NotesService {
 			contentRepoCustom.insertContentFavorite(favorite, contentId);
 			
 			// Cache management. Check to see if the content is already in cache.  If so, update it.  Otherwise, forget it.
-			List<Content> cacheContent = contentCache.getCachedContent(contentId);
-			if (cacheContent != null && !cacheContent.isEmpty()) {
-				if (cacheContent.get(0) != null) {
-					cacheContent.get(0).addFavorite(favorite);
+			if (serviceProps.isEnableCaching()) {
+				List<Content> cacheContent = contentCache.getCachedContent(contentId);
+				if (cacheContent != null && !cacheContent.isEmpty()) {
+					if (cacheContent.get(0) != null) {
+						cacheContent.get(0).addFavorite(favorite);
+					}
+					
+					contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 				}
-				
-				contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when favoriting a content item: " + dbE.getMessage());
@@ -557,13 +573,15 @@ public class NotesServiceImpl implements NotesService {
 			contentRepoCustom.insertContentFlag(flag, contentId);
 			
 			// Cache management. Check to see if the content is already in cache.  If so, update it.  Otherwise, forget it.
-			List<Content> cacheContent = contentCache.getCachedContent(contentId);
-			if (cacheContent != null && !cacheContent.isEmpty()) {
-				if (cacheContent.get(0) != null) {
-					cacheContent.get(0).addFlag(flag);
+			if (serviceProps.isEnableCaching()) {
+				List<Content> cacheContent = contentCache.getCachedContent(contentId);
+				if (cacheContent != null && !cacheContent.isEmpty()) {
+					if (cacheContent.get(0) != null) {
+						cacheContent.get(0).addFlag(flag);
+					}
+					
+					contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 				}
-				
-				contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when flagging a content: " + dbE.getMessage());
@@ -623,15 +641,17 @@ public class NotesServiceImpl implements NotesService {
 			contentRepoCustom.updateComment(favoritedComment.get(0));
 			
 			// Cache management.  If the Content is in the cache, pull it, add the favorite to the comment yourself, and roll it back in.
-			List<Content> cacheContent = contentCache.getCachedContent(commentedContent.get(0).getId());
-			if (cacheContent != null && !cacheContent.isEmpty()) {
-				for (Comment comment : cacheContent.get(0).getComments()) {
-					if (comment.getCommentId().equals(commentId)) {
-						comment.addFavorite(favorite);
+			if (serviceProps.isEnableCaching()) {
+				List<Content> cacheContent = contentCache.getCachedContent(commentedContent.get(0).getId());
+				if (cacheContent != null && !cacheContent.isEmpty()) {
+					for (Comment comment : cacheContent.get(0).getComments()) {
+						if (comment.getCommentId().equals(commentId)) {
+							comment.addFavorite(favorite);
+						}
 					}
+					
+					contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 				}
-				
-				contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when favoriting a content comment: " + dbE.getMessage());
@@ -685,15 +705,17 @@ public class NotesServiceImpl implements NotesService {
 			contentRepoCustom.updateComment(flaggedComment.get(0));
 			
 			// Cache management.  If the Content is in the cache, pull it, add the flag to the comment yourself, and roll it back in.
-			List<Content> cacheContent = contentCache.getCachedContent(commentedContent.get(0).getId());
-			if (cacheContent != null && !cacheContent.isEmpty()) {
-				for (Comment comment : cacheContent.get(0).getComments()) {
-					if (comment.getCommentId().equals(commentId)) {
-						comment.addFlag(flag);
+			if (serviceProps.isEnableCaching()) {
+				List<Content> cacheContent = contentCache.getCachedContent(commentedContent.get(0).getId());
+				if (cacheContent != null && !cacheContent.isEmpty()) {
+					for (Comment comment : cacheContent.get(0).getComments()) {
+						if (comment.getCommentId().equals(commentId)) {
+							comment.addFlag(flag);
+						}
 					}
+					
+					contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 				}
-				
-				contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when flagging a content comment: " + dbE.getMessage());

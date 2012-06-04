@@ -16,7 +16,9 @@
 	
 	<!-- Incorporates Spring configuration information for accessing the DB -->
 	<import resource="spring-mongodb-config.xml" />
-	<import resource="memcached-config.xml"/>
+	
+	<!-- Incorporates Spring configuration information for accessing the cache.  Uncomment when caching is enabled. -->
+	<import resource="cache-config.xml"/> 
 
 	<bean id="placeholderProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -87,6 +89,7 @@
     
     <bean id="serviceProps" class="com.reckonlabs.reckoner.contentservices.utility.ServiceProps">
         <property name="enableServiceAuthentication" value="${reckoner.contentservices.authentication.enable}" />
+        <property name="enableCaching" value="${reckoner.contentservices.cache.${reckoner.contentservices.environment}.enable}" />
         <property name="votePersistenceSize" value="${reckoner.contentservices.db.votecollectionsize}" />
         <property name="votePersistenceBytes" value="${reckoner.contentservices.db.votecollectionbytes}" />
         <property name="defaultBio" value="${reckoner.contentservices.user.bio}" />

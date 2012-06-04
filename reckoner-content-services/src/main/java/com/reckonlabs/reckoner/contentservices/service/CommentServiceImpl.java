@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +20,7 @@ import com.reckonlabs.reckoner.contentservices.repo.ContentRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ContentRepoCustom;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ReckoningRepoCustom;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.message.Message;
 import com.reckonlabs.reckoner.domain.message.MessageEnum;
@@ -45,15 +48,18 @@ public class CommentServiceImpl implements CommentService {
 	@Autowired
 	ContentRepoCustom contentRepoCustom;
 	
-	@Autowired
+	@Resource
 	CommentCache commentCache;
-	@Autowired
+	@Resource
 	ReckoningCache reckoningCache;
-	@Autowired
+	@Resource
 	ContentCache contentCache;
 	
 	@Autowired
 	UserService userService;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(CommentServiceImpl.class);
@@ -71,23 +77,25 @@ public class CommentServiceImpl implements CommentService {
 			comment.setPostingDate(DateUtility.now());
 			reckoningRepoCustom.insertReckoningComment(comment, reckoningId);
 			
-			// Cache management. Remove this user's comment cache entry because of the update.  
-			// Also remove the commented reckoning cache.
-			commentCache.removeUserCommentCache(comment.getPosterId());
-			reckoningCache.removeCachedUserCommentedReckonings(comment.getPosterId());
-			
-			// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
-			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
-			if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
-				if (cacheReckoning.get(0) != null) {
-					if (cacheReckoning.get(0).getComments() == null) {
-						cacheReckoning.get(0).setComments(new LinkedList<Comment> ());
-					} 
-					comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
-					cacheReckoning.get(0).addComment(comment);
-				}
+			if (serviceProps.isEnableCaching()) {	
+				// Cache management. Remove this user's comment cache entry because of the update.  
+				// Also remove the commented reckoning cache.
+				commentCache.removeUserCommentCache(comment.getPosterId());
+				reckoningCache.removeCachedUserCommentedReckonings(comment.getPosterId());
 				
-				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+				// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
+				List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
+				if (cacheReckoning != null && !cacheReckoning.isEmpty()) {
+					if (cacheReckoning.get(0) != null) {
+						if (cacheReckoning.get(0).getComments() == null) {
+							cacheReckoning.get(0).setComments(new LinkedList<Comment> ());
+						} 
+						comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
+						cacheReckoning.get(0).addComment(comment);
+					}
+					
+					reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
+				}
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when inserting a new reckoning comment: " + dbE.getMessage());
@@ -131,7 +139,7 @@ public class CommentServiceImpl implements CommentService {
 		
 		try {
 			// Check the cache to see if the list already exists.  If not, create it and cache.
-			commentedReckonings = reckoningCache.getCachedUserCommentedReckonings(userId);
+			if (serviceProps.isEnableCaching()) {commentedReckonings = reckoningCache.getCachedUserCommentedReckonings(userId);}
 			
 			if (commentedReckonings == null) {
 				commentedReckonings = reckoningRepoCustom.getUserCommentedReckonings(userId);
@@ -152,7 +160,7 @@ public class CommentServiceImpl implements CommentService {
 					commentedReckoning.setCommentIndex(userComments.size());
 				}
 				
-				reckoningCache.setCachedUserCommentedReckonings(commentedReckonings, userId);
+				if (serviceProps.isEnableCaching()) {reckoningCache.setCachedUserCommentedReckonings(commentedReckonings, userId);}
 			} else {
 				count = commentedReckonings.size();
 				for (Reckoning commentedReckoning : commentedReckonings) {
@@ -185,7 +193,7 @@ public class CommentServiceImpl implements CommentService {
 			// Cache management. 
 			// Delete the individual reckoning cache (these should be rare, so we're not doing an in-place update).
 			// Ignoring the user caches -- those will clear soon enough.
-			reckoningCache.removeCachedReckoning(commentedReckoning.get(0).getId());
+			if (serviceProps.isEnableCaching()) {reckoningCache.removeCachedReckoning(commentedReckoning.get(0).getId());}
 		} catch (Exception e) {
 		    log.error("General exception when deleting comment " + comment.getCommentId() + " : " + e.getMessage());
 		    log.debug("Stack Trace:", e);			
@@ -207,7 +215,7 @@ public class CommentServiceImpl implements CommentService {
 			// Cache management. 
 			// Delete the individual reckoning cache (these should be rare, so we're not doing an in-place update).
 			// Ignoring the user caches -- those will clear soon enough.
-			reckoningCache.removeCachedReckoning(commentedReckoning.get(0).getId());
+			if (serviceProps.isEnableCaching()) {reckoningCache.removeCachedReckoning(commentedReckoning.get(0).getId());}
 		} catch (Exception e) {
 		    log.error("General exception when deleting comment " + commentId + " : " + e.getMessage());
 		    log.debug("Stack Trace:", e);			
@@ -231,17 +239,19 @@ public class CommentServiceImpl implements CommentService {
 			contentRepoCustom.insertContentComment(comment, contentId);
 			
 			// Cache management. Check to see if the content is already in cache.  If so, update it.  Otherwise, forget it.
-			List<Content> cacheContent = contentCache.getCachedContent(contentId);
-			if (cacheContent != null && !cacheContent.isEmpty()) {
-				if (cacheContent.get(0) != null) {
-					if (cacheContent.get(0).getComments() == null) {
-						cacheContent.get(0).setComments(new LinkedList<Comment> ());
-					} 
-					comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
-					cacheContent.get(0).addComment(comment);
+			if (serviceProps.isEnableCaching()) {
+				List<Content> cacheContent = contentCache.getCachedContent(contentId);
+				if (cacheContent != null && !cacheContent.isEmpty()) {
+					if (cacheContent.get(0) != null) {
+						if (cacheContent.get(0).getComments() == null) {
+							cacheContent.get(0).setComments(new LinkedList<Comment> ());
+						} 
+						comment.setUser(userService.getUserByUserId(comment.getPosterId(), true).getUser());
+						cacheContent.get(0).addComment(comment);
+					}
+					
+					contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 				}
-				
-				contentCache.setCachedContent(cacheContent, cacheContent.get(0).getId());
 			}
 		} catch (DBUpdateException dbE) {
 			log.error("Database exception when inserting a new content comment: " + dbE.getMessage());
@@ -292,7 +302,7 @@ public class CommentServiceImpl implements CommentService {
 			// Cache management. 
 			// Delete the individual content cache (these should be rare, so we're not doing an in-place update).
 			// Ignoring the user caches -- those will clear soon enough.
-			contentCache.removeCachedContent(commentedContent.get(0).getId());
+			if (serviceProps.isEnableCaching()) {contentCache.removeCachedContent(commentedContent.get(0).getId());}
 		} catch (Exception e) {
 		    log.error("General exception when deleting comment " + comment.getCommentId() + " : " + e.getMessage());
 		    log.debug("Stack Trace:", e);			
@@ -314,7 +324,7 @@ public class CommentServiceImpl implements CommentService {
 			// Cache management. 
 			// Delete the individual content cache (these should be rare, so we're not doing an in-place update).
 			// Ignoring the user caches -- those will clear soon enough.
-			contentCache.removeCachedContent(commentedContent.get(0).getId());
+			if (serviceProps.isEnableCaching()) {contentCache.removeCachedContent(commentedContent.get(0).getId());}
 		} catch (Exception e) {
 		    log.error("General exception when deleting comment " + commentId + " : " + e.getMessage());
 		    log.debug("Stack Trace:", e);			

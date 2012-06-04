@@ -54,7 +54,7 @@ public class VoteServiceImpl implements VoteService {
 	@Autowired
 	VoteCache voteCache;
 	
-	@Autowired
+	@Resource
 	ReckoningCache reckoningCache;
 	
 	@Autowired
@@ -76,7 +76,6 @@ public class VoteServiceImpl implements VoteService {
 				return (new ServiceResponse(new Message(MessageEnum.R600_POST_VOTE), false));
 			}
 			
-			// Confirm that the user hasn't already voted.  Check the cache first -- if nothing is there, check the DB.
 			List<Vote> userReckoningVote = getUserReckoningVote(vote.getVoterId(), reckoningId, sessionId).getVotes();
 			if (userReckoningVote != null) {
 				if (!userReckoningVote.isEmpty()) {
@@ -103,27 +102,29 @@ public class VoteServiceImpl implements VoteService {
 			reckoningRepoCustom.insertReckoningVote(vote);
 			voteRepoCustom.insertVote(vote);
 			
-			// Cache management.  Cache the vote to confirm the user has voted for this one.
-			List<Vote> voteCacheEntry = new LinkedList<Vote>();
-			voteCacheEntry.add(vote);
-			voteCache.setCachedUserReckoningVote(voteCacheEntry, vote.getVoterId(), reckoningId);
-			
-			// Cache management.  Remove the list of reckonings voted by this user from the cache.  We'll recompile on the next request.
-			reckoningCache.removeCachedUserVotedReckonings(vote.getVoterId());
-			
-			// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
-			// Assume that ONLY THE VOTE TOTALS are in the cache, not the votes themselves.
-			List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
-			if (cacheReckoning != null) {
-				if (cacheReckoning.get(0) != null) {
-					if (cacheReckoning.get(0).getAnswers() != null) {
-						if (cacheReckoning.get(0).getAnswers().get(answerIndex) != null) {
-							cacheReckoning.get(0).getAnswers().get(answerIndex).incrementVoteTotal();							
+			if (serviceProps.isEnableCaching()) {
+				// Cache management.  Cache the vote to confirm the user has voted for this one.
+				List<Vote> voteCacheEntry = new LinkedList<Vote>();
+				voteCacheEntry.add(vote);
+				voteCache.setCachedUserReckoningVote(voteCacheEntry, vote.getVoterId(), reckoningId);
+				
+				// Cache management.  Remove the list of reckonings voted by this user from the cache.  We'll recompile on the next request.
+				reckoningCache.removeCachedUserVotedReckonings(vote.getVoterId());
+				
+				// Cache management. Check to see if the reckoning is already in cache.  If so, update it.  Otherwise, forget it.
+				// Assume that ONLY THE VOTE TOTALS are in the cache, not the votes themselves.
+				List<Reckoning> cacheReckoning = reckoningCache.getCachedReckoning(reckoningId);
+				if (cacheReckoning != null) {
+					if (cacheReckoning.get(0) != null) {
+						if (cacheReckoning.get(0).getAnswers() != null) {
+							if (cacheReckoning.get(0).getAnswers().get(answerIndex) != null) {
+								cacheReckoning.get(0).getAnswers().get(answerIndex).incrementVoteTotal();							
+							}
 						}
 					}
+	
+					reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 				}
-
-				reckoningCache.setCachedReckoning(cacheReckoning, cacheReckoning.get(0).getId());
 			}
 		} catch (Exception e) {
 			log.error("General exception when inserting a new reckoning vote: " + e.getMessage());
@@ -154,13 +155,15 @@ public class VoteServiceImpl implements VoteService {
 			updateVote.setVotingDate(userReckoningVote.get(0).getVotingDate());
 			reckoningRepoCustom.updateReckoningVote(updateVote);
 			
-			// Cache management.  Cache the vote to confirm the user has voted for this one.
-			List<Vote> voteCacheEntry = new LinkedList<Vote>();
-			voteCacheEntry.add(updateVote);
-			voteCache.setCachedUserReckoningVote(voteCacheEntry, updateVote.getVoterId(), updateVote.getReckoningId());
-			
-			// Cache management.  Remove the list of reckonings voted by this user from the cache.  We'll recompile on the next request.
-			reckoningCache.removeCachedUserVotedReckonings(updateVote.getVoterId());
+			if (serviceProps.isEnableCaching()) {
+				// Cache management.  Cache the vote to confirm the user has voted for this one.
+				List<Vote> voteCacheEntry = new LinkedList<Vote>();
+				voteCacheEntry.add(updateVote);
+				voteCache.setCachedUserReckoningVote(voteCacheEntry, updateVote.getVoterId(), updateVote.getReckoningId());
+				
+				// Cache management.  Remove the list of reckonings voted by this user from the cache.  We'll recompile on the next request.
+				reckoningCache.removeCachedUserVotedReckonings(updateVote.getVoterId());
+			}
 		} catch (Exception e) {
 			log.error("General exception when updating a vote: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -245,7 +248,8 @@ public class VoteServiceImpl implements VoteService {
 		List<Vote> userReckoningVote = null;
 		
 		try {
-			userReckoningVote = voteCache.getCachedUserReckoningVote(userId, reckoningId);
+			// Confirm that the user hasn't already voted.  Check the cache first -- if nothing is there, check the DB.
+			if (serviceProps.isEnableCaching()) {userReckoningVote = voteCache.getCachedUserReckoningVote(userId, reckoningId);}
 			
 			if (userReckoningVote == null) {
 				List<Reckoning> votedReckonings = reckoningRepo.getReckoningVotesByReckoningId(reckoningId);
@@ -256,7 +260,7 @@ public class VoteServiceImpl implements VoteService {
 					}
 				}
 
-				voteCache.setCachedUserReckoningVote(userReckoningVote, userId, reckoningId);
+				if (serviceProps.isEnableCaching()) {voteCache.setCachedUserReckoningVote(userReckoningVote, userId, reckoningId);}
 			}
 		} catch (Exception e) {
 		   log.error("General exception when getting votes on a reckoning by a user: " + e.getMessage());

@@ -15,7 +15,6 @@ import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
 import com.reckonlabs.reckoner.domain.notes.Tag;
 
-@Component
 public class ContentCacheMemImpl implements ContentCache {
 	
 	public static final int CONTENT_CACHE_LIFESPAN = 1800;

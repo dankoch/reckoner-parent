@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import com.reckonlabs.reckoner.domain.reckoning.Reckoning;
 import com.reckonlabs.reckoner.domain.reckoning.Vote;
 
-@Component
 public class ReckoningCacheMemImpl implements ReckoningCache {
 
 	public static final int RECKONING_CACHE_LIFESPAN = 1800;

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import com.reckonlabs.reckoner.contentservices.cache.ContentCache;
 import com.reckonlabs.reckoner.contentservices.repo.ContentRepo;
 import com.reckonlabs.reckoner.contentservices.repo.ContentRepoCustom;
+import com.reckonlabs.reckoner.contentservices.utility.ServiceProps;
 import com.reckonlabs.reckoner.domain.ApprovalStatusEnum;
 import com.reckonlabs.reckoner.domain.content.Content;
 import com.reckonlabs.reckoner.domain.content.ContentTypeEnum;
@@ -39,11 +42,14 @@ public class ContentServiceImpl implements ContentService {
 	@Autowired
 	ContentRepoCustom contentRepoCustom;
 	
-	@Autowired
+	@Resource
 	ContentCache contentCache;
 	
 	@Autowired
 	UserService userService;
+	
+	@Resource
+	ServiceProps serviceProps;
 	
 	private static final Logger log = LoggerFactory
 			.getLogger(ContentServiceImpl.class);
@@ -67,7 +73,7 @@ public class ContentServiceImpl implements ContentService {
 			content.setTags(formatTags(content.getTags()));
 			
 			contentRepoCustom.insertNewContent(content);
-			contentCache.removeCachedTagList(content.getContentType());
+			if (serviceProps.isEnableCaching()) {contentCache.removeCachedTagList(content.getContentType());}
 		} catch (Exception e) {
 			log.error("General exception when inserting new content: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -94,7 +100,7 @@ public class ContentServiceImpl implements ContentService {
 				contentRepoCustom.updateContent(content);
 			}
 			
-			contentCache.removeCachedContent(content.getId());
+			if (serviceProps.isEnableCaching()) {contentCache.removeCachedContent(content.getId());}
 		} catch (Exception e) {
 			log.error("General exception when updating content: " + e.getMessage());
 			log.debug("Stack Trace:", e);			
@@ -115,7 +121,7 @@ public class ContentServiceImpl implements ContentService {
 		List<Content> contentList = null;
 		try {
 			// Check the caches to see if the Content has already been pulled.  If so, there you go.
-			contentList = contentCache.getCachedContent(id);
+			if (serviceProps.isEnableCaching()) {contentList = contentCache.getCachedContent(id);}
 			
 			// If this is a 'page visit', (i.e. a unique display of this Content on an end client), increment
 			// the views value for this Content in the DB.  Also, update the value returned from the cache.
@@ -123,7 +129,7 @@ public class ContentServiceImpl implements ContentService {
 				contentRepoCustom.incrementContentViews(id);
 				if (contentList != null && !contentList.isEmpty()) {
 					contentList.get(0).incrementViews();
-					contentCache.setCachedContent(contentList, id);
+					if (serviceProps.isEnableCaching()) {contentCache.setCachedContent(contentList, id); }
 				}
 			}
 			
@@ -153,7 +159,7 @@ public class ContentServiceImpl implements ContentService {
 								(contentList.get(0).getSubmitterId(), true).getUser());
 					}					
 					
-					contentCache.setCachedContent(contentList, id);
+					if (serviceProps.isEnableCaching()) {contentCache.setCachedContent(contentList, id);}
 				}
 			}
 		} catch (Exception e) {
@@ -178,8 +184,10 @@ public class ContentServiceImpl implements ContentService {
 			includeTags = formatTags(includeTags);
 			
 			// First, try fetching out of the cache according to the specified criteria.
-			contents = contentCache.getCachedContentSummaries(contentType, postedAfter, postedBefore, includeTags, 
+			if (serviceProps.isEnableCaching()) {	
+				contents = contentCache.getCachedContentSummaries(contentType, postedAfter, postedBefore, includeTags, 
 					submitterId, approvalStatus, sortBy, ascending, page, size);
+			}
 			
 			// Nothing in the cache.  Poll the DB and stow it.
 			if (contents == null) {
@@ -191,8 +199,10 @@ public class ContentServiceImpl implements ContentService {
 									(content.getSubmitterId(), true).getUser());
 				}
 				
-				contentCache.setCachedContentSummaries(contentType, postedAfter, postedBefore, includeTags, 
+				if (serviceProps.isEnableCaching()) {	
+					contentCache.setCachedContentSummaries(contentType, postedAfter, postedBefore, includeTags, 
 						submitterId, approvalStatus, sortBy, ascending, contents, page, size);
+				}
 			}
 			
 			count = getContentCount(contentType, postedAfter, postedBefore, includeTags, submitterId, approvalStatus).getCount();
@@ -213,15 +223,19 @@ public class ContentServiceImpl implements ContentService {
 		Long count = null;
 		
 		try {
-			count = contentCache.getCachedContentCount(contentType, postedAfter, postedBefore, 
-					includeTags, submitterId, approvalStatus);
+			if (serviceProps.isEnableCaching()) {	
+				count = contentCache.getCachedContentCount(contentType, postedAfter, postedBefore, 
+						includeTags, submitterId, approvalStatus);
+			}
 			
 			if (count == null) {
 				count = contentRepoCustom.getContentCount(contentType, postedBefore, 
 					postedAfter, includeTags, submitterId, approvalStatus);
 				
-				contentCache.setCachedContentCount(contentType, postedAfter, postedBefore, 
-						includeTags, submitterId, approvalStatus, count);
+				if (serviceProps.isEnableCaching()) {	
+					contentCache.setCachedContentCount(contentType, postedAfter, postedBefore, 
+							includeTags, submitterId, approvalStatus, count);
+				}
 			}
 		} catch (Exception e) {
 			log.error("General exception when getting content count: " + e.getMessage());
@@ -239,7 +253,7 @@ public class ContentServiceImpl implements ContentService {
 			
 			if (rejectedContent != null && rejectedContent.size() > 0) {
 				contentRepoCustom.rejectContent(id, userService.getUserBySessionId(sessionId).getUser().getId());
-				contentCache.removeCachedContent(id);
+				if (serviceProps.isEnableCaching()) {contentCache.removeCachedContent(id);}
 			} else {
 				log.info("Request to reject non-existent content: " + id);
 				return (new ServiceResponse(new Message(MessageEnum.R300_APPROVE_RECKONING), false));					
@@ -267,7 +281,7 @@ public class ContentServiceImpl implements ContentService {
 			// This should ultimately be a Mongo Map-Reduce call, but its performance is poor and the data set isn't
 			// huge, so we're doing it through Java.
 			
-			tagList = contentCache.getCachedTagList(contentType);
+			if (serviceProps.isEnableCaching()) {tagList = contentCache.getCachedTagList(contentType);}
 			
 			if (tagList == null) {
 				tagList = new LinkedList<Tag>();
@@ -295,7 +309,7 @@ public class ContentServiceImpl implements ContentService {
 					}
 				}
 				
-				contentCache.setCachedTagList(tagList, contentType);
+				if (serviceProps.isEnableCaching()) {contentCache.setCachedTagList(tagList, contentType);}
 			}
 			
 		} catch (Exception e) {
